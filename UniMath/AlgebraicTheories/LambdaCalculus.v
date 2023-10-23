@@ -47,9 +47,7 @@ Definition lambda_calculus_data : UU := ∑
   (subst_subst : ∏ l m n t (g : stn l → L m) (f : stn m → L n),
     subst _ _ (subst _ _ t g) f = subst _ _ t (λ i, subst _ _ (g i) f))
   (beta : ∏ n (f : L (S n)) g,
-    app _ (abs _ f) g = subst _ _ f (extend_tuple (var _) g))
-  (eta : ∏ n (f : L n),
-    abs _ (app _ (inflate _ f) (var _ lastelement)) = f),
+    app _ (abs _ f) g = subst _ _ f (extend_tuple (var _) g)),
   (∏
     (A : ∏ n l,
       hSet)
@@ -91,12 +89,6 @@ Definition lambda_calculus_data : UU := ∑
         (beta n f g)
         (f_app _ _ _ (f_abs _ _ af) ag)
         (f_subst _ _ _ _ af (extend_tuple_dep (A := A n) (f_var _) ag)))
-    (f_eta : ∏ n f af,
-      PathOver
-        (Y := A n)
-        (eta n f)
-        (f_abs _ _ (f_app _ _ _ (f_inflate _ _ af) (f_var _ lastelement)))
-        af)
     , (∏ n l, A n l)
   ).
 
@@ -128,9 +120,6 @@ Definition subst_subst {L : lambda_calculus_data} {l m n} t (g : stn l → L m) 
 Definition beta_equality {L : lambda_calculus_data} {n} (f : L (S n)) g
   : app (abs f) g = subst f (extend_tuple var g)
   := pr1 (pr222 (pr222 (pr222 L))) n f g.
-Definition eta_equality {L : lambda_calculus_data} {n} (f : L n)
-  : abs (app (inflate f) (var lastelement)) = f
-  := pr12 (pr222 (pr222 (pr222 L))) n f.
 
 Definition lambda_calculus_ind
   {L : lambda_calculus_data}
@@ -174,16 +163,10 @@ Definition lambda_calculus_ind
         (Y := A n)
         (beta_equality f g)
         (f_app _ _ _ (f_abs _ _ af) ag)
-        (f_subst _ _ _ _ af (extend_tuple_dep (A := A n) (f_var _) ag))) ×
-    (∏ n f af,
-      PathOver
-        (Y := A n)
-        (eta_equality f)
-        (f_abs _ _ (f_app _ _ _ (f_inflate _ _ af) (f_var _ lastelement)))
-        af)
+        (f_subst _ _ _ _ af (extend_tuple_dep (A := A n) (f_var _) ag)))
   )
   : (∏ n l, A n l)
-  := pr22 (pr222 (pr222 (pr222 L)))
+  := pr2 (pr222 (pr222 (pr222 L)))
     A
     f_var
     f_app
@@ -193,8 +176,7 @@ Definition lambda_calculus_ind
     (pr12 f_paths)
     (pr122 f_paths)
     (pr1 (pr222 f_paths))
-    (pr12 (pr222 f_paths))
-    (pr22 (pr222 f_paths)).
+    (pr2 (pr222 f_paths)).
 
 (** * 2. Properties and operations derived from the data *)
 
@@ -243,7 +225,6 @@ Proof.
       apply maponpaths.
       symmetry.
       apply extend_tuple_dep_const.
-    + apply f_paths.
 Defined.
 
 Definition lambda_calculus_ind_prop
