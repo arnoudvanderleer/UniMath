@@ -61,23 +61,9 @@ Section Monoid.
     exact (move_action_through_vector [(f ; g)] _).
   Qed.
 
-  Definition make_functional (a : A) (n: nat) : A.
-  Proof.
-    induction n as [| n' a'].
-    - exact a.
-    - pose (f := (abs (app
-      (var (make_stn 2 0 (idpath true)))
-      (var (make_stn 2 1 (idpath true))))) : (L 1 : hSet)).
-      exact (action f (weqvecfun _ [(a')])).
-  Defined.
-
-  Definition is_functional (a: A) (n: nat) : UU
-    := a = make_functional a n.
-
-  Lemma isaprop_is_functional (a : A) (n : nat) : isaprop (is_functional a n).
-  Proof.
-    apply setproperty.
-  Qed.
+  Ltac extend_tuple_1 := (
+    rewrite (extend_tuple_last _ _ _ (idpath 0 : stntonat _ (make_stn 1 0 (idpath true)) = 0))
+  ).
 
   Ltac extend_tuple_2 := (
     rewrite (extend_tuple_i _ _ _ _ (idpath true : make_stn 2 0 (idpath true) < 1)) +
@@ -90,17 +76,128 @@ Section Monoid.
     rewrite (extend_tuple_last _ _ _ (idpath 2 : stntonat _ (make_stn 3 2 (idpath true)) = 2))
   ).
 
+  Definition compose
+    (a b : A)
+    : A
+    := action (abs (app (var (make_stn 3 0 (idpath true))) (app (var (make_stn 3 1 (idpath true))) (var (make_stn 3 2 (idpath true))))) : (L 2 : hSet)) (weqvecfun _ [(a ; b)]).
+
+  Lemma compose_assoc
+    (a b c : A)
+    : compose (compose a b) c = compose a (compose b c).
+  Proof.
+    unfold compose.
+    pose (v := weqvecfun _ [(a ; b ; c)]).
+    pose (Hv := λ i Hi,
+      !(algebra_projects_component _ _ (make_stn 3 i Hi) v)).
+    rewrite (Hv 0 (idpath true) : a = _).
+    rewrite (Hv 1 (idpath true) : b = _).
+    rewrite (Hv 2 (idpath true) : c = _).
+    do 2 rewrite move_action_through_vector_2.
+    do 2 rewrite <- algebra_is_assoc.
+    cbn -[weqvecfun action].
+    do 15 reduce_lambda.
+    do 6 extend_tuple_3.
+    do 2 rewrite move_action_through_vector_2.
+    do 2 rewrite <- algebra_is_assoc.
+    apply (maponpaths (λ x, action x v)).
+    cbn -[weqvecfun v].
+    do 12 reduce_lambda.
+    do 6 extend_tuple_3.
+    cbn -[v].
+    now do 42 reduce_lambda.
+  Qed.
+
+  Definition one_1
+    : A
+    :=
+    action (abs (var (make_stn 1 0 (idpath true))) : (L 0 : hSet)) (weqvecfun _ vnil).
+
+  Lemma one_1_idempotent
+    : compose one_1 one_1 = one_1.
+  Proof.
+    unfold compose, one_1.
+    rewrite move_action_through_vector_2.
+    rewrite <- algebra_is_assoc.
+    apply (maponpaths (λ x, action x _)).
+    cbn -[weqvecfun].
+    do 6 reduce_lambda.
+    do 3 extend_tuple_3.
+    cbn.
+    do 4 reduce_lambda.
+    cbn.
+    now do 4 reduce_lambda.
+  Qed.
+
+  Definition make_functional_1 (a : A)
+    : A
+    := compose one_1 a.
+
+  Definition is_functional_1 (a: A)
+    : UU
+    := a = make_functional_1 a.
+
+  Lemma isaprop_is_functional_1 (a : A) : isaprop (is_functional_1 a).
+  Proof.
+    apply setproperty.
+  Qed.
+
+  Definition one_2
+    : A
+    :=
+    action (abs (abs (app (var (make_stn 2 0 (idpath true))) (var (make_stn 2 1 (idpath true))))) : (L 0 : hSet)) (weqvecfun _ vnil).
+
+  Lemma one_2_idempotent
+    : compose one_2 one_2 = one_2.
+  Proof.
+    unfold compose, one_2.
+    rewrite move_action_through_vector_2.
+    rewrite <- algebra_is_assoc.
+    apply (maponpaths (λ x, action x _)).
+    cbn -[weqvecfun].
+    do 6 reduce_lambda.
+    apply maponpaths.
+    do 3 extend_tuple_3.
+    cbn.
+    do 7 reduce_lambda.
+    apply maponpaths.
+    do 4 reduce_lambda.
+    do 2 extend_tuple_2.
+    cbn.
+    now do 28 reduce_lambda.
+  Qed.
+
+  Definition make_functional_2 (a : A)
+    : A
+    := compose one_2 a.
+
+  Definition is_functional_2 (a: A)
+    : UU
+    := a = make_functional_2 a.
+
+  Lemma isaprop_is_functional_2 (a : A) : isaprop (is_functional_2 a).
+  Proof.
+    apply setproperty.
+  Qed.
+
+  Lemma pr_is_var
+    {n : nat}
+    (i : stn n)
+    : pr (T := L) i = var i.
+  Proof.
+    exact (subst_var _ _).
+  Qed.
+
   Section Monoid.
 
     Lemma algebra_isaset_functionals
       (n : nat)
-      : isaset (∑ (a: A), is_functional a n).
+      : isaset (∑ (a: A), is_functional_1 a).
     Proof.
       apply isaset_total2.
       - apply setproperty.
       - intro a.
         apply isasetaprop.
-        apply setproperty.
+        apply isaprop_is_functional_1.
     Qed.
 
     Definition algebra_functionals_set
@@ -108,61 +205,14 @@ Section Monoid.
       : hSet
       := make_hSet _ (algebra_isaset_functionals n).
 
-    Definition compose
-      (a b : A)
-      : A.
-    Proof.
-      pose (f := abs
-        (app
-          (var (make_stn 3 0 (idpath true)))
-          (app
-            (var (make_stn 3 1 (idpath true)))
-            (var (make_stn 3 2 (idpath true)))
-          )) : (L 2 : hSet)).
-      exact (action (A := A) f (weqvecfun _ [( a ; b)])).
-    Defined.
-
-    Lemma is_functional_compose
+    Lemma is_functional_1_compose
       (a b : algebra_functionals_set 1)
-      : is_functional (compose (pr1 a) (pr1 b)) 1.
+      : is_functional_1 (compose (pr1 a) (pr1 b)).
     Proof.
-      set (v := weqvecfun 2 [(pr1 a ; pr1 b)]).
-      unfold compose, is_functional, make_functional.
-      cbn -[weqvecfun action].
-      rewrite move_action_through_vector_1.
-      rewrite <- algebra_is_assoc.
-      cbn -[weqvecfun].
-      do 4 reduce_lambda.
-      do 2 extend_tuple_2.
-      cbn -[v].
-      do 9 reduce_lambda.
-      do 3 extend_tuple_3.
-      now do 7 reduce_lambda.
-    Qed.
-
-    Lemma is_assoc_compose
-      (a b c : A)
-      : compose (compose a b) c = compose a (compose b c).
-    Proof.
-      unfold compose.
-      pose (v := weqvecfun _ [(a ; b ; c)]).
-      pose (Hv := λ i Hi,
-        !(algebra_projects_component _ _ (make_stn 3 i Hi) v)).
-      rewrite (Hv 0 (idpath true) : a = _),
-        (Hv 1 (idpath true) : b = _),
-        (Hv 2 (idpath true) : c = _).
-      do 2 rewrite move_action_through_vector_2.
-      do 2 rewrite <- algebra_is_assoc.
-      cbn -[weqvecfun action].
-      do 15 reduce_lambda.
-      do 6 extend_tuple_3.
-      do 2 rewrite move_action_through_vector_2.
-      do 2 rewrite <- algebra_is_assoc.
-      cbn -[weqvecfun v].
-      do 12 reduce_lambda.
-      do 6 extend_tuple_3.
-      cbn -[v].
-      now do 42 reduce_lambda.
+      unfold is_functional_1, make_functional_1.
+      refine (!_ @ compose_assoc _ _ _).
+      apply (maponpaths (λ x, compose x _)).
+      exact (!pr2 a).
     Qed.
 
     Definition unit_element
@@ -171,62 +221,63 @@ Section Monoid.
       exact (action (T := L) (abs (var (make_stn 1 0 (idpath true)))) (weqvecfun _ [()])).
     Defined.
 
-    Lemma is_functional_unit_element
-      : is_functional unit_element 1.
+    Lemma is_functional_1_unit_element
+      : is_functional_1 unit_element.
     Proof.
-      unfold unit_element, is_functional, make_functional.
-      cbn -[weqvecfun action].
-      rewrite move_action_through_vector_1.
+      unfold unit_element, is_functional_1, make_functional_1, one_1, compose.
+      rewrite move_action_through_vector_2.
       rewrite <- algebra_is_assoc.
+      apply (maponpaths (λ x, action x _)).
       cbn -[weqvecfun action].
-      do 4 reduce_lambda.
-      do 2 extend_tuple_2.
+      do 6 reduce_lambda.
+      do 3 extend_tuple_3.
       cbn.
-      do 3 reduce_lambda.
+      do 6 reduce_lambda.
       cbn.
-      now reduce_lambda.
+      now do 4 reduce_lambda.
     Qed.
 
-    (* Will make this more readable in future PR *)
     Lemma is_unit_unit_element
       : isunit
-        (λ a b, compose (pr1 a) (pr1 b) ,, is_functional_compose a b)
-        (unit_element ,, is_functional_unit_element).
+        (λ a b, compose (pr1 a) (pr1 b) ,, is_functional_1_compose a b)
+        (unit_element ,, is_functional_1_unit_element).
     Proof.
-      unfold unit_element, compose.
-      split; (
-      intro a;
-      pose (v := weqvecfun 1 [(pr1 a)]);
-      use subtypePairEquality; [intro; apply isaprop_is_functional | ];
-      cbn -[weqvecfun action];
-      etrans;
-      [now rewrite <- (algebra_projects_component _ _
-        (make_stn 1 0 (idpath true))
-        v
-      : _ = pr1 a) | ];
-
-      pose (H1 := algebra_is_natural
-        A
-        0
-        1
-        (weqvecfun 0 [()])
-        (abs (var (make_stn 1 0 (idpath true))))
-        v
-      );
-      assert (H2 : (λ i, v (weqvecfun _ [()] i)) = (weqvecfun _ [()]));
-      [ now apply (invmaponpathsweq (invweq (weqvecfun _))) | ];
-      cbn -[weqvecfun action] in H1, H2;
-      rewrite <- (H1 @ maponpaths _ H2);
-      clear H1 H2;
-
-      rewrite move_action_through_vector_2;
-      rewrite <- algebra_is_assoc;
-      cbn -[weqvecfun action];
-      do 9 reduce_lambda;
-      do 3 extend_tuple_3;
-      cbn -[action v];
-      do 7 reduce_lambda;
-      exact (!pr2 a)).
+      split.
+      - intro a.
+        use subtypePairEquality.
+        {
+          intro.
+          apply isaprop_is_functional_1.
+        }
+        exact (!pr2 a).
+    - intro a.
+      use subtypePairEquality.
+      {
+        intro.
+        apply isaprop_is_functional_1.
+      }
+      refine (_ @ !pr2 a).
+      refine (!_ @ maponpaths _ (algebra_projects_component _ _ (make_stn 1 0 (idpath true)) (weqvecfun 1 [(pr1 a)]))).
+      refine (!_ @ maponpaths (λ x, _ x _) (algebra_projects_component _ _ (make_stn 1 0 (idpath true)) (weqvecfun 1 [(pr1 a)]))).
+      rewrite pr_is_var.
+      unfold make_functional_1, compose, one_1.
+      refine (maponpaths (λ x, _ (_ [(_ ; x)])) (!lift_constant_action (A := A) 1 _ (weqvecfun 1 [(pr1 a)])) @ !_).
+      refine (maponpaths (λ x, _ (_ [(x ; _)])) (!lift_constant_action (A := A) 1 _ (weqvecfun 1 [(pr1 a)])) @ !_).
+      do 2 rewrite move_action_through_vector_2.
+      do 2 rewrite <- algebra_is_assoc.
+      apply (maponpaths (λ x, action (A := A) x _)).
+      do 2 refine (subst_abs _ _ @ !_).
+      apply maponpaths.
+      do 4 rewrite subst_app.
+      do 6 rewrite subst_var.
+      do 2 refine (
+        maponpaths (λ x, app x _) (extend_tuple_i _ _ _ _ (idpath true : make_stn 3 0 (idpath true) < 2)) @
+        maponpaths (λ x, app _ (app x _)) (extend_tuple_i _ _ _ _ (idpath true : make_stn 3 1 (idpath true) < 2)) @
+        maponpaths (λ x, app _ (app _ x)) (extend_tuple_last _ _ _ (idpath 2 : stntonat _ (make_stn 3 2 (idpath true)) = 2)) @ !_).
+      cbn.
+      do 8 reduce_lambda.
+      extend_tuple_1.
+      now do 7 reduce_lambda.
     Qed.
 
     Definition algebra_monoid : monoid.
@@ -235,65 +286,16 @@ Section Monoid.
       - use tpair.
         + exact (algebra_functionals_set 1).
         + intros a b.
-          exact (compose (pr1 a) (pr1 b) ,, is_functional_compose a b).
+          exact (compose (pr1 a) (pr1 b) ,, is_functional_1_compose a b).
       - split.
         + abstract (
             intros a b c;
-            apply subtypePairEquality; [intro; apply isaprop_is_functional | ];
-            apply is_assoc_compose
+            apply subtypePairEquality; [intro; apply isaprop_is_functional_1 | ];
+            apply compose_assoc
           ).
         + exact (_ ,, is_unit_unit_element).
     Defined.
 
   End Monoid.
-
-  Definition monoid_category (m : monoid) : category.
-  Proof.
-    use make_category.
-    - use make_precategory.
-      + exact (make_precategory_data
-          (make_precategory_ob_mor (unit)
-          (λ _ _, m))
-          (λ _, unel m)
-          (λ _ _ _ f g, op g f)
-        ).
-      + abstract exact (
-        ((λ _ _ _, runax _ _) ,,
-        (λ _ _ _, lunax _ _)) ,,
-        ((λ _ _ _ _ _ _ _, assocax _ _ _ _) ,,
-        (λ _ _ _ _ _ _ _, !assocax _ _ _ _))
-      ).
-    - abstract (
-        do 2 intro;
-        apply setproperty
-      ).
-  Defined.
-
-  Definition monoid_presheaf_cat (m : monoid) := PreShv (monoid_category m).
-
-  Definition monoid_presheaf (m : monoid) : monoid_presheaf_cat m.
-  Proof.
-    use make_functor.
-    - use make_functor_data.
-      + intro.
-        exact (m : hSet).
-      + intros a b f.
-        intro g.
-        exact (op g f).
-    - split.
-      + intro.
-        use funextfun.
-        intro.
-        apply runax.
-      + intros a b c f g.
-        use funextfun.
-        intro h.
-        symmetry.
-        apply assocax.
-  Defined.
-
-  Definition PA : category := monoid_presheaf_cat algebra_monoid.
-
-  Definition U : PA := monoid_presheaf algebra_monoid.
 
 End Monoid.

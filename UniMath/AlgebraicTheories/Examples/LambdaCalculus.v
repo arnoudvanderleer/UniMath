@@ -3,13 +3,12 @@
   The λ-calculus λ-theory
 
   Given a model for the λ-calculus, this file constructs a λ-theory and shows that it has
-  eta and beta equality (since we assume that the λ-calculus has these equalities).
+  beta equality (since we assume that the λ-calculus has this equality).
 
   Contents
   1. The algebraic theory of the λ-calculus [lambda_calculus_algebraic_theory]
   2. The λ-theory of the λ-calculus [lambda_calculus_lambda_theory]
   3. The λ-theory has β-equality [lambda_calculus_has_beta]
-  4. The λ-theory has η-equality [lambda_calculus_has_eta]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
@@ -173,15 +172,6 @@ Proof.
     refine (maponpaths (λ x, subst (_ x) _) (homotinvweqweq stnweq _) @ _);
     simpl;
     repeat reduce_lambda.
-Qed.
-
-(** * 4. The λ-theory has η-equality *)
-
-Lemma lambda_calculus_has_eta
-  : has_eta lambda_calculus_lambda_theory.
-Proof.
-  intros n l.
-  apply eta_equality.
 Qed.
 
 End LambdaCalculus.
