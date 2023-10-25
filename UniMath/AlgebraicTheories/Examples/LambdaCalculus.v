@@ -4,6 +4,7 @@
 
   Given a model for the λ-calculus, this file constructs a λ-theory and shows that it has
   beta equality (since we assume that the λ-calculus has this equality).
+  beta equality (since we assume that the λ-calculus has this equality).
 
   Contents
   1. The algebraic theory of the λ-calculus [lambda_calculus_algebraic_theory]
