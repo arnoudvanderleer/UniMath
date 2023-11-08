@@ -98,6 +98,17 @@ Definition algebra_cat
   (T : algebraic_theory)
   := fiber_category algebra_disp_cat T.
 
+Lemma algebra_mor_comp
+  {T : algebraic_theory}
+  {P P' P'' : algebra_cat T}
+  (F : algebra_cat T⟦P, P'⟧)
+  (F' : algebra_cat T⟦P', P''⟧)
+  : pr1 (F · F') = (pr1 F : HSET⟦_, _⟧) · (pr1 F').
+Proof.
+  refine (pr1_transportf _ _ @ _).
+  now do 2 refine (eqtohomot (transportf_const _ _) _ @ _).
+Qed.
+
 Lemma displayed_algebra_morphism_eq
   {T T' : algebraic_theory}
   {F : algebraic_theory_morphism T T'}

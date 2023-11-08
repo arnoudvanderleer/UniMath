@@ -203,9 +203,7 @@ Definition lambda_calculus_rect
     (∏ l m n a ag af,
       (f_subst m n (f_subst l m a ag) af) = (f_subst _ _ a (λ i, f_subst _ _ (ag i) af))) ×
     (∏ n af ag,
-      (f_app n (f_abs _ af) ag) = (f_subst _ _ af (extend_tuple (f_var _) ag))) ×
-    (∏ n af,
-      (f_abs _ (f_app _ (f_inflate n af) (f_var _ lastelement))) = af)
+      (f_app n (f_abs _ af) ag) = (f_subst _ _ af (extend_tuple (f_var _) ag)))
   )
   : (∏ n, L n → A n).
 Proof.
@@ -225,7 +223,7 @@ Proof.
       symmetry.
       apply extend_tuple_dep_const.
     + apply f_paths.
-    + refine ((pr12 (pr222 f_paths)) _ _ _ @ _).
+    + refine ((pr2 (pr222 f_paths)) _ _ _ @ _).
       apply maponpaths.
       symmetry.
       apply extend_tuple_dep_const.

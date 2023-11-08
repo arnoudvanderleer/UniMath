@@ -155,6 +155,14 @@ Definition lambda_calculus_lambda_theory
   : lambda_theory
   := _ ,, lambda_calculus_is_lambda_theory.
 
+Lemma pr_is_var
+  {n : nat}
+  (i : stn n)
+  : pr (T := lambda_calculus_lambda_theory) i = var i.
+Proof.
+  exact (subst_var _ _).
+Qed.
+
 (** * 3. The λ-theory has β-equality *)
 
 Lemma lambda_calculus_has_beta

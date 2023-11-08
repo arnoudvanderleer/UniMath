@@ -73,3 +73,25 @@ Coercion lambda_theory_morphism_to_algebraic_theory_morphism
   (F : lambda_theory_morphism L L')
   : algebraic_theory_morphism L L'
   := pr1 F.
+
+Lemma lambda_theory_morphism_eq
+  {L L' : lambda_theory}
+  (F F' : lambda_theory_morphism L L')
+  (H : ∏ n f, F n f = F' n f)
+  : F = F'.
+Proof.
+  apply subtypePath.
+  {
+    intro.
+    apply isapropunit.
+  }
+  apply subtypePath.
+  {
+    intro.
+    apply isapropdirprod;
+      do 2 (apply impred_isaprop; intro);
+      apply setproperty.
+  }
+  apply algebraic_theory_morphism_eq.
+  exact H.
+Qed.

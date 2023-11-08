@@ -92,6 +92,14 @@ Definition lambda_theory_cat
   : category
   := total_category lambda_theory_disp_cat.
 
+Definition β_lambda_theory_disp_cat
+  : disp_cat lambda_theory_cat
+  := disp_full_sub lambda_theory_cat has_beta.
+
+Definition β_lambda_theory_cat
+  : category
+  := total_category β_lambda_theory_disp_cat.
+
 Section Test.
   Goal ob lambda_theory_cat = lambda_theory.
     exact (idpath _).

@@ -44,14 +44,6 @@ Section Monoid.
   Let L := (lambda_calculus_lambda_theory lambda).
   Variable A : algebra L.
 
-  Lemma pr_is_var
-    {n : nat}
-    (i : stn n)
-    : pr (T := L) i = var i.
-  Proof.
-    exact (subst_var _ _).
-  Qed.
-
   Definition compose
     (a b : A)
     : A
@@ -70,8 +62,8 @@ Section Monoid.
     rewrite (Hv 2 (idpath true) : c = _).
     do 4 (rewrite move_action_through_vector_2, <- algebra_is_assoc).
     apply (maponpaths (λ x, action x v)).
-    do 3 rewrite pr_is_var.
-    apply compose_λ_assoc.
+    do 3 rewrite (pr_is_var lambda).
+    apply compose_assoc_λ.
   Qed.
 
   Lemma compose_compose_eq
@@ -95,7 +87,7 @@ Section Monoid.
     rewrite move_action_through_vector_2.
     rewrite <- algebra_is_assoc.
     apply (maponpaths (λ x, action x _)).
-    apply compose_I1_abs_λ_0.
+    apply compose_I1_abs_0_λ.
   Qed.
 
   Definition make_functional_1 (a : A)
@@ -168,7 +160,7 @@ Section Monoid.
     Proof.
       refine (!_ @ maponpaths _ (algebra_projects_component _ _ (make_stn 1 0 (idpath true)) (weqvecfun 1 [(a)]))).
       refine (!_ @ maponpaths (λ x, _ x _) (algebra_projects_component _ _ (make_stn 1 0 (idpath true)) (weqvecfun 1 [(a)]))).
-      rewrite pr_is_var.
+      rewrite (pr_is_var lambda).
       unfold make_functional_1, compose, I1.
       refine (maponpaths (λ x, _ (_ [(_ ; x)])) (!lift_constant_action (A := A) 1 _ (weqvecfun 1 [(a)])) @ !_).
       refine (maponpaths (λ x, _ (_ [(x ; _)])) (!lift_constant_action (A := A) 1 _ (weqvecfun 1 [(a)])) @ !_).
@@ -176,7 +168,7 @@ Section Monoid.
       do 2 rewrite <- algebra_is_assoc.
       apply (maponpaths (λ x, action (A := A) x _)).
       rewrite <- (inflate_is_lift_constant I1_λ : _ = lift_constant (T := L) _ _).
-      apply I1_λ_runit.
+      apply I1_runit_λ.
     Qed.
 
     Lemma is_unit_I1
@@ -224,7 +216,7 @@ Section Monoid.
       rewrite move_action_through_vector_2.
       rewrite <- algebra_is_assoc.
       apply (maponpaths (λ x, action x _)).
-      apply compose_I2_abs_λ_0.
+      apply compose_I2_abs_0_λ.
     Qed.
 
     Definition make_functional_2 (a : A)
@@ -283,7 +275,7 @@ Section Monoid.
       rewrite move_action_through_vector_2.
       rewrite <- algebra_is_assoc.
       apply (maponpaths (λ x, action x _)).
-      apply compose_I1_abs_λ_0.
+      apply compose_I1_abs_0_λ.
     Qed.
 
     Lemma is_functional_2_to_is_functional_1
@@ -368,7 +360,7 @@ Section Monoid.
       rewrite (move_action_through_vector_2 A).
       rewrite <- algebra_is_assoc.
       apply (maponpaths (λ x, action x v)).
-      repeat rewrite pr_is_var.
+      repeat rewrite (pr_is_var lambda).
       exact (!compose_compose_2_λ _ _ _ _).
     Qed.
 
@@ -418,7 +410,7 @@ Section Monoid.
       do 2 rewrite (move_action_through_vector_3 A).
       do 2 rewrite <- algebra_is_assoc.
       apply (maponpaths (λ x, action x v)).
-      do 4 rewrite pr_is_var.
+      do 4 rewrite (pr_is_var lambda).
       cbn -[weqvecfun].
       apply compose_2_compose_λ.
     Qed.
@@ -453,9 +445,7 @@ Section Monoid.
       rewrite <- algebra_is_assoc.
       rewrite <- algebra_is_assoc.
       apply (maponpaths (λ x, action x v)).
-      rewrite pr_is_var.
-      rewrite pr_is_var.
-      rewrite pr_is_var.
+      do 3 rewrite (pr_is_var lambda).
       cbn -[weqvecfun].
       apply compose_2_term_1_λ.
     Qed.
@@ -490,7 +480,7 @@ Section Monoid.
         rewrite (move_action_through_vector_1 A).
         rewrite <- algebra_is_assoc.
         apply (maponpaths (λ x, action x v)).
-        rewrite pr_is_var.
+        rewrite (pr_is_var lambda).
         apply term_1_compose_2_λ.
       - apply funextfun.
         intro f.
@@ -519,7 +509,7 @@ Section Monoid.
           rewrite (move_action_through_vector_2 A);
           rewrite <- algebra_is_assoc;
           apply (maponpaths (λ x, action x v));
-          do 2 rewrite pr_is_var.
+          do 2 rewrite (pr_is_var lambda).
         + apply compose_T_λ.
         + apply compose_F_λ.
     Qed.

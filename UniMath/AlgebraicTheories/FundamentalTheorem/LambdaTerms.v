@@ -39,7 +39,7 @@ Section Monoid.
       (var (make_stn 3 1 (idpath true)))
       (var (make_stn 3 2 (idpath true))))).
 
-  Lemma compose_λ_abs
+  Lemma compose_abs_λ
     (n : nat)
     (a : lambda (S n))
     (b : lambda n)
@@ -70,7 +70,7 @@ Section Monoid.
       now do 2 reduce_lambda.
   Qed.
 
-  Lemma compose_λ_assoc
+  Lemma compose_assoc_λ
     (n : nat)
     (i j k : stn n)
     : subst compose_λ (weqvecfun 2 [(
@@ -90,7 +90,7 @@ Section Monoid.
     unfold compose_λ.
     cbn -[weqvecfun].
     refine (maponpaths (λ x, subst _ (weqvecfun _ [(x ; _)])) (subst_abs _ _) @ _).
-    refine (compose_λ_abs _ _ _ @ _).
+    refine (compose_abs_λ _ _ _ @ _).
     do 15 reduce_lambda.
     apply maponpaths.
     extend_tuple_3.
@@ -128,7 +128,7 @@ Section Monoid.
       now repeat reduce_lambda.
   Qed.
 
-  Lemma compose_I1_abs_λ_0
+  Lemma compose_I1_abs_0_λ
     (a : lambda 1)
     : subst compose_λ (weqvecfun _ [(I1_λ ; (abs a))])
     = abs a.
@@ -140,7 +140,7 @@ Section Monoid.
     now extend_tuple_1.
   Qed.
 
-  Lemma I1_λ_runit
+  Lemma I1_runit_λ
     (a : lambda 1)
     : subst compose_λ (weqvecfun 2 [(
         a ;
@@ -209,7 +209,7 @@ Section Theory.
     - apply idpath.
   Qed.
 
-  Lemma compose_I2_abs_λ_0
+  Lemma compose_I2_abs_0_λ
     (a : lambda 2)
     : subst compose_λ (weqvecfun _ [(I2_λ ; abs (abs a))])
     = abs (abs a).
@@ -250,7 +250,7 @@ Section Theory.
   Proof.
     unfold compose_λ, compose_2_λ.
     rewrite (subst_abs (m := 3)).
-    refine (compose_λ_abs _ _ _ @ _).
+    refine (compose_abs_λ _ _ _ @ _).
     repeat reduce_lambda.
     do 2 extend_tuple_4.
     do 2 extend_tuple_3.
