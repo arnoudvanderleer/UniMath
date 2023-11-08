@@ -13,16 +13,17 @@
   4. The terminal M-action [terminal_monoid_action]
   5. The binary product of M-actions [binproducts_monoid_action_category]
   6. The exponential M-action [is_exponentiable_monoid_action]
+  7. A characterization of isomorphisms [make_monoid_action_z_iso]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
 Require Import UniMath.Algebra.Monoids.
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
-Require Import UniMath.CategoryTheory.Core.Categories.
-Require Import UniMath.CategoryTheory.Core.Functors.
+Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.exponentials.
 Require Import UniMath.CategoryTheory.limits.binproducts.
 Require Import UniMath.CategoryTheory.limits.terminal.
+Require Import UniMath.CategoryTheory.categories.HSET.Core.
 
 Local Open Scope cat.
 Local Open Scope multmonoid.
@@ -592,3 +593,34 @@ Section MonoidAction.
   Defined.
 
 End MonoidAction.
+
+(** * 7. A characterization of isomorphisms *)
+
+Definition make_monoid_action_z_iso
+  (M : monoid)
+  (A A' : monoid_action M)
+  (f : z_iso (C := HSET) (A : hSet) (A' : hSet))
+  (Hf : is_monoid_action_morphism _ (morphism_from_z_iso _ _ f : A → A'))
+  : z_iso (A : monoid_action_category M) (A' : monoid_action_category M).
+Proof.
+  use make_z_iso.
+  - use make_monoid_action_morphism.
+    + exact (morphism_from_z_iso _ _ f).
+    + exact Hf.
+  - use make_monoid_action_morphism.
+    + exact (inv_from_z_iso f).
+    + abstract (
+        intros x m;
+        refine (!_ @ eqtohomot (z_iso_inv_after_z_iso f) _);
+        apply (maponpaths (inv_from_z_iso f));
+        refine (Hf _ _ @ _);
+        exact (maponpaths (λ y, op M (y x) m) (z_iso_after_z_iso_inv f))
+      ).
+  - abstract (
+      split;
+      apply monoid_action_morphism_eq;
+      intro;
+      [ apply (eqtohomot (z_iso_inv_after_z_iso f))
+      | apply (eqtohomot (z_iso_after_z_iso_inv f)) ]
+    ).
+Defined.

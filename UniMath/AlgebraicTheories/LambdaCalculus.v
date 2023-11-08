@@ -102,6 +102,10 @@ Definition subst {L : lambda_calculus_data} {m n : nat} (l : L m) (f : stn m →
   : L n
   := pr12 (pr222 L) m n l f.
 
+Notation "( a b )" := (app a b).
+Notation "(π m )" := (var (make_stn _ m (idpath true))).
+Notation "(λ' n , x )" := (@abs _ n x).
+
 Definition inflate {L : lambda_calculus_data} {n} (l : L n)
   : L (S n)
   := subst l (λ i, (var (dni lastelement i))).
