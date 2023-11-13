@@ -4,7 +4,6 @@
 
   Given a model for the λ-calculus, this file constructs a λ-theory and shows that it has
   beta equality (since we assume that the λ-calculus has this equality).
-  beta equality (since we assume that the λ-calculus has this equality).
 
   Contents
   1. The algebraic theory of the λ-calculus [lambda_calculus_algebraic_theory]
@@ -123,27 +122,37 @@ Proof.
     intros;
     cbn;
     unfold extend_finite_morphism_with_identity, inflate.
-  - do 5 reduce_lambda.
+  - rewrite subst_app.
+    do 2 rewrite subst_subst.
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
     apply (maponpaths (λ x, _ x _)).
     apply maponpaths.
     apply funextfun.
     intro.
-    now do 3 reduce_lambda.
-  - reduce_lambda.
+    do 2 rewrite subst_var.
+    now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+  - rewrite subst_abs.
     do 2 apply maponpaths.
     refine (!extend_tuple_eq _ _).
     + intro.
-      reduce_lambda.
+      rewrite inflate_var.
       apply maponpaths.
       exact (!extend_tuple_inl _ _ i).
     + exact (maponpaths _ (!extend_tuple_inr _ _)).
-  - do 6 reduce_lambda.
+  - rewrite subst_var.
+    rewrite subst_app.
+    do 2 rewrite subst_subst.
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
     apply (maponpaths (λ x, _ x _)).
     apply maponpaths.
     apply funextfun.
     intro.
-    now do 2 reduce_lambda.
-  - do 2 reduce_lambda.
+    rewrite subst_var.
+    now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+  - rewrite subst_var.
+    rewrite subst_abs.
     do 2 apply maponpaths.
     apply extend_tuple_eq.
     + intro.
@@ -171,16 +180,22 @@ Proof.
   unfold has_beta, LambdaTheories.app, LambdaTheories.abs.
   simpl.
   intros n l.
-  do 3 reduce_lambda.
+  rewrite inflate_abs.
+  rewrite beta_equality.
+  rewrite subst_subst.
   refine (_ @ subst_l_var _).
   apply maponpaths.
   apply funextfun.
   intro i.
   rewrite <- (homotweqinvweq stnweq i).
-  now induction (invmap stnweq i) as [i' | i'];
+  induction (invmap stnweq i) as [i' | i'];
     refine (maponpaths (λ x, subst (_ x) _) (homotinvweqweq stnweq _) @ _);
-    simpl;
-    repeat reduce_lambda.
+    cbn.
+  - do 2 rewrite inflate_var.
+    rewrite subst_var.
+    now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+  - rewrite subst_var.
+    now rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
 Qed.
 
 End LambdaCalculus.

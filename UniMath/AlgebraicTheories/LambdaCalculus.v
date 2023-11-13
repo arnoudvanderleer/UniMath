@@ -413,16 +413,28 @@ Qed.
 
 (** ** 4.3. A tactic for reducing λ-terms [reduce_lambda] *)
 
-Ltac reduce_lambda := (
-  rewrite subst_var +
-  rewrite subst_l_var +
-  rewrite subst_app +
-  rewrite subst_abs +
-  rewrite subst_subst +
-  rewrite inflate_var +
-  rewrite inflate_app +
-  rewrite inflate_abs +
-  rewrite beta_equality +
-  rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _) +
-  rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _)
+Ltac repeatc n t :=
+  (t; repeatc (S n) t) || (
+    match n with
+    | 0 => idtac
+    | 1 => idtac t "."
+    | S (S _) => idtac "do" n t "."
+    end
+  ).
+
+Tactic Notation "repeatc" tactic(t) :=
+  repeatc 0 t.
+
+Ltac reduce_lambda := repeat progress (
+  (repeatc rewrite subst_var);
+  (repeatc rewrite subst_l_var);
+  (repeatc rewrite subst_app);
+  (repeatc rewrite subst_abs);
+  (repeatc rewrite subst_subst);
+  (repeatc rewrite inflate_var);
+  (repeatc rewrite inflate_app);
+  (repeatc rewrite inflate_abs);
+  (repeatc rewrite beta_equality);
+  (repeatc rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _) );
+  (repeatc rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _))
 ).

@@ -51,11 +51,15 @@ Section Monoid.
         (app (inflate b) (var lastelement))))).
   Proof.
     unfold compose_λ.
-    repeat reduce_lambda.
+    rewrite subst_abs.
+    do 2 rewrite subst_app.
+    do 3 rewrite subst_var.
     extend_tuple_3.
     cbn.
     apply maponpaths.
-    repeat reduce_lambda.
+    rewrite inflate_abs.
+    rewrite beta_equality.
+    rewrite subst_subst.
     apply maponpaths.
     apply funextfun.
     intro i.
@@ -64,10 +68,13 @@ Section Monoid.
       refine (maponpaths (λ x, subst (_ x) _) (homotinvweqweq stnweq _) @ !_);
       refine (maponpaths _ (homotinvweqweq stnweq _) @ !_).
     - cbn.
-      repeat reduce_lambda.
+      do 2 rewrite inflate_var.
+      rewrite subst_var.
+      rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
       now rewrite replace_dni_last.
     - cbn.
-      now do 2 reduce_lambda.
+      rewrite subst_var.
+      now rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
   Qed.
 
   Lemma compose_assoc_λ
@@ -91,14 +98,35 @@ Section Monoid.
     cbn -[weqvecfun].
     refine (maponpaths (λ x, subst _ (weqvecfun _ [(x ; _)])) (subst_abs _ _) @ _).
     refine (compose_abs_λ _ _ _ @ _).
-    do 15 reduce_lambda.
+    do 4 rewrite subst_app.
+    do 2 rewrite subst_abs.
+    do 3 rewrite subst_subst.
+    rewrite inflate_var.
+    do 3 rewrite subst_var.
+    do 4 rewrite subst_app.
+    do 6 rewrite subst_var.
     apply maponpaths.
     extend_tuple_3.
     cbn -[weqvecfun v extend_tuple].
-    repeat reduce_lambda.
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
     do 2 extend_tuple_3.
     cbn.
-    do 29 reduce_lambda.
+    do 3 rewrite inflate_var.
+    rewrite inflate_abs.
+    rewrite beta_equality.
+    do 2 rewrite subst_var.
+    do 4 rewrite subst_app.
+    do 3 rewrite subst_subst.
+    do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 3 rewrite subst_var.
+    do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 4 rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
     now rewrite replace_dni_last.
   Qed.
 
@@ -112,11 +140,20 @@ Section Monoid.
     = abs a.
   Proof.
     unfold compose_λ, I1_λ.
-    repeat reduce_lambda.
+    do 2 rewrite subst_abs.
+    rewrite subst_var.
+    do 2 rewrite subst_app.
+    do 3 rewrite subst_var.
     apply maponpaths.
     extend_tuple_3.
     cbn.
-    repeat reduce_lambda.
+    do 2 rewrite inflate_abs.
+    do 2 rewrite beta_equality.
+    rewrite subst_var.
+    rewrite subst_subst.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
     refine (_ @ subst_l_var _).
     apply maponpaths.
     apply funextfun.
@@ -124,8 +161,12 @@ Section Monoid.
     rewrite <- (homotweqinvweq stnweq i).
     induction (invmap stnweq i) as [i' | i'];
       refine (maponpaths (λ x, subst (_ x) _) (homotinvweqweq stnweq _) @ _);
-      cbn;
-      now repeat reduce_lambda.
+      cbn.
+    - do 2 rewrite inflate_var.
+      rewrite subst_var.
+      now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    - rewrite subst_var.
+      now rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
   Qed.
 
   Lemma compose_I1_abs_0_λ
@@ -136,7 +177,8 @@ Section Monoid.
     refine (_ @ compose_I1_abs_λ _).
     apply (maponpaths (λ x, _ (_ [(x ; _)]))).
     unfold I1_λ.
-    repeat reduce_lambda.
+    rewrite subst_abs.
+    rewrite subst_var.
     now extend_tuple_1.
   Qed.
 
@@ -155,15 +197,17 @@ Section Monoid.
     do 2 refine (subst_abs _ _ @ !_).
     apply maponpaths.
     do 4 rewrite subst_app.
-    do 6 rewrite subst_var.
-    do 2 refine (
-      maponpaths (λ x, app x _) (extend_tuple_i _ _ _ _ (idpath true : make_stn 3 0 (idpath true) < 2)) @
-      maponpaths (λ x, app _ (app x _)) (extend_tuple_i _ _ _ _ (idpath true : make_stn 3 1 (idpath true) < 2)) @
-      maponpaths (λ x, app _ (app _ x)) (extend_tuple_last _ _ _ (idpath 2 : stntonat _ (make_stn 3 2 (idpath true)) = 2)) @ !_).
+    rewrite inflate_abs.
+    do 7 rewrite subst_var.
+    extend_tuple_3.
+    extend_tuple_3.
     cbn.
-    do 7 reduce_lambda.
-    extend_tuple_1.
-    now do 7 reduce_lambda.
+    rewrite inflate_abs.
+    do 2 rewrite beta_equality.
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    now do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
   Qed.
 
 End Monoid.
@@ -183,12 +227,31 @@ Section Theory.
     = abs (abs a).
   Proof.
     unfold compose_λ, I2_λ.
-    repeat reduce_lambda.
+    do 3 rewrite subst_abs.
+    do 3 rewrite subst_app.
+    do 5 rewrite subst_var.
     extend_tuple_3.
     extend_tuple_2.
     extend_tuple_1.
     cbn.
-    repeat reduce_lambda.
+    rewrite inflate_var.
+    do 2 rewrite inflate_abs.
+    do 2 rewrite beta_equality.
+    do 4 rewrite subst_abs.
+    do 2 rewrite subst_subst.
+    rewrite subst_app.
+    do 2 rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite inflate_abs.
+    rewrite beta_equality.
+    do 2 rewrite subst_subst.
     do 2 apply maponpaths.
     refine (_ @ subst_l_var _).
     apply maponpaths.
@@ -196,17 +259,35 @@ Section Theory.
     intro i.
     rewrite <- (homotweqinvweq stnweq i).
     induction (invmap stnweq i) as [i' | i'];
-      refine (maponpaths (λ x, subst (subst (subst (_ x) _) _) _) (homotinvweqweq stnweq _) @ _);
-      cbn;
-      repeat reduce_lambda.
-    - unfold inflate.
-      reduce_lambda.
+      refine (maponpaths (λ x, subst (subst (_ x) _) _) (homotinvweqweq stnweq _) @ _);
+      cbn.
+    - rewrite subst_subst.
+      unfold inflate.
+      rewrite subst_subst.
       rewrite <- (homotweqinvweq stnweq i').
-      now induction (invmap stnweq i') as [i'' | i''];
+      induction (invmap stnweq i') as [i'' | i''];
         refine (maponpaths (λ x, subst (_ x) _) (homotinvweqweq stnweq _) @ _);
-        cbn;
-        repeat reduce_lambda.
-    - apply idpath.
+        cbn.
+      + do 4 rewrite subst_var.
+        do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+        do 2 rewrite subst_var.
+        rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+        do 3 rewrite subst_var.
+        now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+      + do 2 rewrite subst_var.
+        rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+        rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+        do 2 rewrite subst_var.
+        rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+        do 3 rewrite subst_var.
+        now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+            - rewrite subst_subst.
+        rewrite subst_var.
+        rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+        rewrite subst_var.
+        rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+        rewrite subst_var.
+        now rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
   Qed.
 
   Lemma compose_I2_abs_0_λ
@@ -217,10 +298,12 @@ Section Theory.
     refine (_ @ compose_I2_abs_λ _).
     apply (maponpaths (λ x, _ (_ [(x ; _)]))).
     unfold I2_λ.
-    repeat reduce_lambda.
+    do 2 rewrite subst_abs.
+    rewrite subst_app.
+    do 2 rewrite subst_var.
     extend_tuple_2.
     cbn.
-    now repeat reduce_lambda.
+    now rewrite inflate_var.
   Qed.
 
   Definition compose_2_λ
@@ -251,11 +334,33 @@ Section Theory.
     unfold compose_λ, compose_2_λ.
     rewrite (subst_abs (m := 3)).
     refine (compose_abs_λ _ _ _ @ _).
-    repeat reduce_lambda.
+    do 8 rewrite subst_app.
+    do 3 rewrite subst_abs.
+    do 4 rewrite subst_subst.
+    rewrite inflate_var.
+    do 4 rewrite subst_var.
+    do 8 rewrite subst_app.
+    do 10 rewrite subst_var.
     do 2 extend_tuple_4.
     do 2 extend_tuple_3.
     cbn.
-    repeat reduce_lambda.
+    rewrite subst_var.
+    do 4 rewrite inflate_var.
+    do 2 rewrite inflate_abs.
+    do 2 rewrite beta_equality.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    do 8 rewrite subst_app.
+    do 4 rewrite subst_subst.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 4 rewrite subst_var.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 6 rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
     now rewrite replace_dni_last.
   Qed.
 
@@ -268,11 +373,25 @@ Section Theory.
       (weqvecfun 3 [(var a; subst compose_λ (weqvecfun 2 [(var b; var c)]); var d)]).
   Proof.
     unfold compose_2_λ, compose_λ.
-    repeat reduce_lambda.
+    do 4 rewrite subst_abs.
+    do 12 rewrite subst_app.
+    do 14 rewrite subst_var.
     do 2 extend_tuple_4.
     do 2 extend_tuple_3.
     cbn.
-    now repeat reduce_lambda.
+    do 4 rewrite inflate_var.
+    do 2 rewrite inflate_abs.
+    do 2 rewrite beta_equality.
+    do 8 rewrite subst_app.
+    do 6 rewrite subst_subst.
+    do 6 rewrite subst_var.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 6 rewrite inflate_var.
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 4 rewrite subst_var.
+    now do 4 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
   Qed.
 
   Definition T_λ
@@ -308,7 +427,12 @@ Section Theory.
     subst compose_λ (weqvecfun 2 [(subst I2_λ (weqvecfun 0 [()]); (var (make_stn 1 0 (idpath true))))]).
   Proof.
     unfold term_1_λ, compose_2_λ.
-    repeat reduce_lambda.
+    do 3 rewrite subst_abs.
+    do 5 rewrite subst_app.
+    rewrite subst_abs.
+    do 5 rewrite subst_var.
+    do 2 rewrite subst_app.
+    do 3 rewrite subst_var.
     extend_tuple_4.
     extend_tuple_4_1.
     extend_tuple_4_2.
@@ -318,26 +442,86 @@ Section Theory.
     set (a := weqvecfun 2 [(_ ; _)]).
     cbn -[a].
     unfold inflate.
-    repeat reduce_lambda.
+    do 3 rewrite subst_var.
+    do 2 rewrite subst_abs.
+    do 4 rewrite subst_subst.
+    rewrite beta_equality.
+    do 8 rewrite subst_app.
+    do 7 rewrite subst_subst.
+    rewrite subst_var.
+    rewrite subst_subst.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
     rewrite (empty_vector_eq (lambda 3) _).
     unfold compose_λ.
-    repeat reduce_lambda.
+    do 2 rewrite subst_abs.
+    rewrite beta_equality.
+    do 6 rewrite subst_app.
+    do 3 rewrite subst_subst.
+    do 6 rewrite subst_var.
     extend_tuple_3.
     extend_tuple_3.
     cbn.
-    repeat reduce_lambda.
+    do 3 rewrite subst_var.
+    do 3 rewrite subst_subst.
+    rewrite inflate_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite inflate_var.
+    rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite inflate_var.
+    rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite inflate_var.
+    rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
     unfold inflate.
-    repeat reduce_lambda.
+    do 3 rewrite subst_subst.
     rewrite (empty_vector_eq (lambda 3) _).
     unfold I2_λ.
-    repeat reduce_lambda.
+    do 4 rewrite subst_abs.
+    do 2 rewrite beta_equality.
+    do 2 rewrite subst_app.
+    do 2 rewrite subst_abs.
+    rewrite beta_equality.
+    do 4 rewrite subst_var.
+    do 3 rewrite subst_app.
+    do 2 rewrite subst_subst.
     extend_tuple_2.
     extend_tuple_1.
     unfold inflate.
-    repeat reduce_lambda.
+    do 3 rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 4 rewrite subst_app.
+    do 2 rewrite subst_abs.
+    do 4 rewrite subst_subst.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 2 rewrite subst_app.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 3 rewrite subst_var.
+    do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 2 rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 4 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite inflate_var.
     rewrite (empty_vector_eq (lambda 3) _).
     unfold T_λ, F_λ.
-    repeat reduce_lambda.
+    do 2 rewrite subst_abs.
+    do 2 rewrite beta_equality.
+    do 4 rewrite subst_app.
+    do 8 rewrite subst_abs.
+    do 4 rewrite subst_subst.
+    do 4 rewrite subst_var.
     extend_tuple_3_1.
     extend_tuple_3_2.
     extend_tuple_2.
@@ -345,7 +529,32 @@ Section Theory.
     extend_tuple_1.
     extend_tuple_1.
     cbn.
-    now repeat reduce_lambda.
+    do 5 rewrite subst_var.
+    rewrite inflate_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 4 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite subst_app.
+    do 2 rewrite beta_equality.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 4 rewrite subst_app.
+    rewrite inflate_var.
+    do 6 rewrite subst_var.
+    do 4 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite beta_equality.
+    do 2 rewrite subst_abs.
+    do 2 rewrite beta_equality.
+    do 2 rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    now rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
   Qed.
 
   Definition term_2_λ
@@ -377,7 +586,12 @@ Section Theory.
       )]).
   Proof.
     unfold term_2_λ, compose_2_λ, compose_λ, term_1_λ.
-    repeat reduce_lambda.
+    do 6 rewrite subst_abs.
+    do 11 rewrite subst_app.
+    rewrite subst_abs.
+    do 12 rewrite subst_var.
+    do 2 rewrite subst_app.
+    do 3 rewrite subst_var.
     extend_tuple_4.
     extend_tuple_4.
     extend_tuple_3.
@@ -388,7 +602,43 @@ Section Theory.
     extend_tuple_4_3.
     extend_tuple_3.
     cbn.
-    now repeat reduce_lambda.
+    do 9 rewrite inflate_var.
+    do 2 rewrite inflate_abs.
+    do 2 rewrite beta_equality.
+    do 4 rewrite subst_abs.
+    do 2 rewrite subst_subst.
+    rewrite beta_equality.
+    do 6 rewrite subst_app.
+    do 2 rewrite subst_abs.
+    do 2 rewrite subst_subst.
+    do 5 rewrite subst_var.
+    do 2 rewrite subst_app.
+    rewrite subst_subst.
+    do 7 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 4 rewrite subst_var.
+    do 10 rewrite inflate_var.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 4 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 6 rewrite subst_var.
+    rewrite inflate_var.
+    do 7 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 3 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 5 rewrite inflate_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 2 rewrite inflate_app.
+    do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_app.
+    do 4 rewrite inflate_var.
+    rewrite inflate_app.
+    do 2 rewrite subst_var.
+    do 2 rewrite inflate_var.
+    do 4 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    now do 2 rewrite inflate_var.
   Qed.
 
   Lemma compose_T_λ
@@ -405,7 +655,11 @@ Section Theory.
       )]).
   Proof.
     unfold T_λ, term_2_λ, compose_λ, I1_λ.
-    repeat reduce_lambda.
+    do 6 rewrite subst_abs.
+    rewrite subst_var.
+    do 9 rewrite subst_app.
+    do 2 rewrite subst_abs.
+    do 12 rewrite subst_var.
     extend_tuple_4.
     extend_tuple_3.
     extend_tuple_3.
@@ -414,7 +668,48 @@ Section Theory.
     extend_tuple_2_1.
     extend_tuple_1.
     cbn.
-    now repeat reduce_lambda.
+    do 6 rewrite inflate_var.
+    do 3 rewrite inflate_abs.
+    do 3 rewrite beta_equality.
+    rewrite subst_var.
+    do 2 rewrite subst_app.
+    do 6 rewrite subst_abs.
+    do 3 rewrite subst_subst.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    do 4 rewrite subst_app.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 3 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 5 rewrite subst_var.
+    rewrite inflate_var.
+    do 5 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 3 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 2 rewrite subst_var.
+    do 7 rewrite inflate_var.
+    rewrite beta_equality.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 2 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    do 4 rewrite subst_app.
+    rewrite inflate_var.
+    do 5 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 3 rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    rewrite beta_equality.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite subst_abs.
+    rewrite beta_equality.
+    rewrite subst_var.
+    rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite inflate_app.
+    rewrite subst_app.
+    do 2 rewrite inflate_var.
+    do 2 rewrite subst_var.
+    now do 2 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
   Qed.
 
   Lemma compose_F_λ
@@ -431,7 +726,11 @@ Section Theory.
       )]).
   Proof.
     unfold F_λ, term_2_λ, compose_λ, I1_λ.
-    repeat reduce_lambda.
+    do 6 rewrite subst_abs.
+    rewrite subst_var.
+    do 9 rewrite subst_app.
+    do 2 rewrite subst_abs.
+    do 12 rewrite subst_var.
     extend_tuple_4.
     extend_tuple_3.
     extend_tuple_3.
@@ -439,7 +738,40 @@ Section Theory.
     extend_tuple_3_2.
     extend_tuple_1.
     cbn.
-    now repeat reduce_lambda.
+    do 5 rewrite inflate_var.
+    do 3 rewrite inflate_abs.
+    do 3 rewrite beta_equality.
+    rewrite subst_var.
+    do 2 rewrite subst_app.
+    do 6 rewrite subst_abs.
+    do 3 rewrite subst_subst.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    do 4 rewrite subst_app.
+    do 3 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 6 rewrite subst_var.
+    do 5 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    do 4 rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 7 rewrite inflate_var.
+    rewrite beta_equality.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    do 4 rewrite subst_app.
+    do 5 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    do 3 rewrite inflate_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    do 3 rewrite subst_var.
+    rewrite beta_equality.
+    do 3 rewrite (extend_tuple_inl _ _ _ : extend_tuple _ _ (dni lastelement _) = _).
+    rewrite subst_abs.
+    rewrite beta_equality.
+    rewrite subst_var.
+    rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
+    rewrite subst_var.
+    now rewrite (extend_tuple_inr _ _ : extend_tuple _ _ lastelement = _).
   Qed.
 
 End Theory.
