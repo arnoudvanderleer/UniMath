@@ -11,6 +11,7 @@
   1. The dependent product category of theories and algebras [algebra_full_cat]
   2. The category of algebras [algebra_cat]
   3. Univalence [is_univalent_algebra_cat]
+  4. A characterization of isomorphisms of algebras [make_algebra_z_iso]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
@@ -100,13 +101,21 @@ Definition algebra_cat
 
 Lemma algebra_mor_comp
   {T : algebraic_theory}
-  {P P' P'' : algebra_cat T}
-  (F : algebra_cat T⟦P, P'⟧)
-  (F' : algebra_cat T⟦P', P''⟧)
+  {A A' A'' : algebra_cat T}
+  (F : algebra_cat T⟦A, A'⟧)
+  (F' : algebra_cat T⟦A', A''⟧)
   : pr1 (F · F') = (pr1 F : HSET⟦_, _⟧) · (pr1 F').
 Proof.
   refine (pr1_transportf _ _ @ _).
   now do 2 refine (eqtohomot (transportf_const _ _) _ @ _).
+Qed.
+
+Lemma algebra_identity
+  {T : algebraic_theory}
+  (A : algebra_cat T)
+  : pr1 (identity A) = identity (C := HSET) ((A : algebra T) : hSet).
+Proof.
+  exact (eqtohomot (transportb_const _ _) _).
 Qed.
 
 Lemma displayed_algebra_morphism_eq
@@ -196,3 +205,63 @@ Section Test.
     exact (λ _ _ _, idpath _).
   Qed.
 End Test.
+
+(** * 4. A characterization of isomorphisms of algebras *)
+
+Section Iso.
+
+  Context {T : algebraic_theory}.
+  Context {A A' : algebra T}.
+  Context (F : z_iso (C := HSET) (A : hSet) (A' : hSet)).
+  Context (H : preserves_action (morphism_from_z_iso _ _ F)).
+
+  Definition algebra_mor
+    : algebra_morphism A A'
+    := make_algebra_morphism (morphism_from_z_iso _ _ F) H.
+
+  Definition algebra_inv_data
+    : algebra_morphism_data A' A
+    := inv_from_z_iso F.
+
+  Lemma algebra_inv_is_morphism
+    : preserves_action algebra_inv_data.
+  Proof.
+    intros n f a.
+    refine (_ @ eqtohomot (z_iso_inv_after_z_iso F) _).
+    refine (_ @ maponpaths _ (!H _ _ _)).
+    refine (maponpaths (λ x, _ (_ x)) _).
+    apply funextfun.
+    intro i.
+    exact (eqtohomot (!z_iso_after_z_iso_inv F) _).
+  Qed.
+
+  Definition algebra_inv
+    : algebra_morphism A' A
+    := make_algebra_morphism algebra_inv_data algebra_inv_is_morphism.
+
+  Lemma algebra_is_inverse
+    : is_inverse_in_precat (C := algebra_cat T) algebra_mor algebra_inv.
+  Proof.
+    split.
+    - apply (algebra_morphism_eq (T := T) (A := A) (A' := A)).
+      intro.
+      refine (eqtohomot (algebra_mor_comp _ _) _ @ _).
+      refine (eqtohomot (z_iso_inv_after_z_iso F) _ @ _).
+      exact (!eqtohomot (algebra_identity _) _).
+    - apply (algebra_morphism_eq (T := T) (A := A') (A' := A')).
+      intro.
+      refine (eqtohomot (algebra_mor_comp _ _) _ @ _).
+      refine (eqtohomot (z_iso_after_z_iso_inv F) _ @ _).
+      exact (!eqtohomot (algebra_identity _) _).
+  Qed.
+
+  Definition make_algebra_z_iso
+    : z_iso (C := algebra_cat T) A A'.
+  Proof.
+    use make_z_iso.
+    - exact algebra_mor.
+    - exact algebra_inv.
+    - exact algebra_is_inverse.
+  Defined.
+
+End Iso.
