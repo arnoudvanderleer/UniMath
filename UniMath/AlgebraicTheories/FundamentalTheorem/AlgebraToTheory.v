@@ -23,6 +23,7 @@ Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.Algebras.
+Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.Examples.LambdaCalculus.
 Require Import UniMath.AlgebraicTheories.Examples.EndomorphismTheory.
 Require Import UniMath.AlgebraicTheories.FundamentalTheorem.LambdaTerms.
@@ -39,10 +40,9 @@ Local Open Scope algebraic_theories.
 (** * 1. The definition of the functional monoid [algebra_monoid] *)
 
 Section Monoid.
-  Variable lambda : lambda_calculus.
-
+  Context (lambda : lambda_calculus).
   Let L := (lambda_calculus_lambda_theory lambda).
-  Variable A : algebra L.
+  Context (A : algebra L).
 
   Definition compose
     (a b : A)
@@ -550,14 +550,6 @@ Section Monoid.
         now apply functional_1_eq.
     Defined.
 
-    Lemma functional_app_after_abs
-      (a : functional_2_set)
-      : functional_app (functional_abs a) = a.
-    Proof.
-      apply functional_2_eq.
-      exact (!pr2 a).
-    Qed.
-
     Definition lambda_algebra_theory
       : lambda_theory.
     Proof.
@@ -570,6 +562,24 @@ Section Monoid.
       - exact (inv_from_z_iso universal_monoid_exponential_iso · functional_abs).
       - exact ((functional_app : monoid_action_category _ ⟦_, _⟧) · morphism_from_z_iso _ _ universal_monoid_exponential_iso).
     Defined.
+
+    Lemma lambda_algebra_theory_has_beta
+      : has_beta lambda_algebra_theory.
+    Proof.
+      apply endomorphism_theory_has_beta.
+      assert ((functional_abs : monoid_action_category _⟦_, _⟧) · functional_app = identity _).
+      {
+        apply monoid_action_morphism_eq.
+        intro a.
+        apply functional_2_eq.
+        exact (!pr2 a).
+      }
+      refine (assoc' _ _ _ @ _).
+      refine (maponpaths (λ x, _ · x) (assoc _ _ _ ) @ _).
+      rewrite X.
+      rewrite id_left.
+      apply z_iso_after_z_iso_inv.
+    Qed.
 
   End Theory.
 

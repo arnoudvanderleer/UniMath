@@ -248,6 +248,23 @@ Proof.
   - exact is_univalent_disp_lambda_theory_disp_cat.
 Qed.
 
+Lemma is_univalent_disp_β_lambda_theory_disp_cat
+  : is_univalent_disp β_lambda_theory_disp_cat.
+Proof.
+  apply disp_full_sub_univalent.
+  intro.
+  repeat (apply impred_isaprop; intro).
+  apply setproperty.
+Qed.
+
+Lemma is_univalent_β_lambda_theory_cat
+  : is_univalent β_lambda_theory_cat.
+Proof.
+  apply is_univalent_total_category.
+  - exact is_univalent_lambda_theory_cat.
+  - exact is_univalent_disp_β_lambda_theory_disp_cat.
+Qed.
+
 (** * 4. Limits *)
 
 Section Limits.
