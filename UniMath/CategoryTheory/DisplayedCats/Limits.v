@@ -401,8 +401,6 @@ Section fiber.
 
 End fiber.
 
-Check fiber_limit.
-
 Definition fiber_limits
   {C : category}
   {D : disp_cat C}
