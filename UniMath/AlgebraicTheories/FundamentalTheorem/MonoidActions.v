@@ -7,16 +7,20 @@
   object, binary products and exponentials.
 
   Contents
-  1. The definition of a right M-action [monoid_action]
-  2. The definition of a morphism of M-actions [monoid_action_morphism]
-  3. The category of M-actions [monoid_action_category]
-  4. The terminal M-action [terminal_monoid_action]
-  5. The binary product of M-actions [binproducts_monoid_action_category]
-  6. The exponential M-action [is_exponentiable_monoid_action]
-  7. A characterization of isomorphisms [make_monoid_action_z_iso]
+  1.  The definition of a right M-action [monoid_action]
+  2.  The definition of a morphism of M-actions [monoid_action_morphism]
+  3.  The category of M-actions [monoid_action_category]
+  4.  The terminal M-action [terminal_monoid_action]
+  5.  The binary product of M-actions [binproducts_monoid_action_category]
+  6.  The exponential M-action [is_exponentiable_monoid_action]
+  7.  A characterization of isomorphisms [make_monoid_action_z_iso]
+  8.  An isomorphism between the set of global elements and the set of fixpoints of a monoid action [monoid_action_global_element_fixpoint_iso]
+  9.  Restriction of scalars [scalar_restriction_functor]
+  10. Extension of scalars [scalar_extension_functor]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
+Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.Algebra.Monoids.
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
 Require Import UniMath.CategoryTheory.Core.Prelude.
@@ -27,6 +31,7 @@ Require Import UniMath.CategoryTheory.categories.HSET.Core.
 
 Local Open Scope cat.
 Local Open Scope multmonoid.
+Local Open Scope type_scope.
 
 Section MonoidAction.
 
@@ -592,35 +597,396 @@ Section MonoidAction.
       + exact (monoid_action_cat_induced_morphism_unique _ _ F).
   Defined.
 
-End MonoidAction.
-
 (** * 7. A characterization of isomorphisms *)
 
-Definition make_monoid_action_z_iso
-  (M : monoid)
-  (A A' : monoid_action M)
-  (f : z_iso (C := HSET) (A : hSet) (A' : hSet))
-  (Hf : is_monoid_action_morphism _ (morphism_from_z_iso _ _ f : A → A'))
-  : z_iso (A : monoid_action_category M) (A' : monoid_action_category M).
-Proof.
-  use make_z_iso.
-  - use make_monoid_action_morphism.
-    + exact (morphism_from_z_iso _ _ f).
-    + exact Hf.
-  - use make_monoid_action_morphism.
-    + exact (inv_from_z_iso f).
-    + abstract (
-        intros x m;
-        refine (!_ @ eqtohomot (z_iso_inv_after_z_iso f) _);
-        apply (maponpaths (inv_from_z_iso f));
-        refine (Hf _ _ @ _);
-        exact (maponpaths (λ y, op M (y x) m) (z_iso_after_z_iso_inv f))
+  Definition make_monoid_action_z_iso
+    (A A' : monoid_action)
+    (f : z_iso (C := HSET) (A : hSet) (A' : hSet))
+    (Hf : is_monoid_action_morphism (morphism_from_z_iso _ _ f : A → A'))
+    : z_iso (A : monoid_action_category) (A' : monoid_action_category).
+  Proof.
+    use make_z_iso.
+    - use make_monoid_action_morphism.
+      + exact (morphism_from_z_iso _ _ f).
+      + exact Hf.
+    - use make_monoid_action_morphism.
+      + exact (inv_from_z_iso f).
+      + abstract (
+          intros x m;
+          refine (!_ @ eqtohomot (z_iso_inv_after_z_iso f) _);
+          apply (maponpaths (inv_from_z_iso f));
+          refine (Hf _ _ @ _);
+          exact (maponpaths (λ y, op (y x) m) (z_iso_after_z_iso_inv f))
+        ).
+    - abstract (
+        split;
+        apply monoid_action_morphism_eq;
+        intro;
+        [ apply (eqtohomot (z_iso_inv_after_z_iso f))
+        | apply (eqtohomot (z_iso_after_z_iso_inv f)) ]
       ).
-  - abstract (
-      split;
-      apply monoid_action_morphism_eq;
-      intro;
-      [ apply (eqtohomot (z_iso_inv_after_z_iso f))
-      | apply (eqtohomot (z_iso_after_z_iso_inv f)) ]
-    ).
-Defined.
+  Defined.
+
+(** * 8. An isomorphism between the set of global elements and the set of fixpoints of a monoid action *)
+
+  Section GlobalElements.
+
+    Context (X : monoid_action).
+
+    Definition global_element : UU
+      := monoid_action_morphism
+        (TerminalObject terminal_monoid_action : monoid_action)
+        X.
+
+    Lemma isaset_global_element
+      : isaset global_element.
+    Proof.
+      use (isaset_carrier_subset (_ ,, _) (λ _, make_hProp _ _)).
+      - apply funspace_isaset.
+        apply setproperty.
+      - do 2 (apply impred_isaprop; intro).
+        apply setproperty.
+    Qed.
+
+    Definition global_element_set
+      : hSet
+      := make_hSet _ isaset_global_element.
+
+    Definition fixpoint : UU
+      := ∑ x : X, ∏ m, op x m = x.
+
+    Lemma isaset_fixpoint
+      : isaset fixpoint.
+    Proof.
+      use (isaset_carrier_subset _ (λ _, make_hProp _ _)).
+      apply impred_isaprop.
+      intro.
+      apply setproperty.
+    Qed.
+
+    Definition fixpoint_set
+      : hSet
+      := make_hSet _ isaset_fixpoint.
+
+    Definition global_element_to_fixpoint
+      (f : global_element)
+      : fixpoint.
+    Proof.
+      exists ((f : monoid_action_morphism _ _) tt).
+      abstract (
+        intro m;
+        exact (!monoid_action_morphism_commutes f tt m)
+      ).
+    Defined.
+
+    Definition fixpoint_to_global_element
+      (a : fixpoint)
+      : global_element.
+    Proof.
+      use make_monoid_action_morphism.
+      - intro t.
+        exact (pr1 a).
+      - abstract (
+          intros t m;
+          exact (!pr2 a m)
+        ).
+    Defined.
+
+    Lemma global_element_fixpoint_inverse
+      : is_inverse_in_precat (C := HSET) (a := global_element_set) (b := fixpoint_set)
+      global_element_to_fixpoint fixpoint_to_global_element.
+    Proof.
+      split.
+      - apply funextfun.
+        intro f.
+        use monoid_action_morphism_eq.
+        intro t.
+        now induction t.
+      - apply funextfun.
+        intro a.
+        refine (subtypePath _ _).
+        {
+          intro.
+          apply impred_isaprop.
+          intro.
+          apply setproperty.
+        }
+        apply idpath.
+    Qed.
+
+    Definition monoid_action_global_element_fixpoint_iso
+      : z_iso (C := HSET) global_element_set fixpoint_set
+      := make_z_iso (C := HSET) (a := global_element_set) (b := fixpoint_set)
+        global_element_to_fixpoint
+        fixpoint_to_global_element
+        global_element_fixpoint_inverse.
+
+  End GlobalElements.
+
+End MonoidAction.
+
+Section ScalarRestriction.
+
+  Context (M M' : monoid).
+  Context (f : monoidfun M M').
+
+  Section Ob.
+
+    Context (X : monoid_action M').
+
+    Definition restriction_functor_ob_monoid_action_data
+      : monoid_action_data M.
+    Proof.
+      use make_monoid_action_data.
+      - exact X.
+      - exact (λ x m, op _ x (f m)).
+    Defined.
+
+    Lemma restriction_functor_ob_is_monoid_action
+      : is_monoid_action _ restriction_functor_ob_monoid_action_data.
+    Proof.
+      use make_is_monoid_action.
+      - intro.
+        refine (maponpaths _ (monoidfununel f) @ _).
+        apply monoid_action_unax.
+      - intros.
+        refine (maponpaths _ (monoidfunmul f _ _) @ _).
+        apply monoid_action_assocax.
+    Qed.
+
+    Definition restriction_functor_ob_monoid_action
+      : monoid_action M
+      := make_monoid_action _ _ restriction_functor_ob_is_monoid_action.
+
+  End Ob.
+
+  Section Mor.
+
+    Context (X X' : monoid_action M').
+    Context (F : monoid_action_morphism M' X X').
+
+    Definition restriction_functor_mor_monoid_action_morphism_data
+      : monoid_action_morphism_data _ (restriction_functor_ob_monoid_action X) (restriction_functor_ob_monoid_action X')
+      := F.
+
+    Lemma restriction_functor_mor_is_monoid_action_morphism
+      : is_monoid_action_morphism _ restriction_functor_mor_monoid_action_morphism_data.
+    Proof.
+      intros x m.
+      apply (monoid_action_morphism_commutes _ F).
+    Qed.
+
+    Definition restriction_functor_mor_monoid_action_morphism
+      : monoid_action_morphism _ (restriction_functor_ob_monoid_action X) (restriction_functor_ob_monoid_action X')
+      := make_monoid_action_morphism _ _ restriction_functor_mor_is_monoid_action_morphism.
+
+  End Mor.
+
+  Definition scalar_restriction_functor_data
+    : functor_data (monoid_action_category M') (monoid_action_category M)
+    := make_functor_data (C := monoid_action_category M') (C' := monoid_action_category M)
+      restriction_functor_ob_monoid_action
+      restriction_functor_mor_monoid_action_morphism.
+
+  Lemma scalar_restriction_is_functor
+    : is_functor scalar_restriction_functor_data.
+  Proof.
+    split.
+    - intro X.
+      apply monoid_action_morphism_eq.
+      easy.
+    - intros X X' X'' F F''.
+      apply monoid_action_morphism_eq.
+      easy.
+  Qed.
+
+  Definition scalar_restriction_functor
+    : monoid_action_category M' ⟶ monoid_action_category M
+    := make_functor _ scalar_restriction_is_functor.
+
+End ScalarRestriction.
+
+Definition mapeqrel_hrel
+  {X X' : UU}
+  (f : X → X')
+  (R : eqrel X')
+  : hrel X
+  := λ x x', R (f x) (f x').
+
+Lemma mapeqrel_iseqrel
+  {X X' : UU}
+  (f : X → X')
+  (R : eqrel X')
+  : iseqrel (mapeqrel_hrel f R).
+Proof.
+  repeat split.
+  - intros x x' x''.
+    apply eqreltrans.
+  - intro x.
+    apply eqrelrefl.
+  - intros x y.
+    apply eqrelsymm.
+Qed.
+
+Definition mapeqrel
+  {X X' : UU}
+  (f : X → X')
+  (R : eqrel X')
+  : eqrel X
+  := make_eqrel _ (mapeqrel_iseqrel f R).
+
+Lemma iscomprelrelfun_eqrel_from_hrel
+  (X X' : UU)
+  (R : hrel X)
+  (R' : hrel X')
+  (f : X → X')
+  (Hf : iscomprelrelfun R R' f)
+  : iscomprelrelfun (eqrel_from_hrel R) (eqrel_from_hrel R') f.
+Proof.
+  intros x x' Hx.
+  intros R0 HR0.
+  apply (Hx (mapeqrel f R0)).
+  intros y y' Hy.
+  apply HR0.
+  apply Hf.
+  apply Hy.
+Qed.
+
+Section ScalarExtension.
+
+  Context (M M' : monoid).
+  Context (f : monoidfun M M').
+
+  Section Ob.
+
+    Context (X : monoid_action M).
+
+    Definition hrelation
+      : hrel (X × monoid_monoid_action M').
+    Proof.
+      intros x x'.
+      exact (
+        ∃ (a : M),
+          (pr1 x' = op _ (pr1 x) a) ×
+          (pr2 x = (f a) * pr2 x')).
+    Defined.
+
+    Definition eqrelation
+      : eqrel (X × monoid_monoid_action M')
+      := _ ,, iseqrel_eqrel_from_hrel hrelation.
+
+    Definition extension_functor_ob_monoid_action_data
+      : monoid_action_data M'.
+    Proof.
+      use make_monoid_action_data.
+      - refine (setquotinset (X := X × monoid_monoid_action M') _).
+        exact eqrelation.
+      - intros x m.
+        revert x.
+        refine (setquotfun _ _ (λ x, pr1 x ,, pr2 x * m) _).
+        abstract (
+          apply iscomprelrelfun_eqrel_from_hrel;
+          intros x x' H;
+          refine (hinhfun _ H);
+          intro H1;
+          exists (pr1 H1);
+          split;
+          [ exact (pr12 H1)
+          | exact (maponpaths (λ x, x * m) (pr22 H1) @ assocax _ _ _ _) ]
+        ).
+    Defined.
+
+    Lemma extension_functor_ob_is_monoid_action
+      : is_monoid_action _ extension_functor_ob_monoid_action_data.
+    Proof.
+      use make_is_monoid_action.
+      - intro x.
+        use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+        intro y.
+        rewrite <- (pr2 y).
+        refine (setquotfuncomm _ _ _ _ _ @ _).
+        apply (maponpaths (λ x, _ (_ ,, x))).
+        apply runax.
+      - intros x m m'.
+        use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+        intro y.
+        rewrite <- (pr2 y).
+        refine (setquotfuncomm _ _ _ _ _ @ !_).
+        refine (maponpaths _ (setquotfuncomm _ _ _ _ _) @ _).
+        refine (setquotfuncomm _ _ _ _ _ @ !_).
+        apply (maponpaths (λ x, _ (_ ,, x))).
+        symmetry.
+        apply assocax.
+    Qed.
+
+    Definition extension_functor_ob_monoid_action
+      : monoid_action M'
+      := make_monoid_action _ _ extension_functor_ob_is_monoid_action.
+
+  End Ob.
+
+  Section Mor.
+
+    Context (X X' : monoid_action M).
+    Context (F : monoid_action_morphism M X X').
+
+    Definition extension_functor_mor_monoid_action_morphism_data
+      : monoid_action_morphism_data _ (extension_functor_ob_monoid_action X) (extension_functor_ob_monoid_action X').
+    Proof.
+      refine (setquotfun _ (eqrelation X') (λ x, F (pr1 x) ,, (pr2 x : M')) _).
+      abstract (
+        apply iscomprelrelfun_eqrel_from_hrel;
+        intros x x' Hx;
+        refine (hinhfun _ Hx);
+        intro H1;
+        exists (pr1 H1);
+        split;
+        [ exact (maponpaths _ (pr12 H1) @ monoid_action_morphism_commutes _ _ _ _)
+        | apply (pr22 H1) ]
+      ).
+    Defined.
+
+    Lemma extension_functor_mor_is_monoid_action_morphism
+      : is_monoid_action_morphism _ extension_functor_mor_monoid_action_morphism_data.
+    Proof.
+      intros x m.
+      use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+      intro y.
+      now rewrite <- (pr2 y).
+    Qed.
+
+    Definition extension_functor_mor_monoid_action_morphism
+      : monoid_action_morphism _ (extension_functor_ob_monoid_action X) (extension_functor_ob_monoid_action X')
+      := make_monoid_action_morphism _ _ extension_functor_mor_is_monoid_action_morphism.
+
+  End Mor.
+
+  Definition scalar_extension_functor_data
+    : functor_data (monoid_action_category M) (monoid_action_category M')
+    := make_functor_data (C := monoid_action_category M) (C' := monoid_action_category M')
+      extension_functor_ob_monoid_action
+      extension_functor_mor_monoid_action_morphism.
+
+  Lemma scalar_extension_is_functor
+    : is_functor scalar_extension_functor_data.
+  Proof.
+    split.
+    - intro X.
+      apply monoid_action_morphism_eq.
+      intro x.
+      use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+      intro y.
+      now rewrite <- (pr2 y).
+    - intros X X' X'' F F''.
+      apply monoid_action_morphism_eq.
+      intro x.
+      use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+      intro y.
+      now rewrite <- (pr2 y).
+  Qed.
+
+  Definition scalar_extension_functor
+    : monoid_action_category M ⟶ monoid_action_category M'
+    := make_functor _ scalar_extension_is_functor.
+
+End ScalarExtension.
