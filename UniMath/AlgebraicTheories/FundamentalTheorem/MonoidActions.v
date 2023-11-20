@@ -4,7 +4,9 @@
 
   For any monoid M, there is a category of sets with a right M-action. This file defines the objects
   and morphisms in this category, defines the category itself, and shows that it has a terminal
-  object, binary products and exponentials.
+  object, binary products and exponentials. Also, a morphism between two monoids induces
+  "restriction" and "extension" of scalar functors between their categories of monoid actions. The
+  extension functor preserves the terminal object and binary product.
 
   Contents
   1.  The definition of a right M-action [monoid_action]
@@ -20,7 +22,7 @@
   10.1. Extension of scalars preserves monoid monoid action
     [scalar_extension_preserves_monoid_monoid_action]
   10.2. Extension of scalars preserves the terminal [scalar_extension_preserves_terminal]
-  10.3. Extension of scalars preserves products [scalar_extension_preserves_binproducts]
+  10.3. Extension of scalars preserves binary products [scalar_extension_preserves_binproducts]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
@@ -33,6 +35,7 @@ Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.exponentials.
 Require Import UniMath.CategoryTheory.limits.binproducts.
 Require Import UniMath.CategoryTheory.limits.terminal.
+Require Import UniMath.CategoryTheory.limits.Preservation.
 
 Local Open Scope cat.
 Local Open Scope multmonoid.
@@ -1049,16 +1052,16 @@ Section ScalarExtension.
     Context (terminal_element : M').
     Context (element_is_terminal : ∏ (m' : M'), ∑ (m : M), f(m) * m' = terminal_element).
 
-    Definition scalar_extension_preserves_terminal_mor
+    Definition scalar_extension_terminal_iso_mor
       : (scalar_extension_functor (terminal_monoid_action M) : monoid_action _) → (TerminalObject (terminal_monoid_action M') : monoid_action _)
       := λ x, tt.
 
-    Definition scalar_extension_preserves_terminal_inv
+    Definition scalar_extension_terminal_iso_inv
       : (TerminalObject (terminal_monoid_action M') : monoid_action _) → (scalar_extension_functor (terminal_monoid_action M) : monoid_action _)
       := λ x, setquotpr _ (tt ,, terminal_element).
 
-    Lemma scalar_extension_preserves_terminal_is_iso
-      : is_inverse_in_precat (C := HSET) scalar_extension_preserves_terminal_mor scalar_extension_preserves_terminal_inv.
+    Lemma scalar_extension_terminal_iso_is_iso
+      : is_inverse_in_precat (C := HSET) scalar_extension_terminal_iso_mor scalar_extension_terminal_iso_inv.
     Proof.
       split.
       - use funextfun.
@@ -1078,20 +1081,29 @@ Section ScalarExtension.
         exact (!pr2 iscontrunit _).
     Qed.
 
-    Lemma scalar_extension_preserves_terminal_is_morphism
-      : is_monoid_action_morphism M' scalar_extension_preserves_terminal_mor.
+    Lemma scalar_extension_terminal_iso_is_morphism
+      : is_monoid_action_morphism M' scalar_extension_terminal_iso_mor.
     Proof.
       easy.
     Qed.
 
-    Definition scalar_extension_preserves_terminal
+    Definition scalar_extension_terminal_iso
       : z_iso (scalar_extension_functor (terminal_monoid_action M)) (terminal_monoid_action M')
       := make_monoid_action_z_iso _ _ _
         (make_z_iso (C := HSET)
-          scalar_extension_preserves_terminal_mor
-          scalar_extension_preserves_terminal_inv
-          scalar_extension_preserves_terminal_is_iso)
-        scalar_extension_preserves_terminal_is_morphism.
+          scalar_extension_terminal_iso_mor
+          scalar_extension_terminal_iso_inv
+          scalar_extension_terminal_iso_is_iso)
+        scalar_extension_terminal_iso_is_morphism.
+
+    Definition scalar_extension_preserves_terminal
+      : preserves_terminal scalar_extension_functor.
+    Proof.
+      use preserves_terminal_if_preserves_chosen.
+      - apply terminal_monoid_action.
+      - apply (iso_to_Terminal (terminal_monoid_action _)).
+        exact (z_iso_inv scalar_extension_terminal_iso).
+    Defined.
 
   End PreservesTerminal.
 
@@ -1107,173 +1119,193 @@ Section ScalarExtension.
       ∏ (b1 b2 : M') (t := (terminal_element b1 b2)) (t' : ∑ (c : M') (a1 a2 : M), (b1 = f(a1) * c) × (b2 = f(a2) * c)),
       ∑ (a : M), (pr1 t) = f(a) * (pr1 t') × (pr12 t) * a = (pr12 t') × (pr122 t) * a = (pr122 t')).
 
-    Context (X X' : monoid_action M).
+    Section Isomorphism.
 
-    Definition scalar_extension_preserves_binproducts_mor_data
-      (x : (X × X') × M')
-      : (X × M') × X' × M'
-      := (pr11 x ,, pr2 x) ,, (pr21 x ,, pr2 x).
+      Context (X X' : monoid_action M).
 
-    Lemma scalar_extension_preserves_binproducts_mor_iscomprelrelfun
-      : iscomprelrelfun
-        (eqrelation (BinProductObject _ (binproducts_monoid_action_category M X X')))
-        (eqreldirprod (eqrelation X) (eqrelation X')) scalar_extension_preserves_binproducts_mor_data.
-    Proof.
-      refine (transportf (λ x, iscomprelrelfun _ x _) (eqrel_from_hreldirprod _ _ (isrefl_hrelation _) (isrefl_hrelation _)) _).
-      apply iscomprelrelfun_eqrel_from_hrel.
-      intros x x' Hx.
-      split.
-      - revert Hx.
-        apply hinhfun.
-        intro Hx.
-        exists (pr1 Hx).
+      Definition scalar_extension_binproduct_iso_mor_data
+        (x : (X × X') × M')
+        : (X × M') × X' × M'
+        := (pr11 x ,, pr2 x) ,, (pr21 x ,, pr2 x).
+
+      Lemma scalar_extension_binproduct_iso_mor_iscomprelrelfun
+        : iscomprelrelfun
+          (eqrelation (BinProductObject _ (binproducts_monoid_action_category M X X')))
+          (eqreldirprod (eqrelation X) (eqrelation X')) scalar_extension_binproduct_iso_mor_data.
+      Proof.
+        refine (transportf (λ x, iscomprelrelfun _ x _) (eqrel_from_hreldirprod _ _ (isrefl_hrelation _) (isrefl_hrelation _)) _).
+        apply iscomprelrelfun_eqrel_from_hrel.
+        intros x x' Hx.
         split.
-        ++ exact (base_paths _ _ (pr12 Hx)).
-        ++ exact (pr22 Hx).
-      - revert Hx.
-        apply hinhfun.
-        intro Hx.
-        exists (pr1 Hx).
+        - revert Hx.
+          apply hinhfun.
+          intro Hx.
+          exists (pr1 Hx).
+          split.
+          ++ exact (base_paths _ _ (pr12 Hx)).
+          ++ exact (pr22 Hx).
+        - revert Hx.
+          apply hinhfun.
+          intro Hx.
+          exists (pr1 Hx).
+          split.
+          ++ refine (!maponpaths (λ x, x _) (transportf_const _ _) @ fiber_paths (pr12 Hx)).
+          ++ exact (pr22 Hx).
+      Qed.
+
+      Definition scalar_extension_binproduct_iso_mor
+        : setquot (eqrel_from_hrel (hrelation (action_binproduct_object M X X'))) →
+          setquot (eqrel_from_hrel (hrelation X)) × setquot (eqrel_from_hrel (hrelation X'))
+        := funcomp
+          (setquotfun _ _ _ scalar_extension_binproduct_iso_mor_iscomprelrelfun)
+          (setquottodirprod (eqrelation X) (eqrelation X')).
+
+      Definition scalar_extension_binproduct_iso_inv_data
+        (x : (X × M') × X' × M')
+        (t := terminal_element (pr21 x) (pr22 x))
+        : (X × X') × M'
+        := ((
+          op _ (pr11 x) (pr12 t) ,,
+          op _ (pr12 x) (pr122 t)) ,,
+          pr1 t).
+
+      Lemma scalar_extension_binproduct_iso_inv_iscomprelrelfun
+        : iscomprelrelfun (eqreldirprod (eqrelation X) (eqrelation X')) (eqrelation (BinProductObject _ (binproducts_monoid_action_category M X X'))) scalar_extension_binproduct_iso_inv_data.
+      Proof.
+        refine (transportf (λ x, iscomprelrelfun x _ _) (eqrel_from_hreldirprod _ _ (isrefl_hrelation _) (isrefl_hrelation _)) _).
+        apply iscomprelrelfun_eqrel_from_hrel.
+        intros x x' Hx.
+        set (t := terminal_element (pr21 x) (pr22 x)).
+        set (t' := terminal_element (pr21 x') (pr22 x')).
+        induction Hx as [Hx1 Hx2].
+        revert Hx1 Hx2.
+        apply hinhfun2.
+        intros Hx1 Hx2.
+        epose (t'' := element_is_terminal _ _ (_ ,, _ ,, _ ,,
+          (pr22 Hx1 @ maponpaths _ (pr1 (pr222 t')) @ !assocax _ _ _ _ @ !maponpaths (λ x, x * _) (monoidfunmul f _ _)) ,,
+          (pr22 Hx2 @ maponpaths _ (pr2 (pr222 t')) @ !assocax _ _ _ _ @ !maponpaths (λ x, x * _) (monoidfunmul f _ _))
+        )).
+        refine (pr1 t'' ,, _ ,, pr12 t'').
+        apply pathsdirprod.
+        - refine (maponpaths (λ x, _ x _) (pr12 Hx1) @ _).
+          do 2 refine (!_ @ monoid_action_assocax _ _ _ _).
+          exact (!maponpaths _ (pr122 t'')).
+        - refine (maponpaths (λ x, _ x _) (pr12 Hx2) @ _).
+          do 2 refine (!_ @ monoid_action_assocax _ _ _ _).
+          exact (!maponpaths _ (pr222 t'')).
+      Qed.
+
+      Definition scalar_extension_binproduct_iso_inv
+        : setquot (eqrel_from_hrel (hrelation X)) × setquot (eqrel_from_hrel (hrelation X')) →
+          setquot (eqrel_from_hrel (hrelation (action_binproduct_object M X X')))
+        := funcomp
+          (dirprodtosetquot (eqrelation X) (eqrelation X'))
+          (setquotfun _ _ _ scalar_extension_binproduct_iso_inv_iscomprelrelfun).
+
+      Lemma scalar_extension_binproduct_iso_is_iso
+        : is_inverse_in_precat
+        (C := HSET)
+        (a := setquotinset (eqrelation _))
+        (b := setdirprod (setquotinset (eqrelation _)) (setquotinset (eqrelation _)))
+        scalar_extension_binproduct_iso_mor
+        scalar_extension_binproduct_iso_inv.
+      Proof.
+        pose (prodiso := hset_equiv_weq_z_iso (setquotinset _) (setdirprod (setquotinset _) (setquotinset _)) (weqsetquottodirprod (eqrelation X) (eqrelation X'))).
         split.
-        ++ refine (!maponpaths (λ x, x _) (transportf_const _ _) @ fiber_paths (pr12 Hx)).
-        ++ exact (pr22 Hx).
-    Qed.
+        - apply funextfun.
+          intro.
+          refine (maponpaths _ (eqtohomot (z_iso_inv_after_z_iso prodiso) _) @ _).
+          use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+          intro y.
+          rewrite <- (pr2 y).
+          apply iscompsetquotpr.
+          pose (t := terminal_element (pr21 y) (pr21 y)).
+          pose (t' := element_is_terminal (pr21 y) (pr21 y) (pr1 t ,, pr12 t ,, pr12 t ,, pr1 (pr222 t) ,, pr1 (pr222 t))).
+          apply (eqreltrans _ _
+            ((op M (pr111 y) (pr12 t * pr1 t') ,, op M (pr211 y) (pr122 t * pr1 t')) ,, pr1 t)).
+          + apply eqrel_impl.
+            apply hinhpr.
+            use (pr1 t' ,, _ ,, pr12 t').
+            use pathsdirprod;
+            exact (monoid_action_assocax _ _ _ _).
+          + apply eqrelsymm.
+            apply eqrel_impl.
+            apply hinhpr.
+            use (pr12 t * pr1 t' ,, _ ,, _).
+            * apply (pathsdirprod (idpath _)).
+              apply maponpaths.
+              exact (pr222 t' @ !pr122 t').
+            * refine (pr1 (pr222 t) @ _).
+              refine (maponpaths _ (pr12 t') @ _).
+              refine (!assocax _ _ _ _ @ _).
+              exact (maponpaths (λ x, x * _) (!monoidfunmul f _ _)).
+        - apply funextfun.
+          intro.
+          refine (_ @ eqtohomot (z_iso_after_z_iso_inv prodiso) _).
+          apply (maponpaths (morphism_from_z_iso _ _ prodiso)).
+          refine ((idpath _ : _ = (λ y, setquotfun _ _ _ _ (setquotfun _ _ _ _ y)) (inv_from_z_iso prodiso x)) @ _).
+          use (issurjsetquotpr _ (inv_from_z_iso prodiso x) (_ ,, isasetsetquot _ _ _) _).
+          intro y.
+          rewrite <- (pr2 y).
+          apply iscompsetquotpr.
+          split.
+          + apply eqrelsymm.
+            apply eqrel_impl.
+            apply hinhpr.
+            use (pr12 (terminal_element (pr211 y) (pr221 y)) ,, idpath _ ,, _).
+            exact (pr1 (pr222 (terminal_element (pr211 y) (pr221 y)))).
+          + apply eqrelsymm.
+            apply eqrel_impl.
+            apply hinhpr.
+            use (pr122 (terminal_element (pr211 y) (pr221 y)) ,, idpath _ ,, _).
+            exact (pr2 (pr222 (terminal_element (pr211 y) (pr221 y)))).
+      Qed.
 
-    Definition scalar_extension_preserves_binproducts_mor
-      : setquot (eqrel_from_hrel (hrelation (action_binproduct_object M X X'))) →
-        setquot (eqrel_from_hrel (hrelation X)) × setquot (eqrel_from_hrel (hrelation X'))
-      := funcomp
-        (setquotfun _ _ _ scalar_extension_preserves_binproducts_mor_iscomprelrelfun)
-        (setquottodirprod (eqrelation X) (eqrelation X')).
-
-    Definition scalar_extension_preserves_binproducts_inv_data
-      (x : (X × M') × X' × M')
-      (t := terminal_element (pr21 x) (pr22 x))
-      : (X × X') × M'
-      := ((
-        op _ (pr11 x) (pr12 t) ,,
-        op _ (pr12 x) (pr122 t)) ,,
-        pr1 t).
-
-    Lemma scalar_extension_preserves_binproducts_inv_iscomprelrelfun
-      : iscomprelrelfun (eqreldirprod (eqrelation X) (eqrelation X')) (eqrelation (BinProductObject _ (binproducts_monoid_action_category M X X'))) scalar_extension_preserves_binproducts_inv_data.
-    Proof.
-      refine (transportf (λ x, iscomprelrelfun x _ _) (eqrel_from_hreldirprod _ _ (isrefl_hrelation _) (isrefl_hrelation _)) _).
-      apply iscomprelrelfun_eqrel_from_hrel.
-      intros x x' Hx.
-      set (t := terminal_element (pr21 x) (pr22 x)).
-      set (t' := terminal_element (pr21 x') (pr22 x')).
-      induction Hx as [Hx1 Hx2].
-      revert Hx1 Hx2.
-      apply hinhfun2.
-      intros Hx1 Hx2.
-      epose (t'' := element_is_terminal _ _ (_ ,, _ ,, _ ,,
-        (pr22 Hx1 @ maponpaths _ (pr1 (pr222 t')) @ !assocax _ _ _ _ @ !maponpaths (λ x, x * _) (monoidfunmul f _ _)) ,,
-        (pr22 Hx2 @ maponpaths _ (pr2 (pr222 t')) @ !assocax _ _ _ _ @ !maponpaths (λ x, x * _) (monoidfunmul f _ _))
-      )).
-      refine (pr1 t'' ,, _ ,, pr12 t'').
-      apply pathsdirprod.
-      - refine (maponpaths (λ x, _ x _) (pr12 Hx1) @ _).
-        do 2 refine (!_ @ monoid_action_assocax _ _ _ _).
-        exact (!maponpaths _ (pr122 t'')).
-      - refine (maponpaths (λ x, _ x _) (pr12 Hx2) @ _).
-        do 2 refine (!_ @ monoid_action_assocax _ _ _ _).
-        exact (!maponpaths _ (pr222 t'')).
-    Qed.
-
-    Definition scalar_extension_preserves_binproducts_inv
-      : setquot (eqrel_from_hrel (hrelation X)) × setquot (eqrel_from_hrel (hrelation X')) →
-        setquot (eqrel_from_hrel (hrelation (action_binproduct_object M X X')))
-      := funcomp
-        (dirprodtosetquot (eqrelation X) (eqrelation X'))
-        (setquotfun _ _ _ scalar_extension_preserves_binproducts_inv_iscomprelrelfun).
-
-    Lemma scalar_extension_preserves_binproducts_is_iso
-      : is_inverse_in_precat
-      (C := HSET)
-      (a := setquotinset (eqrelation _))
-      (b := setdirprod (setquotinset (eqrelation _)) (setquotinset (eqrelation _)))
-      scalar_extension_preserves_binproducts_mor
-      scalar_extension_preserves_binproducts_inv.
-    Proof.
-      pose (prodiso := hset_equiv_weq_z_iso (setquotinset _) (setdirprod (setquotinset _) (setquotinset _)) (weqsetquottodirprod (eqrelation X) (eqrelation X'))).
-      split.
-      - apply funextfun.
-        intro.
-        refine (maponpaths _ (eqtohomot (z_iso_inv_after_z_iso prodiso) _) @ _).
-        use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _).
+      Lemma scalar_extension_binproduct_iso_is_morphism
+        : is_monoid_action_morphism M'
+          (X := (scalar_extension_functor (binproducts_monoid_action_category M X X')) : monoid_action M')
+          (X' := BinProductObject _(binproducts_monoid_action_category M' (scalar_extension_functor X) (scalar_extension_functor X')) : monoid_action M')
+          scalar_extension_binproduct_iso_mor.
+      Proof.
+        intros x m.
+        use (issurjsetquotpr _ x (_ ,, isasetdirprod _ _ (isasetsetquot _) (isasetsetquot _) _ _)).
         intro y.
-        rewrite <- (pr2 y).
-        apply iscompsetquotpr.
-        pose (t := terminal_element (pr21 y) (pr21 y)).
-        pose (t' := element_is_terminal (pr21 y) (pr21 y) (pr1 t ,, pr12 t ,, pr12 t ,, pr1 (pr222 t) ,, pr1 (pr222 t))).
-        apply (eqreltrans _ _
-          ((op M (pr111 y) (pr12 t * pr1 t') ,, op M (pr211 y) (pr122 t * pr1 t')) ,, pr1 t)).
-        + apply eqrel_impl.
-          apply hinhpr.
-          use (pr1 t' ,, _ ,, pr12 t').
-          use pathsdirprod;
-          exact (monoid_action_assocax _ _ _ _).
-        + apply eqrelsymm.
-          apply eqrel_impl.
-          apply hinhpr.
-          use (pr12 t * pr1 t' ,, _ ,, _).
-          * apply (pathsdirprod (idpath _)).
-            apply maponpaths.
-            exact (pr222 t' @ !pr122 t').
-          * refine (pr1 (pr222 t) @ _).
-            refine (maponpaths _ (pr12 t') @ _).
-            refine (!assocax _ _ _ _ @ _).
-            exact (maponpaths (λ x, x * _) (!monoidfunmul f _ _)).
-      - apply funextfun.
-        intro.
-        refine (_ @ eqtohomot (z_iso_after_z_iso_inv prodiso) _).
-        apply (maponpaths (morphism_from_z_iso _ _ prodiso)).
-        refine ((idpath _ : _ = (λ y, setquotfun _ _ _ _ (setquotfun _ _ _ _ y)) (inv_from_z_iso prodiso x)) @ _).
-        use (issurjsetquotpr _ (inv_from_z_iso prodiso x) (_ ,, isasetsetquot _ _ _) _).
-        intro y.
-        rewrite <- (pr2 y).
-        apply iscompsetquotpr.
-        split.
-        + apply eqrelsymm.
-          apply eqrel_impl.
-          apply hinhpr.
-          use (pr12 (terminal_element (pr211 y) (pr221 y)) ,, idpath _ ,, _).
-          exact (pr1 (pr222 (terminal_element (pr211 y) (pr221 y)))).
-        + apply eqrelsymm.
-          apply eqrel_impl.
-          apply hinhpr.
-          use (pr122 (terminal_element (pr211 y) (pr221 y)) ,, idpath _ ,, _).
-          exact (pr2 (pr222 (terminal_element (pr211 y) (pr221 y)))).
-    Qed.
+        now rewrite <- (pr2 y).
+      Qed.
 
-    Lemma scalar_extension_preserves_binproducts_is_morphism
-      : is_monoid_action_morphism M'
-        (X := (scalar_extension_functor (binproducts_monoid_action_category M X X')) : monoid_action M')
-        (X' := BinProductObject _(binproducts_monoid_action_category M' (scalar_extension_functor X) (scalar_extension_functor X')) : monoid_action M')
-        scalar_extension_preserves_binproducts_mor.
-    Proof.
-      intros x m.
-      use (issurjsetquotpr _ x (_ ,, isasetdirprod _ _ (isasetsetquot _) (isasetsetquot _) _ _)).
-      intro y.
-      now rewrite <- (pr2 y).
-    Qed.
+      Definition scalar_extension_binproduct_iso
+        : z_iso
+          (scalar_extension_functor (binproducts_monoid_action_category M X X'))
+          (binproducts_monoid_action_category M' (scalar_extension_functor X) (scalar_extension_functor X'))
+        := make_monoid_action_z_iso _
+          (scalar_extension_functor (binproducts_monoid_action_category M X X'))
+          (BinProductObject _ (binproducts_monoid_action_category _ (scalar_extension_functor X) (scalar_extension_functor X')))
+          (make_z_iso
+            (C := HSET)
+            (a := setquotinset _)
+            (b := setdirprod (setquotinset _) (setquotinset _))
+            scalar_extension_binproduct_iso_mor
+            scalar_extension_binproduct_iso_inv
+            scalar_extension_binproduct_iso_is_iso)
+          scalar_extension_binproduct_iso_is_morphism.
+
+    End Isomorphism.
 
     Definition scalar_extension_preserves_binproducts
-      : z_iso
-        (scalar_extension_functor (binproducts_monoid_action_category M X X'))
-        (binproducts_monoid_action_category M' (scalar_extension_functor X) (scalar_extension_functor X'))
-      := make_monoid_action_z_iso _
-        (scalar_extension_functor (binproducts_monoid_action_category M X X'))
-        (BinProductObject _ (binproducts_monoid_action_category _ (scalar_extension_functor X) (scalar_extension_functor X')))
-        (make_z_iso
-          (C := HSET)
-          (a := setquotinset _)
-          (b := setdirprod (setquotinset _) (setquotinset _))
-          scalar_extension_preserves_binproducts_mor
-          scalar_extension_preserves_binproducts_inv
-          scalar_extension_preserves_binproducts_is_iso)
-        scalar_extension_preserves_binproducts_is_morphism.
+      : preserves_binproduct scalar_extension_functor.
+    Proof.
+      use preserves_binproduct_if_preserves_chosen.
+      - apply binproducts_monoid_action_category.
+      - intros Y Y'.
+        use (isBinProduct_eq_arrow _ _ (iso_to_isBinProduct _ _ (z_iso_to_iso (scalar_extension_binproduct_iso Y Y'))));
+        abstract now (
+          apply monoid_action_morphism_eq;
+          intro;
+          use (issurjsetquotpr _ x (_ ,, isasetsetquot _ _ _) _);
+          intro y;
+          rewrite <- (pr2 y)
+        ).
+    Defined.
 
   End PreservesProduct.
 
