@@ -200,6 +200,16 @@ Section MakeAlgebraicTheory'.
   Definition make_algebraic_theory' (C : algebraic_theory'_data) (H : is_algebraic_theory' C)
     : algebraic_theory
     := make_algebraic_theory _ (algebraic_theory'_to_is_algebraic_theory (C ,, H)).
+
+  Lemma pr_is_pr'
+    {C : algebraic_theory'_data}
+    (H : is_algebraic_theory' C)
+    {n : nat}
+    (i : stn n)
+    : pr (T := make_algebraic_theory' C H) i = pr' i.
+  Proof.
+    apply algebraic_theory'_comp_project_component.
+  Qed.
 End MakeAlgebraicTheory'.
 
 Lemma isaprop_is_algebraic_theory (T : algebraic_theory_data) : isaprop (is_algebraic_theory T).

@@ -32,12 +32,11 @@ Require Import UniMath.CategoryTheory.limits.binproducts.
 Require Import UniMath.CategoryTheory.limits.products.
 Require Import UniMath.CategoryTheory.limits.terminal.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.Tuples.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories2.
 Require Import UniMath.AlgebraicTheories.LambdaTheories.
-Require Import UniMath.AlgebraicTheories.LambdaTheoryMorphisms.
-Require Import UniMath.Combinatorics.Tuples.
 
 Local Open Scope cat.
 

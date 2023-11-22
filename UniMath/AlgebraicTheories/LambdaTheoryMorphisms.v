@@ -57,6 +57,7 @@ Definition lambda_theory_data_morphism_preserves_abs
   (n : nat) (t : (L (S n) : hSet))
   : F _ (abs t) = abs (F _ t)
   := pr22 F n t.
+
 Definition lambda_theory_morphism
   (L L' : lambda_theory)
   : UU
