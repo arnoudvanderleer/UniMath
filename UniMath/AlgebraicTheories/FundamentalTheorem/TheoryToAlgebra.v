@@ -132,7 +132,6 @@ Section Functor.
       : lambda_theory_morphism L L'.
     Proof.
       use make_lambda_theory_morphism.
-      use make_lambda_theory_data_morphism.
       - use make_algebraic_theory_morphism'.
         + exact initial_morphism_data'.
         + exact initial_is_algebraic_theory_morphism'.
@@ -170,7 +169,7 @@ Section Functor.
           refine (extend_tuple_inl _ _ _ @ _).
           apply pr_is_var.
         + refine (algebraic_theory_morphism_preserves_composition _ _ _ _ _ @ _).
-          refine (maponpaths (λ x, x • _) (lambda_theory_data_morphism_preserves_app _ _ _) @ !_).
+          refine (maponpaths (λ x, x • _) (lambda_theory_morphism_preserves_app _ _ _) @ !_).
           apply maponpaths.
           apply extend_tuple_eq.
           * intro i.
@@ -180,8 +179,8 @@ Section Functor.
           * refine (!_).
             exact (maponpaths (λ x, _ (_ x)) (homotinvweqweq stnweq _)).
       - intros n l Hl.
-        refine (lambda_theory_data_morphism_preserves_abs _ _ _ @ !_).
-        refine (lambda_theory_data_morphism_preserves_abs initial_morphism _ _ @ !_).
+        refine (lambda_theory_morphism_preserves_abs _ _ _ @ !_).
+        refine (lambda_theory_morphism_preserves_abs initial_morphism _ _ @ !_).
         apply maponpaths.
         exact Hl.
       - intros m n f g Hf Hg.

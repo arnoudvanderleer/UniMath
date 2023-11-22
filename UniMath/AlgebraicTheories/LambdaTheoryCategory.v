@@ -74,16 +74,6 @@ Definition lambda_theory_data_cat
   : category
   := total_category lambda_theory_data_disp_cat.
 
-Section Test.
-  Goal ob lambda_theory_data_cat = lambda_theory_data.
-    exact (idpath _).
-  Qed.
-  Goal ∏ (L L' : lambda_theory_data),
-    lambda_theory_data_cat⟦L, L'⟧ = lambda_theory_data_morphism L L'.
-    exact (λ _ _, idpath _).
-  Qed.
-End Test.
-
 Definition lambda_theory_disp_cat
   : disp_cat lambda_theory_data_cat
   := disp_full_sub lambda_theory_data_cat is_lambda_theory.
@@ -115,63 +105,41 @@ Section Iso.
 
   Context (a b : lambda_theory).
   Context (F : z_iso (C := algebraic_theory_cat) (a : algebraic_theory) (b : algebraic_theory)).
-  Context (Happ : ∏ n f, (morphism_from_z_iso _ _ F : algebraic_theory_morphism _ _) (S n) (app f)
-     = app ((morphism_from_z_iso _ _ F : algebraic_theory_morphism _ _) _ f)).
-  Context (Habs : ∏ n f, (morphism_from_z_iso _ _ F : algebraic_theory_morphism _ _) n (abs f)
-      = abs ((morphism_from_z_iso _ _ F : algebraic_theory_morphism _ _) _ f)).
+  Context (H : is_lambda_theory_morphism (morphism_from_z_iso _ _ F)).
 
   Definition iso_morphism
-    : lambda_theory_morphism a b.
-  Proof.
-    use make_lambda_theory_morphism.
-    use make_lambda_theory_data_morphism.
-    - exact (morphism_from_z_iso _ _ F).
-    - exact Happ.
-    - exact Habs.
-  Defined.
+    : lambda_theory_morphism a b
+    := make_lambda_theory_morphism _ H.
 
   Definition iso_inv_data
     : algebraic_theory_morphism b a
     := inv_from_z_iso F.
 
-  Lemma iso_inv_preserves_app
-    (n : nat)
-    (f : (b n : hSet))
-    : iso_inv_data (S n) (app f) = app (iso_inv_data n f).
+  Lemma iso_inv_is_morphism
+    : is_lambda_theory_morphism iso_inv_data.
   Proof.
-    refine (!_ @ maponpaths
-      (λ x, (x : algebraic_theory_morphism a a) (S n) _)
-      (z_iso_inv_after_z_iso F)
-    ).
-    apply (maponpaths ((inv_from_z_iso F : algebraic_theory_morphism b a) (S n))).
-    refine (Happ _ _ @ _).
-    apply maponpaths.
-    exact (maponpaths (λ x, (x : algebraic_theory_morphism b b) n f) (z_iso_after_z_iso_inv F)).
-  Qed.
-
-  Lemma iso_inv_preserves_abs
-    (n : nat)
-    (f : (b (S n) : hSet))
-    : iso_inv_data n (abs f) = abs (iso_inv_data (S n) f).
-  Proof.
-    refine (!_ @ maponpaths
-      (λ x, (x : algebraic_theory_morphism a a) _ _)
-      (z_iso_inv_after_z_iso F)
-    ).
-    apply (maponpaths ((inv_from_z_iso F : algebraic_theory_morphism b a) n)).
-    refine (Habs _ _ @ _).
-    apply maponpaths.
-    exact (maponpaths (λ x, (x : algebraic_theory_morphism b b) _ f) (z_iso_after_z_iso_inv F)).
+    split.
+    - intros n f.
+      refine (!_ @ maponpaths
+        (λ x, (x : algebraic_theory_morphism a a) _ _)
+        (z_iso_inv_after_z_iso F)
+      ).
+      apply (maponpaths ((inv_from_z_iso F : algebraic_theory_morphism b a) (S n))).
+      refine (pr1 H _ _ @ _).
+      exact (maponpaths (λ x, _ ((x : algebraic_theory_morphism b b) _ f)) (z_iso_after_z_iso_inv F)).
+    - intros n f.
+      refine (!_ @ maponpaths
+        (λ x, (x : algebraic_theory_morphism a a) _ _)
+        (z_iso_inv_after_z_iso F)
+      ).
+      apply (maponpaths ((inv_from_z_iso F : algebraic_theory_morphism b a) n)).
+      refine (pr2 H _ _ @ _).
+      exact (maponpaths (λ x, _ ((x : algebraic_theory_morphism b b) _ f)) (z_iso_after_z_iso_inv F)).
   Qed.
 
   Definition iso_inv
     : lambda_theory_morphism b a
-    := make_lambda_theory_morphism
-      (make_lambda_theory_data_morphism
-        iso_inv_data
-        iso_inv_preserves_app
-        iso_inv_preserves_abs
-      ).
+    := make_lambda_theory_morphism _ iso_inv_is_morphism.
 
   Lemma iso_is_inverse
     : is_inverse_in_precat (C := lambda_theory_cat) iso_morphism iso_inv.

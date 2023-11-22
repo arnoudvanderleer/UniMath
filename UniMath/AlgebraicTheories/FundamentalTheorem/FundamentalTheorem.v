@@ -73,7 +73,7 @@ Section FundamentalTheorem.
     induction n as [ | n IHn].
     * exact (maponpaths (λ x, (x : algebra_morphism (theory_to_algebra _ _ _) ((theory_to_algebra _ _ _))) f) H).
     * do 2 refine (!_ @ pr2 L'' _ _).
-      do 2 refine (!_ @ maponpaths _ (lambda_theory_data_morphism_preserves_abs _ _ _)).
+      do 2 refine (!_ @ maponpaths _ (lambda_theory_morphism_preserves_abs _ _ _)).
       now rewrite IHn.
   Qed.
 

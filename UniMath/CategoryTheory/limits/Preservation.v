@@ -39,11 +39,29 @@ Local Open Scope cat.
 (**
  1. Preservation of terminal objects
  *)
-Definition preserves_terminal
-           {C₁ C₂ : category}
-           (F : C₁ ⟶ C₂)
-  : UU
-  := ∏ (x : C₁), isTerminal C₁ x → isTerminal C₂ (F x).
+
+Section PreservesTerminal.
+
+  Context {C₁ C₂ : category}.
+  Context (F : C₁ ⟶ C₂).
+
+  Definition preserves_terminal
+    : UU
+    := ∏ (x : C₁), isTerminal C₁ x → isTerminal C₂ (F x).
+
+  Context (H : preserves_terminal).
+  Context (T : Terminal C₁).
+  Context (T' : Terminal C₂).
+
+  Definition preserves_terminal_to_terminal
+    : Terminal C₂
+    := make_Terminal _ (H _ (pr2 T)).
+
+  Definition preserves_terminal_to_z_iso
+    : z_iso preserves_terminal_to_terminal T'
+    := z_iso_Terminals _ _.
+
+End PreservesTerminal.
 
 Definition identity_preserves_terminal
            (C : category)
