@@ -92,52 +92,60 @@ Section Functor.
         exact (lambda_calculus_rect_var _).
     Qed.
 
-    Lemma initial_preserves_app
-      {n : nat}
-      (t : (L n : hSet))
-      : initial_morphism_data' _ (app t) = app (initial_morphism_data' _ t).
+    Definition initial_algebraic_theory_morphism
+      : algebraic_theory_morphism L L'
+      := make_algebraic_theory_morphism'
+        initial_morphism_data'
+        initial_is_algebraic_theory_morphism'.
+
+    Lemma initial_preserves_app'
+      : preserves_app' initial_algebraic_theory_morphism.
     Proof.
       refine (lambda_calculus_rect_app _ _ @ _).
-      unfold inflate.
-      rewrite lambda_calculus_rect_subst.
-      rewrite lambda_calculus_rect_var.
+      refine (maponpaths (λ x, _ (_ x) • _) (inflate_var _) @ _).
+      refine (maponpaths (λ x, _ x • _) (lambda_calculus_rect_var _) @ _).
+      refine (maponpaths (λ x, _ (_ x)) (lambda_calculus_rect_var _) @ _).
+      refine (!maponpaths (λ x, _ x • _) (algebraic_theory_comp_is_unital _ _ _) @ _).
       refine (maponpaths (λ x, x • _) (lambda_theory_app_compatible_with_comp _ _) @ _).
       refine (algebraic_theory_comp_is_assoc _ _ _ _ _ _ _ @ _).
       refine (_ @ algebraic_theory_comp_identity_projections _ _ _).
-      apply maponpaths.
+      apply (maponpaths (comp _)).
       apply funextfun.
       intro i.
       rewrite <- (homotweqinvweq stnweq i).
       induction (invmap stnweq i) as [i' | i'];
         refine (maponpaths (λ x, _ x • _) (homotinvweqweq stnweq _) @ _).
-      - cbn.
-        rewrite lambda_calculus_rect_var.
-        rewrite algebraic_theory_functor_uses_projections.
-        do 2 rewrite algebraic_theory_comp_projects_component.
-        apply extend_tuple_inl.
-      - cbn.
-        rewrite algebraic_theory_comp_projects_component.
-        apply extend_tuple_inr.
+      - refine (maponpaths (λ x, x • _) (algebraic_theory_functor_uses_projections _ _ _ _ _) @ _).
+        refine (maponpaths (λ x, x • _) (algebraic_theory_comp_projects_component _ _ _ _ _) @ _).
+        refine (algebraic_theory_comp_projects_component _ _ _ _ _ @ _).
+        refine (extend_tuple_inl _ _ _ @ _).
+        exact (maponpaths (λ x, _ (_ x)) (isconnectedstn1 _ _)).
+      - apply algebraic_theory_comp_projects_component.
     Qed.
 
-    Lemma initial_preserves_abs
-      {n : nat}
-      (t : (L (S n) : hSet))
-      : initial_morphism_data' _ (abs t) = abs (initial_morphism_data' _ t).
+    Lemma initial_preserves_one
+      : preserves_one initial_algebraic_theory_morphism.
     Proof.
-      exact (lambda_calculus_rect_abs _).
+      refine (lambda_calculus_rect_abs _ @ _).
+      refine (maponpaths _ (lambda_calculus_rect_abs _) @ _).
+      exact (maponpaths (λ x, _ (_ x)) initial_preserves_app').
+    Qed.
+
+    Lemma initial_is_lambda_theory_morphism
+      : is_lambda_theory_morphism initial_algebraic_theory_morphism.
+    Proof.
+      use make_is_lambda_theory_morphism'.
+      - apply lambda_calculus_has_beta.
+      - apply H.
+      - apply initial_preserves_app'.
+      - apply initial_preserves_one.
     Qed.
 
     Definition initial_morphism
-      : lambda_theory_morphism L L'.
-    Proof.
-      use make_lambda_theory_morphism.
-      - use make_algebraic_theory_morphism'.
-        + exact initial_morphism_data'.
-        + exact initial_is_algebraic_theory_morphism'.
-      - exact (λ _, initial_preserves_app).
-      - exact (λ _, initial_preserves_abs).
-    Defined.
+      : lambda_theory_morphism L L'
+      := make_lambda_theory_morphism
+        initial_algebraic_theory_morphism
+        initial_is_lambda_theory_morphism.
 
     Lemma initial_morphism_unique
       (F : lambda_theory_morphism L L')
@@ -233,7 +241,7 @@ Section Functor.
     (HL'' : has_beta L'')
     (F : lambda_theory_morphism L' L'')
     : algebra_morphism_data (theory_to_algebra L' HL') (theory_to_algebra L'' HL'')
-    := (pr1 F) 0.
+    := F 0.
 
   Lemma theory_morphism_to_is_algebra_morphism
     {L' L'' : lambda_theory}

@@ -34,6 +34,19 @@ Section Morphism.
   Context (C'_bin_products : BinProducts C').
   Context (X' : C').
 
+  Context (E : is_exponentiable C_bin_products X).
+  Context (abs : C⟦pr1 E X, X⟧).
+  Context (app : C⟦X, pr1 E X⟧).
+  Context (C_beta : abs · app = identity _).
+
+  Context (E' : is_exponentiable C'_bin_products X').
+  Context (abs' : C'⟦pr1 E' X', X'⟧).
+  Context (app' : C'⟦X', pr1 E' X'⟧).
+  Context (C'_beta : abs' · app' = identity _).
+
+  Let L := endomorphism_lambda_theory C_terminal C_bin_products X E abs app.
+  Let L' := endomorphism_lambda_theory C'_terminal C'_bin_products X' E' abs' app'.
+
   Context (F : C ⟶ C').
   Context (F_preserves_X : z_iso (F X) X').
   Context (F_preserves_terminal : preserves_terminal F).
@@ -111,9 +124,7 @@ Section Morphism.
   Qed.
 
   Definition functor_to_algebraic_theory_morphism'_data
-    : algebraic_theory_morphism'_data
-      (endomorphism_theory C_terminal C_bin_products X)
-      (endomorphism_theory C'_terminal C'_bin_products X')
+    : algebraic_theory_morphism'_data L L'
     := λ _ f, inv_from_z_iso (F_power_iso _) · #F f · F_preserves_X.
 
   Lemma functor_to_is_algebraic_theory_morphism'
@@ -149,21 +160,8 @@ Section Morphism.
   Qed.
 
   Definition functor_to_algebraic_theory_morphism
-    : algebraic_theory_morphism
-      (endomorphism_theory C_terminal C_bin_products X)
-      (endomorphism_theory C'_terminal C'_bin_products X')
+    : algebraic_theory_morphism L L'
     := make_algebraic_theory_morphism' _ functor_to_is_algebraic_theory_morphism'.
-
-  Context (E : is_exponentiable C_bin_products X).
-  Context (abs : C⟦pr1 E X, X⟧).
-  Context (app : C⟦X, pr1 E X⟧).
-
-  Context (E' : is_exponentiable C'_bin_products X').
-  Context (abs' : C'⟦pr1 E' X', X'⟧).
-  Context (app' : C'⟦X', pr1 E' X'⟧).
-
-  Let L := endomorphism_lambda_theory C_terminal C_bin_products X E abs app.
-  Let L' := endomorphism_lambda_theory C'_terminal C'_bin_products X' E' abs' app'.
 
   Context (F_preserves_E : z_iso (F (pr1 E X)) (pr1 E' X')).
   Context (F_preserves_φ_adj_inv
@@ -185,11 +183,8 @@ Section Morphism.
       · # (pr1 E') (app' · abs') · abs'
       · inv_from_z_iso F_preserves_X).
 
-  Lemma functor_to_morphism_preserves_app
-    {n : nat}
-    (t : (L n : hSet))
-    : functor_to_algebraic_theory_morphism _ (LambdaTheories.app (id_pr (T := L)))
-    = LambdaTheories.app (id_pr (T := L')).
+  Lemma functor_to_morphism_preserves_app'
+    : preserves_app' functor_to_algebraic_theory_morphism.
   Proof.
     refine (maponpaths _ (φ_adj_inv_natural_precomp _ _ _ _ _ _) @ !_).
     refine (φ_adj_inv_natural_precomp (pr2 E') _ _ _ _ _ @ !_).
@@ -237,11 +232,8 @@ Section Morphism.
       exact (assoc _ _ _).
   Qed.
 
-  Lemma functor_to_morphism_preserves_1
-    {n : nat}
-    (t : (L n : hSet))
-    : functor_to_algebraic_theory_morphism _ (LambdaTheories.abs (LambdaTheories.abs (LambdaTheories.app (id_pr (T := L)))))
-    = (LambdaTheories.abs (LambdaTheories.abs (LambdaTheories.app (id_pr (T := L'))))).
+  Lemma functor_to_morphism_preserves_one
+    : preserves_one functor_to_algebraic_theory_morphism.
   Proof.
     refine (maponpaths (λ x, _ (_ (x · _) · _)) (φ_adj_after_φ_adj_inv _ _) @ _).
     refine (maponpaths (λ x, _ (_ x · _)) (assoc' _ _ _) @ _).
@@ -263,5 +255,23 @@ Section Morphism.
     apply z_iso_inv_to_right.
     apply F_preserves_app_abs_abs.
   Qed.
+
+  Lemma functor_to_is_lambda_theory_morphism
+    : is_lambda_theory_morphism functor_to_algebraic_theory_morphism.
+  Proof.
+    use make_is_lambda_theory_morphism'.
+    - use endomorphism_theory_has_beta.
+      exact C_beta.
+    - use endomorphism_theory_has_beta.
+      exact C'_beta.
+    - exact functor_to_morphism_preserves_app'.
+    - exact functor_to_morphism_preserves_one.
+  Qed.
+
+  Definition functor_to_lambda_theory_morphism
+    : lambda_theory_morphism L L'
+    := make_lambda_theory_morphism
+      functor_to_algebraic_theory_morphism
+      functor_to_is_lambda_theory_morphism.
 
 End Morphism.

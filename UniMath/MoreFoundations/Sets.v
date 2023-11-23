@@ -295,13 +295,8 @@ Proof.
   intro x.
   apply funextfun.
   intro x'.
-  apply subtypePath.
-  {
-    intro.
-    apply isapropisaprop.
-  }
-  apply univalence.
-  use weq_iso.
+  apply weqtopathshProp.
+  apply logeqweq.
   - refine (minimal_eqrel_from_hrel _ (eqreldirprod (make_eqrel _ (iseqrel_eqrel_from_hrel _)) (make_eqrel _ (iseqrel_eqrel_from_hrel _))) _ _ _).
     intros y y' Hy.
     induction Hy as [Hy1 Hy2].
@@ -323,10 +318,6 @@ Proof.
       split.
       * apply HR.
       * exact Hy.
-  - intro.
-    apply propproperty.
-  - intro.
-    apply propproperty.
 Qed.
 
 Lemma eqreleq {A : UU} (R : eqrel A) (x y : A) : x = y → R x y.

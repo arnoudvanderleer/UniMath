@@ -169,3 +169,82 @@ Definition has_beta (L : lambda_theory) : UU
 
 Definition has_eta (L : lambda_theory) : UU
   := ∏ n (l : (L n : hSet)), abs (app l) = l.
+
+(** * 5. A characterization of app and abs in terms of app' and one *)
+
+Definition app'
+  (L : lambda_theory_data)
+  : (L 2 : hSet)
+  := app id_pr.
+
+Definition one
+  (L : lambda_theory_data)
+  : (L 0 : hSet)
+  := abs (abs (app id_pr)).
+
+Section AppAbs.
+
+  Context (L : lambda_theory).
+  Context (H : has_beta L).
+
+  Lemma app_from_app'
+    {n : nat}
+    (s : (L n : hSet))
+    : app s = extended_composition (app' L) (λ _, s).
+  Proof.
+    exact (!maponpaths _ (algebraic_theory_comp_is_unital _ _ _) @ lambda_theory_app_compatible_with_comp _ _).
+  Qed.
+
+  Local Lemma aux1
+    {n : nat}
+    {s : (L (S n) : hSet)}
+    {t : (L n : hSet)}
+    (H2 : extended_composition (app' L) (λ _ : (⟦ 1 ⟧)%stn, t) = s)
+    : abs s = app' L • extend_tuple (λ _ : (⟦ 1 ⟧)%stn, lift_constant n (one L)) t.
+  Proof.
+    refine (!maponpaths _ H2 @ _).
+    refine (lambda_theory_abs_compatible_with_comp _ _ @ _).
+    refine (!maponpaths (λ x, x • _) (H _ _) @ _).
+    refine (maponpaths (λ x, x • _) (app_from_app' (one L)) @ _).
+    refine (algebraic_theory_comp_is_assoc _ _ _ _ _ _ _ @ _).
+    apply maponpaths.
+    refine (!extend_tuple_eq _ _).
+    - intro i'.
+      refine (!_ @ !maponpaths (λ x, (_ x) • _) (homotinvweqweq stnweq _)).
+      refine (algebraic_theory_comp_is_natural_l _ _ _ _ _ _ _ @ _).
+      apply (maponpaths (comp _)).
+      apply funextfun.
+      intro i.
+      induction (negnatlthn0 _ (stnlt i)).
+    - refine (!_ @ !maponpaths (λ x, (_ x) • _) (homotinvweqweq stnweq _)).
+      apply algebraic_theory_comp_projects_component.
+  Qed.
+
+  Lemma abs_from_one
+    {n : nat}
+    (s : (L (S n) : hSet))
+    (t : (L n : hSet))
+    : abs s = t
+    ≃ (app' L • extend_tuple (λ _, lift_constant _ (one L)) t = t)
+      × (extended_composition (app' L) (λ _, t) = s).
+  Proof.
+    use (logeqweq
+      (make_hProp _ (setproperty _ _ _))
+      (make_hProp _ (isapropdirprod _ _ (setproperty _ _ _) (setproperty _ _ _)))).
+    - intro H1.
+      assert (H2 : extended_composition (app' L) (λ _, t) = s).
+      {
+        refine (!app_from_app' _ @ _).
+        refine (!maponpaths _ H1 @ _).
+        apply H.
+      }
+      refine (make_dirprod _ H2).
+      refine (_ @ H1).
+      exact (!aux1 H2).
+    - intro H'.
+      induction H' as [H1 H2].
+      refine (_ @ H1).
+      exact (aux1 H2).
+  Qed.
+
+End AppAbs.

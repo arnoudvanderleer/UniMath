@@ -620,8 +620,9 @@ Section RepresentationTheorem.
             ).
         + exact L_to_presheaf_preserves_pr.
         + exact L_to_presheaf_preserves_comp.
-      - exact presheaf_to_L_preserves_app.
-      - exact presheaf_to_L_preserves_abs.
+      - split.
+        + exact presheaf_to_L_preserves_app.
+        + exact presheaf_to_L_preserves_abs.
     Defined.
 
   End Iso.
