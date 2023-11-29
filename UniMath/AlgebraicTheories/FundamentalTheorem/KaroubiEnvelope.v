@@ -1,43 +1,15 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
-Require Import UniMath.CategoryTheory.Core.Prelude.
-Require Import UniMath.CategoryTheory.Presheaf.
-Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.categories.HSET.Core.
 Require Import UniMath.CategoryTheory.categories.HSET.Univalence.
+Require Import UniMath.CategoryTheory.Core.Prelude.
+Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.opp_precat.
+Require Import UniMath.CategoryTheory.Presheaf.
+Require Import UniMath.CategoryTheory.whiskering.
 
 Local Open Scope cat.
-
-Definition functor_pullback
-  {C C' : category}
-  (F : C ⟶ C')
-  (D : category)
-  : [C', D] ⟶ [C, D].
-Proof.
-  use make_functor.
-  - use make_functor_data.
-    + intro a.
-      apply (functor_composite F a).
-    + intros a b f.
-      exact (whiskering.pre_whisker _ f).
-  - abstract (
-      split;
-      [ intro a;
-        apply nat_trans_eq_alt;
-        easy
-      | intros a b c f g;
-        apply nat_trans_eq_alt;
-        easy ]
-    ).
-Defined.
-
-Definition presheaf_pullback
-  {C C' : category}
-  (F : C ⟶ C')
-  : PreShv C' ⟶ PreShv C
-  := functor_pullback (C := C^op) (C' := C'^op) (functor_opp F) SET.
 
 Section KaroubiEnvelope.
 
@@ -150,7 +122,11 @@ Section KaroubiEnvelope.
 
   Definition karoubi_pullback
     : PreShv karoubi_envelope ⟶ PreShv C
-    := presheaf_pullback (karoubi_envelope_inclusion).
+    := pre_composition_functor
+      C^op
+      karoubi_envelope^op
+      SET
+      (functor_opp (karoubi_envelope_inclusion)).
 
   Definition extend_presheaf_to_karoubi
     : PreShv C → PreShv karoubi_envelope.
