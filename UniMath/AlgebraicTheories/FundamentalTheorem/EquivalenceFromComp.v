@@ -26,7 +26,6 @@ Section AdjointEquivalenceFromComp.
 
   Context (Hequiv : adj_equivalence_of_cats (pre_comp_functor (C := D) F' ∙ pre_comp_functor F)).
 
-  Let Hes := functor_from_equivalence_is_essentially_surjective _ _ _ Hequiv.
   Let Hff := fully_faithful_from_equivalence _ _ _ Hequiv.
 
   Definition lan_after_pre_comp_iso
