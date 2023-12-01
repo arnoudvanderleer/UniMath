@@ -18,69 +18,50 @@ Section AdjointEquivalenceFromComp.
   Context {C C' C'' : category}.
   Context (F : C ⟶ C').
   Context (F' : C' ⟶ C'').
-  Context (H : fully_faithful F').
+  Context (HF' : fully_faithful F').
 
   Context (D : category).
-  Context (HD1 : Colims D).
-  Context (HD2 : is_univalent D).
+  Context (HD : Colims D).
 
   Context (Hequiv : adj_equivalence_of_cats (pre_comp_functor (C := D) F' ∙ pre_comp_functor F)).
 
-  Let Hff := fully_faithful_from_equivalence _ _ _ Hequiv.
-
   Definition lan_after_pre_comp_iso
     (P : [C'', D])
-    : z_iso (lan_functor HD1 F' (pre_comp_functor F' P)) P.
+    : z_iso (lan_functor HD F' (pre_comp_functor F' P)) P.
   Proof.
-    refine (iso_from_fully_faithful_reflection Hff _).
+    refine (iso_from_fully_faithful_reflection (fully_faithful_from_equivalence _ _ _ Hequiv) _).
     apply (functor_on_z_iso (pre_comp_functor F)).
-    exact (pr2 (pre_comp_split_essentially_surjective F' H D HD1 (pre_comp_functor F' P))).
+    apply (pre_comp_after_lan_iso _ HF').
   Defined.
 
-  Definition precomp_mor_weq
-    (P P' : [C'', D])
-    : [C'', D] ⟦ P, P' ⟧ ≃ [C', D] ⟦ pre_comp_functor F' P, pre_comp_functor F' P' ⟧.
+  Definition lan_after_pre_comp_iso_is_counit
+    (P : [C'', D])
+    : morphism_from_z_iso _ _ (lan_after_pre_comp_iso P)
+    = counit_from_right_adjoint (is_right_adjoint_precomposition HD F') P.
   Proof.
-    refine (weqcomp _ (adjunction_hom_weq (lan_precomposition_are_adjoints HD1 F') _ _)).
-    refine (make_weq _ (pr2 (z_iso_to_iso _) _)).
-    apply lan_after_pre_comp_iso.
-  Defined.
-
-  Definition precomp_fully_faithful
-    : fully_faithful (pre_comp_functor (C := D) F').
-  Proof.
-    intros P P'.
-    use isweqhomot.
-    - apply precomp_mor_weq.
-    - intro f.
-      refine (φ_adj_natural_postcomp _ _ _ _ _ _ @ _).
-      refine (_ @ id_left _).
-      apply (maponpaths (λ x, x · _)).
-      refine (_ @ triangle_id_right_ad (lan_precomposition_are_adjoints HD1 F') P).
-      apply (maponpaths (λ x, _ · # (pre_comp_functor F') x)).
-      apply invmap_eq.
-      apply (maponpaths (pre_whisker_in_funcat _ _ _ _)).
-      apply nat_trans_eq_alt.
-      intro c.
-      apply colim_mor_eq.
-      intro v.
-      refine (colimArrowCommutes (lan_colim _ _ _ _) _ _ _ @ !_).
-      refine (colim_mor_commute (lan_colim _ _ _ _) _ _ _ _ @ !_).
-      apply (maponpaths #(P : C'' ⟶ D)).
-      apply (homotweqinvweq (weq_from_fully_faithful _ _ _)).
-    - apply weqproperty.
+    apply invmap_eq.
+    apply (maponpaths (pre_whisker_in_funcat _ _ _ _)).
+    apply nat_trans_eq_alt.
+    intro c.
+    apply colim_mor_eq.
+    intro v.
+    refine (colimArrowCommutes (lan_colim _ _ _ _) _ _ _ @ !_).
+    refine (colim_mor_commute (lan_colim _ _ _ _) _ _ _ _ @ !_).
+    apply (maponpaths #(P : C'' ⟶ D)).
+    apply (homotweqinvweq (weq_from_fully_faithful _ _ _)).
   Defined.
 
   Definition adjoint_equivalence_1_from_comp
     : adj_equivalence_of_cats (pre_comp_functor (C := D) F' ).
   Proof.
-    apply rad_equivalence_of_cats.
-    - apply is_univalent_functor_category.
-      apply HD2.
-    - apply precomp_fully_faithful.
+    use adj_equivalence_from_right_adjoint.
+    - apply (is_right_adjoint_precomposition HD).
     - intro P.
-      apply hinhpr.
-      exact (pre_comp_split_essentially_surjective F' H D HD1 P).
+      exact (is_z_iso_inv_from_z_iso (pre_comp_after_lan_iso _ HF' _ HD P)).
+    - intro P.
+      exact (is_z_isomorphism_path
+        (lan_after_pre_comp_iso_is_counit P)
+        (z_iso_is_z_isomorphism (lan_after_pre_comp_iso P))).
   Defined.
 
 End AdjointEquivalenceFromComp.

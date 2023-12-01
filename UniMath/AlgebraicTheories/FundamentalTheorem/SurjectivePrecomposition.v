@@ -66,29 +66,8 @@ Section PrecompositionEssentiallySurjective.
       : nat_trans (pre_comp_functor F (lan_functor HD F P) : C ⟶ D) (P : C ⟶ D)
       := make_nat_trans _ _ _ pre_comp_z_iso_mor_is_nat_trans.
 
-    Definition pre_comp_z_iso_inv_data
-      : nat_trans_data (P : C ⟶ D) (pre_comp_functor F (lan_functor HD F P) : C ⟶ D).
-    Proof.
-      intro c.
-      exact (colimIn (lan_colim _ _ _ _) ((c ,, tt) ,, identity (F c))).
-    Defined.
-
-    Lemma pre_comp_z_iso_inv_is_nat_trans
-      : is_nat_trans _ _ pre_comp_z_iso_inv_data.
-    Proof.
-      intros c c' f.
-      refine (_ @ !lan_mor_colimIn _ _ _ (#F f) _ _ _).
-      refine (colimInCommutes (lan_colim HD F P (F c')) ((c ,, tt) ,, identity (F c) · #F f) ((c' ,, tt) ,, identity (F c')) ((f ,, idpath tt) ,, _)).
-      refine (assoc' _ _ _ @ _).
-      exact (id_left _).
-    Qed.
-
-    Definition pre_comp_z_iso_inv
-      : nat_trans (P : C ⟶ D) (pre_comp_functor F (lan_functor HD F P) : C ⟶ D)
-      := make_nat_trans _ _ _ pre_comp_z_iso_inv_is_nat_trans.
-
     Lemma pre_comp_z_iso_is_iso
-      : is_inverse_in_precat (C := [C, D]) pre_comp_z_iso_mor pre_comp_z_iso_inv.
+      : is_inverse_in_precat (C := [C, D]) pre_comp_z_iso_mor (unit_from_right_adjoint (is_right_adjoint_precomposition HD F) P).
     Proof.
       split.
       - apply nat_trans_eq_alt.
@@ -115,10 +94,7 @@ Section PrecompositionEssentiallySurjective.
 
     Definition pre_comp_after_lan_iso
       : z_iso (pre_comp_functor F (lan_functor HD F P)) P
-      := make_z_iso (C := [C, D])
-        pre_comp_z_iso_mor
-        pre_comp_z_iso_inv
-        pre_comp_z_iso_is_iso.
+      := make_z_iso _ _ pre_comp_z_iso_is_iso.
 
   End Iso.
 
