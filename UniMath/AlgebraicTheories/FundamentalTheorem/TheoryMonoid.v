@@ -1,25 +1,12 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
-Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.CategoryTheory.Core.Prelude.
-Require Import UniMath.CategoryTheory.limits.products.
-Require Import UniMath.CategoryTheory.Presheaf.
-Require Import UniMath.CategoryTheory.Equivalences.Core.
-Require Import UniMath.CategoryTheory.categories.HSET.Core.
-Require Import UniMath.CategoryTheory.categories.HSET.Univalence.
-Require Import UniMath.CategoryTheory.FunctorCategory.
-Require Import UniMath.CategoryTheory.opp_precat.
-Require Import UniMath.CategoryTheory.whiskering.
 Require Import UniMath.Algebra.Monoids.
+Require Import UniMath.CategoryTheory.Core.Functors.
+Require Import UniMath.Combinatorics.StandardFiniteSets.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
-Require Import UniMath.AlgebraicTheories.Presheaves.
-Require Import UniMath.AlgebraicTheories.PresheafCategory.
-Require Import UniMath.AlgebraicTheories.PresheafMorphisms.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.MonoidActions.
 
 Local Open Scope algebraic_theories.
-Local Open Scope cat.
 
 Section TheoryMonoid.
 
