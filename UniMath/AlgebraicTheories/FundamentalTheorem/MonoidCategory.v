@@ -2,7 +2,10 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.Algebra.Monoids.
 Require Import UniMath.CategoryTheory.categories.HSET.Univalence.
+Require Import UniMath.CategoryTheory.categories.monoids.
+Require Import UniMath.CategoryTheory.categories.CategoryOfSetCategories.
 Require Import UniMath.CategoryTheory.Core.Prelude.
+Require Import UniMath.CategoryTheory.Core.Setcategories.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.Presheaf.
@@ -12,36 +15,190 @@ Require Import UniMath.AlgebraicTheories.FundamentalTheorem.MonoidActions.
 Local Open Scope cat.
 Local Open Scope multmonoid.
 
-Section MonoidCategory.
+Section MonoidToCategory.
+
+  Section Ob.
+
+    Context (M : monoid).
+
+    Definition monoid_to_category_ob_data
+      : precategory_data.
+    Proof.
+      use make_precategory_data.
+      - use make_precategory_ob_mor.
+        + exact unit.
+        + intros t t'.
+          exact M.
+      - intro c.
+        exact 1.
+      - intros a b c m m'.
+        exact (m' * m).
+    Defined.
+
+    Lemma monoid_to_category_ob_is_precategory
+      : is_precategory_one_assoc monoid_to_category_ob_data.
+    Proof.
+      repeat split.
+      - intros a b f.
+        apply runax.
+      - intros a b f.
+        apply lunax.
+      - intros t t' t'' t''' f g h.
+        apply assocax.
+    Qed.
+
+    Definition monoid_to_category_ob_precategory
+      : precategory
+      := make_precategory_one_assoc
+        monoid_to_category_ob_data
+        monoid_to_category_ob_is_precategory.
+
+    Lemma monoid_to_category_is_setcategory
+      : is_setcategory monoid_to_category_ob_precategory.
+    Proof.
+      split.
+      - apply isasetunit.
+      - intros t t'.
+        apply setproperty.
+    Qed.
+
+    Definition monoid_to_category_ob
+      : setcategory
+      := monoid_to_category_ob_precategory ,, monoid_to_category_is_setcategory.
+
+  End Ob.
+
+  Section Mor.
+
+    Context {M M' : monoid}.
+    Context (f : monoidfun M M').
+
+    Definition monoid_to_category_mor_data
+      : functor_data (monoid_to_category_ob M) (monoid_to_category_ob M').
+    Proof.
+      use make_functor_data.
+      - exact (idfun _).
+      - intros t t' m.
+        exact (f m).
+    Defined.
+
+    Lemma monoid_to_category_mor_is_functor
+      : is_functor monoid_to_category_mor_data.
+    Proof.
+      split.
+      - intro t.
+        apply monoidfununel.
+      - intros t t' t'' m m'.
+        apply monoidfunmul.
+    Qed.
+
+    Definition monoid_to_category_mor
+      : monoid_to_category_ob M ⟶ monoid_to_category_ob M'
+      := make_functor _ monoid_to_category_mor_is_functor.
+
+  End Mor.
+
+  Definition monoid_to_category_data
+    : functor_data monoid_category cat_of_setcategory
+    := make_functor_data (C := monoid_category) (C' := cat_of_setcategory)
+      monoid_to_category_ob
+      (λ _ _, monoid_to_category_mor).
+
+  Lemma monoid_to_category_is_functor
+    : is_functor monoid_to_category_data.
+  Proof.
+    now split;
+      repeat intro;
+      apply (functor_eq _ _ (homset_property _)).
+  Qed.
+
+  Definition monoid_to_category
+    : monoids.monoid_category ⟶ cat_of_setcategory
+    := make_functor
+      monoid_to_category_data
+      monoid_to_category_is_functor.
+
+  Section FullyFaithful.
+
+    Context (M M' : monoid).
+
+    Section Mor.
+
+      Context (f : monoid_to_category_ob M ⟶ monoid_to_category_ob M').
+
+      Definition functor_to_monoidfun_data
+        : M → M'.
+      Proof.
+        intro m.
+        exact (#f (m : monoid_to_category_ob M⟦tt, tt⟧)).
+      Defined.
+
+      Lemma functor_to_is_monoidfun
+        : ismonoidfun functor_to_monoidfun_data.
+      Proof.
+        use make_ismonoidfun.
+        - intros m m'.
+          apply (functor_comp f).
+        - apply (functor_id f).
+      Qed.
+
+      Definition functor_to_monoidfun
+        : monoidfun M M'
+        := _ ,, functor_to_is_monoidfun.
+
+    End Mor.
+
+    Lemma monoid_to_category_fully_faithful_monoidfun_iso
+      (f : monoidfun M M')
+      : functor_to_monoidfun (monoid_to_category_mor f) = f.
+    Proof.
+      apply subtypePath.
+      {
+        intro.
+        apply isapropismonoidfun.
+      }
+      apply idpath.
+    Qed.
+
+    Lemma monoid_to_category_fully_faithful_functor_iso
+      (f : monoid_to_category_ob M ⟶ monoid_to_category_ob M')
+      : monoid_to_category_mor (functor_to_monoidfun f) = f.
+    Proof.
+      apply (functor_eq _ _ (homset_property _)).
+      use functor_data_eq.
+      - intro t.
+        now induction t, (pr1 f tt).
+      - intros t t' m.
+        do 2 refine (eqtohomot (transportf_const _ _) _ @ _).
+        now induction t, t'.
+    Qed.
+
+  End FullyFaithful.
+
+  Definition monoid_to_cat_fully_faithful
+    : fully_faithful monoid_to_category.
+  Proof.
+    intros m m'.
+    use isweq_iso.
+    - apply functor_to_monoidfun.
+    - apply monoid_to_category_fully_faithful_monoidfun_iso.
+    - apply monoid_to_category_fully_faithful_functor_iso.
+  Defined.
+
+  Definition monoid_iso_weq_monoid_category_equiv
+    : ∏ (M M' : monoid),
+      z_iso (C := monoids.monoid_category) M M'
+      ≃ z_iso (C := cat_of_setcategory) (monoid_to_category_ob M) (monoid_to_category_ob M')
+    := weq_ff_functor_on_z_iso monoid_to_cat_fully_faithful.
+
+End MonoidToCategory.
+
+Section MonoidCategoryPresheaf.
 
   Context (M : monoid).
 
-  Definition monoid_category : category.
-  Proof.
-    use make_category.
-    - use make_precategory_one_assoc.
-      + use make_precategory_data.
-        * use make_precategory_ob_mor.
-          -- exact unit.
-          -- intros t t'.
-            exact M.
-        * intro c.
-          exact 1.
-        * intros a b c m m'.
-          exact (m' * m).
-      + repeat split.
-        * intros a b f.
-          apply runax.
-        * intros a b f.
-          apply lunax.
-        * intros t t' t'' t''' f g h.
-          apply assocax.
-    - intros a b.
-      apply setproperty.
-  Defined.
-
   Definition monoid_presheaf_to_action
-    : PreShv monoid_category ⟶ monoid_action_category M.
+    : PreShv (monoid_to_category_ob M) ⟶ monoid_action_category M.
   Proof.
     use make_functor.
     - use make_functor_data.
@@ -68,7 +225,7 @@ Section MonoidCategory.
 
   Definition monoid_action_to_presheaf_ob
     (X : monoid_action M)
-    : PreShv monoid_category.
+    : PreShv (monoid_to_category_ob M).
   Proof.
     use make_functor.
     - use make_functor_data.
@@ -129,4 +286,4 @@ Section MonoidCategory.
       + abstract easy.
   Defined.
 
-End MonoidCategory.
+End MonoidCategoryPresheaf.
