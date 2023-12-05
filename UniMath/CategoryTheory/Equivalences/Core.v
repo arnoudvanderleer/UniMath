@@ -597,13 +597,12 @@ Defined.
     univalent_category.
 *)
 
-Section from_fully_faithful_and_ess_surj_to_equivalence.
+Section FullyFaithfulAndSplitEssentiallySurjectiveToEquivalence.
 
 Variables A B : category.
-Hypothesis HA : is_univalent A.
 Variable F : functor A B.
 Hypothesis HF : fully_faithful F.
-Hypothesis HS : essentially_surjective F.
+Hypothesis HS : split_essentially_surjective F.
 
 (** Definition of a functor which will later be the right adjoint. *)
 
@@ -611,15 +610,14 @@ Definition rad_ob : ob B -> ob A.
 Proof.
   use split_essentially_surjective_inv_on_obj.
   - exact F.
-  - apply ff_essentially_surjective_to_split; assumption.
+  - exact HS.
 Defined.
 
 (** Definition of the epsilon transformation *)
 
 Definition rad_eps (b : ob B) : z_iso (F (rad_ob b)) b.
 Proof.
-  apply (pr2 (HS b (tpair (λ x, isaprop x) _
-               (isaprop_sigma_z_iso A B HA F HF b)) (λ x, x))).
+  exact (pr2 (HS _)).
 Defined.
 
 (** The right adjoint on morphisms *)
@@ -777,7 +775,7 @@ Defined.
     remains to show that [eta], [eps] are isos
 *)
 
-Lemma rad_equivalence_of_cats : adj_equivalence_of_cats F.
+Lemma rad_equivalence_of_cats' : adj_equivalence_of_cats F.
 Proof.
   exists rad_is_left_adjoint.
   split; simpl.
@@ -795,4 +793,18 @@ Proof.
   intro b. apply (pr2 (rad_eps b)).
 Defined.
 
-End from_fully_faithful_and_ess_surj_to_equivalence.
+End FullyFaithfulAndSplitEssentiallySurjectiveToEquivalence.
+
+Lemma rad_equivalence_of_cats
+  (A B : category)
+  (F : functor A B)
+  (HA : is_univalent A)
+  (HF : fully_faithful F)
+  (HS : essentially_surjective F)
+ : adj_equivalence_of_cats F.
+Proof.
+  apply rad_equivalence_of_cats'.
+  - exact HF.
+  - apply ff_essentially_surjective_to_split;
+    assumption.
+Defined.
