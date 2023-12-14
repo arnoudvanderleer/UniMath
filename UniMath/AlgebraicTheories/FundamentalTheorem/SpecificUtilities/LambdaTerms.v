@@ -5,7 +5,7 @@ Require Import UniMath.Combinatorics.Vectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
 Require Import UniMath.AlgebraicTheories.LambdaCalculus.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.Utilities.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SpecificUtilities.Utilities.
 
 Local Open Scope vec.
 

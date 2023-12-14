@@ -221,7 +221,7 @@ Section PresheafEquivalence.
     now use functor_data_eq.
   Defined.
 
-  Definition fully_faithful
+  Definition fully_faithful_algebraic_presheaf_to_lawvere_presheaf
     : fully_faithful algebraic_presheaf_to_lawvere_presheaf.
   Proof.
     intros P P'.
@@ -243,7 +243,7 @@ Section PresheafEquivalence.
   Proof.
     use rad_equivalence_of_cats.
     - apply is_univalent_presheaf_cat.
-    - exact fully_faithful.
+    - exact fully_faithful_algebraic_presheaf_to_lawvere_presheaf.
     - intro P.
       apply hinhpr.
       exists (lawvere_presheaf_to_algebraic_presheaf_ob P).

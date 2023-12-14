@@ -10,7 +10,7 @@ Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.Presheaf.
 
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.MonoidActions.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.CommonUtilities.MonoidActions.
 
 Local Open Scope cat.
 Local Open Scope multmonoid.
