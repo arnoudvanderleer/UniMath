@@ -26,9 +26,9 @@ Require Import UniMath.AlgebraicTheories.Algebras.
 Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.Examples.LambdaCalculus.
 Require Import UniMath.AlgebraicTheories.Examples.EndomorphismTheory.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.LambdaTerms.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.Utilities.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.MonoidActions.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SpecificUtilities.LambdaTerms.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SpecificUtilities.Utilities.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.CommonUtilities.MonoidActions.
 Require Import UniMath.AlgebraicTheories.LambdaTheories.
 Require Import UniMath.AlgebraicTheories.LambdaCalculus.
 Require Import UniMath.AlgebraicTheories.LambdaTheoryCategory.

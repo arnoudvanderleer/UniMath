@@ -92,7 +92,7 @@ Proof.
 Qed.
 
 Definition from_eq_cat_of_setcategory
-           {C₁ C₂ : setcategory}
+           {C₁ C₂ : category}
            {F₁ F₂ : C₁ ⟶ C₂}
            (p : F₁ = F₂)
            {x₁ x₂ : pr1 C₁}

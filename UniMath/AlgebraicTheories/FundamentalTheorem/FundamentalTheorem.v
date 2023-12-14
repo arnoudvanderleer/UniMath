@@ -23,11 +23,11 @@ Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.LambdaCalculus.
 Require Import UniMath.AlgebraicTheories.Examples.LambdaCalculus.
 
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.MonoidActions.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.CommonUtilities.MonoidActions.
 Require Import UniMath.AlgebraicTheories.FundamentalTheorem.TheoryToAlgebra.
 Require Import UniMath.AlgebraicTheories.FundamentalTheorem.AlgebraToTheory.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.Utilities.
-Require Import UniMath.AlgebraicTheories.FundamentalTheorem.LambdaTerms.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SpecificUtilities.Utilities.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SpecificUtilities.LambdaTerms.
 
 Local Open Scope cat.
 Local Open Scope vec.
