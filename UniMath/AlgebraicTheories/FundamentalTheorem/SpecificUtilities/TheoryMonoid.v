@@ -4,9 +4,16 @@ Require Import UniMath.Algebra.Monoids.
 Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
+Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.CategoryTheory.Core.Setcategories.
+
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.CommonUtilities.MonoidToCategory.
+Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SpecificUtilities.LawvereTheory.
+
 Local Open Scope algebraic_theories.
+Local Open Scope cat.
 
 Section TheoryMonoid.
 
@@ -34,6 +41,27 @@ Section TheoryMonoid.
           refine (algebraic_theory_id_pr_is_pr _ @ _).
           apply maponpaths.
           apply isconnectedstn1.
+  Defined.
+
+  Definition monoid_to_lawvere
+    : monoid_to_category_ob theory_monoid ⟶ lawvere_theory T.
+  Proof.
+    use make_functor.
+    - use make_functor_data.
+      + intro t.
+        exact 1.
+      + intros t t' f i.
+        exact f.
+    - split.
+      + abstract (
+          intro t;
+          apply funextfun;
+          intro i;
+          refine (algebraic_theory_id_pr_is_pr _ @ _);
+          apply (maponpaths pr);
+          apply isconnectedstn1
+        ).
+      + abstract easy.
   Defined.
 
 End TheoryMonoid.
