@@ -4,6 +4,7 @@ Require Import UniMath.CategoryTheory.Adjunctions.Core.
 Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Equivalences.FullyFaithful.
+Require Import UniMath.CategoryTheory.Equivalences.CompositesAndInverses.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.LeftKanExtension.
 Require Import UniMath.CategoryTheory.limits.graphs.colimits.
@@ -31,7 +32,7 @@ Section AdjointEquivalenceFromComp.
   Proof.
     refine (iso_from_fully_faithful_reflection (fully_faithful_from_equivalence _ _ _ Hequiv) _).
     apply (functor_on_z_iso (pre_comp_functor F)).
-    apply (pre_comp_after_lan_iso _ HF').
+    exact (z_iso_inv (pre_comp_after_lan_iso _ HF' _ _ _)).
   Defined.
 
   Definition lan_after_pre_comp_iso_is_counit
@@ -52,7 +53,7 @@ Section AdjointEquivalenceFromComp.
   Defined.
 
   Definition adjoint_equivalence_1_from_comp
-    : adj_equivalence_of_cats (pre_comp_functor (C := D) F' ).
+    : adj_equivalence_of_cats (pre_comp_functor (C := D) F').
   Proof.
     use adj_equivalence_from_right_adjoint.
     - apply (is_right_adjoint_precomposition HD).
@@ -63,5 +64,15 @@ Section AdjointEquivalenceFromComp.
         (lan_after_pre_comp_iso_is_counit P)
         (z_iso_is_z_isomorphism (lan_after_pre_comp_iso P))).
   Defined.
+
+  Definition adjoint_equivalence_2_from_comp
+    : adj_equivalence_of_cats (pre_comp_functor (C := D) F)
+    := two_out_of_three_second
+    (pre_comp_functor F')
+    (pre_comp_functor F)
+    (pre_comp_functor F' ∙ pre_comp_functor F)
+    (nat_z_iso_id _)
+    (adjoint_equivalence_1_from_comp)
+    Hequiv.
 
 End AdjointEquivalenceFromComp.
