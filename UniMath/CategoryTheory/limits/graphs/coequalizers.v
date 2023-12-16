@@ -383,3 +383,40 @@ Proof.
      intro e.
      induction e; apply idpath.
 Defined.
+
+(* For a section-retraction pair (g, f) between b and a, b is the coequalizer of id_a and f · g *)
+Lemma retract_is_coequalizer
+  {C : category}
+  {a b : C}
+  {f : C ⟦a, b⟧}
+  {g : C ⟦b, a⟧}
+  (H : is_retraction g f)
+  : Coequalizer C (f · g) (identity _).
+Proof.
+  use make_Coequalizer.
+  - exact b.
+  - exact f.
+  - abstract (
+      refine (_ @ !id_left _);
+      refine (assoc' _ _ _ @ _);
+      refine (maponpaths _ H @ _);
+      apply id_right
+    ).
+  - apply make_isCoequalizer.
+    intros d f' Hf'.
+    use unique_exists.
+    + exact (g · f').
+    + abstract exact (assoc _ _ _ @ Hf' @ id_left _).
+    + abstract (
+        intro y;
+        apply homset_property
+      ).
+    + abstract (
+        intros g' Hg';
+        refine (!id_left _ @ _);
+        refine (!maponpaths (λ x, x · _) H @ _);
+        refine (assoc' _ _ _ @ _);
+        apply maponpaths;
+        exact Hg'
+      ).
+Defined.

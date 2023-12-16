@@ -7,7 +7,9 @@ Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.LeftKanExtension.
+Require Import UniMath.CategoryTheory.limits.graphs.coequalizers.
 Require Import UniMath.CategoryTheory.limits.graphs.colimits.
+Require Import UniMath.CategoryTheory.limits.graphs.equalizers.
 Require Import UniMath.CategoryTheory.opp_precat.
 Require Import UniMath.CategoryTheory.Presheaf.
 Require Import UniMath.CategoryTheory.whiskering.
@@ -15,6 +17,34 @@ Require Import UniMath.CategoryTheory.whiskering.
 Require Import UniMath.AlgebraicTheories.FundamentalTheorem.SurjectivePrecomposition.
 
 Local Open Scope cat.
+
+Lemma retract_functor_is_equalizer
+  {C D : category}
+  (F : C ⟶ D)
+  {a b : C}
+  {f : C ⟦a, b⟧}
+  {g : C ⟦b, a⟧}
+  (H : is_retraction g f)
+  : Equalizer D (#F f · #F g) (identity _).
+Proof.
+  apply retract_is_equalizer.
+  apply functor_preserves_retraction.
+  apply H.
+Defined.
+
+Lemma retract_functor_is_coequalizer
+  {C D : category}
+  (F : C ⟶ D)
+  {a b : C}
+  {f : C ⟦a, b⟧}
+  {g : C ⟦b, a⟧}
+  (H : is_retraction g f)
+  : Coequalizer D (#F f · #F g) (identity _).
+Proof.
+  apply retract_is_coequalizer.
+  apply functor_preserves_retraction.
+  apply H.
+Defined.
 
 Section KaroubiEnvelope.
 
