@@ -377,24 +377,22 @@ End equalizers_coincide.
 Lemma retract_is_equalizer
   {C : category}
   {a b : C}
-  {f : C ⟦a, b⟧}
-  {g : C ⟦b, a⟧}
-  (H : is_retraction g f)
-  : Equalizer C (f · g) (identity _).
+  (H : retraction b a)
+  : Equalizer C (pr1 (pr2 H) · pr1 H) (identity a).
 Proof.
   use make_Equalizer.
   - exact b.
-  - exact g.
+  - exact (pr1 H).
   - abstract (
       refine (_ @ !id_right _);
       refine (assoc _ _ _ @ _);
-      refine (maponpaths (λ x, x · _) H @ _);
+      refine (maponpaths (λ x, x · _) (pr2 (pr2 H)) @ _);
       apply id_left
     ).
   - apply make_isEqualizer.
     intros d f' Hf'.
     use unique_exists.
-    + exact (f' · f).
+    + exact (f' · pr1 (pr2 H)).
     + abstract exact (assoc' _ _ _ @ Hf' @ id_right _).
     + abstract (
         intro y;
@@ -403,7 +401,7 @@ Proof.
     + abstract (
         intros g' Hg';
         refine (!id_right _ @ _);
-        refine (!maponpaths _ H @ _);
+        refine (!maponpaths _ (pr2 (pr2 H)) @ _);
         refine (assoc _ _ _ @ _);
         apply (maponpaths (λ x, x · _));
         exact Hg'

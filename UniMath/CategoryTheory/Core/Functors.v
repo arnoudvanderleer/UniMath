@@ -1300,16 +1300,22 @@ Notation "F ∙ G" := (functor_composite F G) : cat.
 (* Notation "G □ F" := (functor_composite F G) (at level 35, only parsing) : cat. *)
 (* to input: type "\Box" or "\square" or "\sqw" or "\sq" with Agda input method *)
 
-Lemma functor_preserves_retraction
+Lemma functor_preserves_is_retraction
   {C D : category}
   (F : C ⟶ D)
   {a b : C}
-  {f : C ⟦a, b⟧}
-  {g : C ⟦b, a⟧}
-  (H : is_retraction g f)
-  : is_retraction (#F g) (#F f).
+  (H : retraction b a)
+  : is_retraction (#F (pr1 H)) (#F (pr1 (pr2 H))).
 Proof.
   refine (!functor_comp _ _ _ @ _).
-  refine (maponpaths _ H @ _).
+  refine (maponpaths _ (pr2 (pr2 H)) @ _).
   apply functor_id.
 Qed.
+
+Definition functor_preserves_retraction
+  {C D : category}
+  (F : C ⟶ D)
+  {a b : C}
+  (H : retraction b a)
+  : retraction (F b) (F a)
+  := _ ,, _ ,, functor_preserves_is_retraction F H.

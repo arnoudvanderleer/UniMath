@@ -22,28 +22,20 @@ Lemma retract_functor_is_equalizer
   {C D : category}
   (F : C ⟶ D)
   {a b : C}
-  {f : C ⟦a, b⟧}
-  {g : C ⟦b, a⟧}
-  (H : is_retraction g f)
-  : Equalizer D (#F f · #F g) (identity _).
+  (H : retraction b a)
+  : Equalizer D (#F (retraction_retraction H) · #F (retraction_section H)) (identity (F a)).
 Proof.
-  apply retract_is_equalizer.
-  apply functor_preserves_retraction.
-  apply H.
+  exact (retract_is_equalizer (functor_preserves_retraction F H)).
 Defined.
 
 Lemma retract_functor_is_coequalizer
   {C D : category}
   (F : C ⟶ D)
   {a b : C}
-  {f : C ⟦a, b⟧}
-  {g : C ⟦b, a⟧}
-  (H : is_retraction g f)
-  : Coequalizer D (#F f · #F g) (identity _).
+  (H : retraction b a)
+  : Coequalizer D (#F (retraction_retraction H) · #F (retraction_section H)) (identity (F a)).
 Proof.
-  apply retract_is_coequalizer.
-  apply functor_preserves_retraction.
-  apply H.
+  exact (retract_is_coequalizer (functor_preserves_retraction F H)).
 Defined.
 
 Section KaroubiEnvelope.
@@ -55,7 +47,7 @@ Section KaroubiEnvelope.
   Proof.
     use make_precategory_data.
     - use make_precategory_ob_mor.
-      + exact (∑ (c : C) (f : C⟦c, c⟧), f · f = f).
+      + exact (∑ (c : C), idempotent c).
       + intros f f'.
         exact (∑ (g : C⟦pr1 f, pr1 f'⟧), pr12 f · g = g × g · pr12 f' = g).
     - intro f.
@@ -157,6 +149,62 @@ Section KaroubiEnvelope.
     - intro f.
       now apply karoubi_mor_eq.
   Qed.
+
+  Definition karoubi_envelope_is_retract
+    (d : karoubi_envelope)
+    : ∑ c, retraction d (karoubi_envelope_inclusion c).
+  Proof.
+    exists (pr1 d).
+    use (_ ,, _ ,, _).
+    - exists (pr12 d).
+      abstract (
+        split;
+        [ exact (idempotent_is_idempotent (pr2 d))
+        | apply id_right ]
+      ).
+    - exists (pr12 d).
+      abstract (
+        split;
+        [ apply id_left
+        | exact (idempotent_is_idempotent (pr2 d)) ]
+      ).
+    - abstract (
+        apply karoubi_mor_eq;
+        apply (idempotent_is_idempotent (pr2 d))
+      ).
+  Defined.
+
+  Definition karoubi_envelope_idempotent_splits
+    (c : karoubi_envelope)
+    (e : idempotent c)
+    : is_split_idempotent e.
+  Proof.
+    use (_ ,, _ ,, _).
+    - exists (pr1 c).
+      exists (pr1 (e : c --> c)).
+      abstract exact (base_paths _ _ (idempotent_is_idempotent e)).
+    - use (_ ,, _ ,, _).
+      + exists (pr1 (e : c --> c)).
+        abstract (
+          split;
+          [ exact (base_paths _ _ (idempotent_is_idempotent e))
+          | exact (pr22 (e : c --> c)) ]
+        ).
+      + exists (pr1 (e : c --> c)).
+        abstract (
+          split;
+          [ exact (pr12 (e : c --> c))
+          | exact (base_paths _ _ (idempotent_is_idempotent e)) ]
+        ).
+      + abstract (
+          apply karoubi_mor_eq;
+          exact (base_paths _ _ (idempotent_is_idempotent e))
+        ).
+    - abstract (
+        apply karoubi_mor_eq;
+        exact (!base_paths _ _ (idempotent_is_idempotent e))
+      ).
+  Defined.
 
   Context (D : category).
   Context (HD : Colims D).
