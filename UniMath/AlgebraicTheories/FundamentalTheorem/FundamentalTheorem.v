@@ -17,6 +17,7 @@ Require Import UniMath.AlgebraicTheories.Algebras.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories2.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryMorphisms.
+Require Import UniMath.AlgebraicTheories.AlgebraicTheoryMorphisms2.
 Require Import UniMath.AlgebraicTheories.LambdaTheories.
 Require Import UniMath.AlgebraicTheories.LambdaTheoryMorphisms.
 Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
@@ -36,6 +37,36 @@ Section FundamentalTheorem.
 
   Context (lambda : lambda_calculus).
   Let L := lambda_calculus_lambda_theory lambda.
+
+  Lemma theory_to_algebra_is_fully_faithful
+    : fully_faithful (theory_to_algebra_functor lambda).
+  Proof.
+    intros l l'.
+    use isweq_iso.
+    - refine (λ (F : algebra_morphism (theory_to_algebra_functor lambda l : algebra _) (theory_to_algebra_functor lambda l' : algebra _)), (_ ,, tt)).
+      use make_lambda_theory_morphism.
+      + use make_algebraic_theory_morphism'.
+        * intro.
+          induction n as [ | n IHn].
+          -- exact F.
+          -- exact (λ t, LambdaTheories.app (IHn (LambdaTheories.abs t))).
+        * use make_is_algebraic_theory_morphism'.
+          -- admit.
+          -- intro n.
+            induction n as [ | n IHn].
+            ++ exact (λ i, fromstn0 i).
+            ++ intro i.
+              cbn.
+            intros m n f g.
+            induction m as [ | m IHm];
+            induction n as [ | n IHn].
+            ++ cbn.
+          --
+            apply app.
+          unfold algebra_morphism in F.
+          cbn in X.
+          use make_algebraic_theory_morphism'_data.
+  Defined.
 
   Lemma theory_to_algebra_is_full
     : full (theory_to_algebra_functor lambda).

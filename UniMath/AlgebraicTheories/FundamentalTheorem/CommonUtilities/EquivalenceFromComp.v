@@ -58,7 +58,7 @@ Section AdjointEquivalenceFromComp.
     use adj_equivalence_from_right_adjoint.
     - apply (is_right_adjoint_precomposition HD).
     - intro P.
-      exact (is_z_iso_inv_from_z_iso (pre_comp_after_lan_iso _ HF' _ HD P)).
+      exact (z_iso_is_z_isomorphism (pre_comp_after_lan_iso _ HF' _ HD P)).
     - intro P.
       exact (is_z_isomorphism_path
         (lan_after_pre_comp_iso_is_counit P)
