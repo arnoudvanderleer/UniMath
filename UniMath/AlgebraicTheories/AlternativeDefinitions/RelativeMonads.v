@@ -14,7 +14,8 @@
   1.4. The type of relative monads [relative_monad]
   1.5. The type of relative monad morphisms [relative_monad_morphism]
   2. Univalence [is_univalent_relative_monad_cat]
-  3. The adjoint equivalence between relative monads on the embedding and algebraic theories
+  3. Precomposing relative monads with a functor [relative_monad_precomp_functor]
+  4. The adjoint equivalence between relative monads on the embedding and algebraic theories
     [monad_theory_equivalence]
 
  **************************************************************************************************)
@@ -31,6 +32,7 @@ Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.Subcategory.Core.
+Require Import UniMath.CategoryTheory.whiskering.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
@@ -448,7 +450,65 @@ Arguments ext_η_ax /.
 Arguments η_ext_ax /.
 Arguments ext_ext_ax /.
 
-(** * 3. The adjoint equivalence between relative monads on the embedding and algebraic theories *)
+(** * 3. Precomposing relative monads with a functor *)
+
+Definition relative_monad_precomp
+  {C C' E : category}
+  (F : C' ⟶ C)
+  {J : C ⟶ E}
+  (T : relative_monad J)
+  : relative_monad (F ∙ J).
+Proof.
+  use make_relative_monad.
+  - use make_relative_monad_data.
+    + exact (F ∙ (T : C ⟶ E)).
+    + exact (pre_whisker F (η T)).
+    + exact (λ _ _, ext T).
+  - abstract (
+      repeat split;
+      intros;
+      apply (pr2 T)
+    ).
+Defined.
+
+Definition relative_monad_morphism_precomp
+  {C C' E : category}
+  (F : C' ⟶ C)
+  {J : C ⟶ E}
+  {T T' : relative_monad J}
+  (f : relative_monad_morphism T T')
+  : relative_monad_morphism (relative_monad_precomp F T) (relative_monad_precomp F T').
+Proof.
+  use make_relative_monad_morphism.
+  - exact (pre_whisker F f).
+  - abstract (
+      intro c;
+      apply (mor_η f)
+    ).
+  - abstract (
+      intros c d s;
+      apply (mor_ext f)
+    ).
+Defined.
+
+Definition relative_monad_precomp_functor
+  {C C' E : category}
+  (F : C' ⟶ C)
+  (J : C ⟶ E)
+  : relative_monad_cat J ⟶ relative_monad_cat (F ∙ J).
+Proof.
+  use make_functor.
+  - use make_functor_data.
+    + apply relative_monad_precomp.
+    + apply relative_monad_morphism_precomp.
+  - abstract (
+      split;
+      repeat intro;
+      now apply relative_monad_morphism_eq
+    ).
+Defined.
+
+(** * 4. The adjoint equivalence between relative monads on the embedding and algebraic theories *)
 
 Section TheoryToMonad.
 
