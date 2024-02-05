@@ -24,6 +24,7 @@ Require Import UniMath.CategoryTheory.Core.NaturalTransformations.
 Require Import UniMath.CategoryTheory.Core.Isos.
 Require Import UniMath.CategoryTheory.limits.terminal.
 Require Import UniMath.CategoryTheory.limits.binproducts.
+Require Import UniMath.CategoryTheory.limits.products.
 Require Import UniMath.CategoryTheory.limits.pullbacks.
 Require Import UniMath.CategoryTheory.limits.initial.
 Require Import UniMath.CategoryTheory.limits.bincoproducts.
@@ -727,6 +728,68 @@ Definition preserves_chosen_coproduct
        (λ j, F(D j))
        (F (HC₁ D))
        (λ j, #F (CoproductIn _ _ (HC₁ D) j)).
+
+(**
+ 8. Preservation of products
+ *)
+
+Section PreservesProduct.
+
+  Context (J : UU).
+
+  Definition preserves_product
+    {C₁ C₂ : category}
+    (F : C₁ ⟶ C₂)
+    : UU
+    := ∏ (D : J → C₁)
+      (c : C₁)
+      (ι : ∏ (j : J), c --> (D j)),
+      isProduct J C₁ D c ι
+      →
+      isProduct J C₂ (λ j, F (D j)) (F c) (λ j, #F (ι j)).
+
+  Definition identity_preserves_product
+    (C : category)
+    : preserves_product (functor_identity C)
+    := λ _ _ _ Hx, Hx.
+
+  Definition composition_preserves_product
+    {C₁ C₂ C₃ : category}
+    {F : C₁ ⟶ C₂}
+    {G : C₂ ⟶ C₃}
+    (HF : preserves_product F)
+    (HG : preserves_product G)
+    : preserves_product (F ∙ G).
+  Proof.
+    intros ? ? ? Hx.
+    apply HG.
+    apply HF.
+    exact Hx.
+  Defined.
+
+  Definition isaprop_preserves_product
+    {C₁ C₂ : category}
+    (F : C₁ ⟶ C₂)
+    : isaprop (preserves_product F).
+  Proof.
+    repeat (use impred ; intro).
+    use isapropiscontr.
+  Qed.
+
+  Definition preserves_chosen_product
+    {C₁ C₂ : category}
+    (HC₁ : Products J C₁)
+    (F : C₁ ⟶ C₂)
+    : UU
+    := ∏ (D : J → C₁),
+      isProduct
+        J
+        C₂
+        (λ j, F(D j))
+        (F (HC₁ D))
+        (λ j, #F (ProductPr _ _ (HC₁ D) j)).
+
+End PreservesProduct.
 
 (**
  8. Preservation of pushouts
