@@ -91,7 +91,7 @@ Section Coalgebra_Definition.
     := coalg_map X · #F f = f · coalg_map Y.
 
   Definition coalgebra_mor (X Y : coalgebra_ob) : UU := CoAlg_category⟦X,Y⟧.
-  #[reversible] Coercion mor_from_coalgebra_mor {X Y : coalgebra_ob} (f : coalgebra_mor X Y) : C⟦X, Y⟧ := pr1 f.
+  #[reversible=no] Coercion mor_from_coalgebra_mor {X Y : coalgebra_ob} (f : coalgebra_mor X Y) : C⟦X, Y⟧ := pr1 f.
 
   Lemma coalgebra_mor_commutes {X Y : coalgebra_ob} (f : coalgebra_mor X Y)
     : coalg_map X · #F f = pr1 f · coalg_map Y.
@@ -343,5 +343,16 @@ Section PrimitiveCorecursion.
     exists (h ,, primitive_corecursion_existence).
     apply primitive_corecursion_aux.
   Defined.
+
+  Lemma primitive_corecursion_formula_with_inverse :
+    h  = ϕ · #F (BinCoproductArrow (CP _ _) h (identity _)) · (α' _ _ _ isTerminalνF).
+  Proof.
+    etrans.
+    2: { exact (maponpaths (fun x => x · α' C F νF isTerminalνF) primitive_corecursion_existence). }
+    rewrite assoc'.
+    etrans.
+    2: { apply maponpaths, pathsinv0, αα'_idA. }
+    apply pathsinv0, id_right.
+  Qed.
 
 End PrimitiveCorecursion.
