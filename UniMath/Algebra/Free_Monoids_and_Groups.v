@@ -168,7 +168,7 @@ Definition presented_monoid_universal_property {X : hSet} (R : hrel (free_monoid
   monoidfun (presented_monoid X R) Y ≃ ∑(f : X → Y), iscomprelfun R (free_monoid_extend f).
 Proof.
   use weq_iso.
-  - intro g. exact (tpair _ (g ∘ presented_monoid_intro) (iscomprelfun_presented_monoidfun g)).
+  - intro g. exact (g ∘ presented_monoid_intro ,, iscomprelfun_presented_monoidfun g).
   - intro f. exact (presented_monoid_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_monoid_extend_comp.
   - intro f. use total2_paths_f.
@@ -339,7 +339,7 @@ Definition presented_abmonoid_universal_property {X : hSet} (R : hrel (free_abmo
   monoidfun (presented_abmonoid X R) Y ≃ ∑(f : X → Y), iscomprelfun R (free_abmonoid_extend f).
 Proof.
   use weq_iso.
-  - intro g. exact (tpair _ (g ∘ presented_abmonoid_intro) (iscomprelfun_presented_abmonoidfun g)).
+  - intro g. exact (g ∘ presented_abmonoid_intro ,, iscomprelfun_presented_abmonoidfun g).
   - intro f. exact (presented_abmonoid_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_abmonoid_extend_comp.
   - intro f. use total2_paths_f.
@@ -587,7 +587,7 @@ Definition presented_gr_universal_property {X : hSet} (R : hrel (free_gr X)) (Y 
   monoidfun (presented_gr X R) Y ≃ ∑(f : X → Y), iscomprelfun R (free_gr_extend f).
 Proof.
   use weq_iso.
-  - intro g. exact (tpair _ (g ∘ presented_gr_intro) (iscomprelfun_presented_grfun g)).
+  - intro g. exact (g ∘ presented_gr_intro ,, iscomprelfun_presented_grfun g).
   - intro f. exact (presented_gr_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_gr_extend_comp.
   - intro f. use total2_paths_f.
@@ -746,7 +746,7 @@ Definition presented_abgr_universal_property {X : hSet} (R : hrel (free_abgr X))
   monoidfun (presented_abgr X R) Y ≃ ∑(f : X → Y), iscomprelfun R (free_abgr_extend f).
 Proof.
   use weq_iso.
-  - intro g. exact (tpair _ (g ∘ presented_abgr_intro) (iscomprelfun_presented_abgrfun g)).
+  - intro g. exact (g ∘ presented_abgr_intro ,, iscomprelfun_presented_abgrfun g).
   - intro f. exact (presented_abgr_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_abgr_extend_comp.
   - intro f. use total2_paths_f.
