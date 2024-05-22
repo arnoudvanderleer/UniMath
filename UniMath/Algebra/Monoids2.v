@@ -230,9 +230,7 @@ Definition idmonoidiso (X : monoid) : monoidiso X X.
 Proof.
   use make_monoidiso.
   - exact (idweq X).
-  - use make_dirprod.
-    + intros x x'. use idpath.
-    + use idpath.
+  - easy.
 Defined.
 
 Lemma monoidfunidleft {A B : monoid} (f : monoidfun A B) : monoidfuncomp (idmonoidiso A) f = f.
@@ -351,8 +349,7 @@ Proof.
     induction b as [x p], c as [y q].
     cbn in *.
     induction (!p), (!q).
-    rewrite lunax.
-    apply idpath.
+    now rewrite lunax.
   - apply idpath.
 Defined.
 
@@ -395,10 +392,8 @@ Qed.
 
 Lemma ismonoidfun_pr1 {X : monoid} (A : submonoid X) : @ismonoidfun A X pr1.
 Proof.
-  use make_ismonoidfun.
-  - intros a a'. reflexivity.
-  - reflexivity.
-Defined.
+  easy.
+Qed.
 
 Definition submonoid_incl {X : monoid} (A : submonoid X) : monoidfun A X :=
   monoidfunconstr (ismonoidfun_pr1 A).
@@ -500,9 +495,7 @@ Proof. exists (setwithbinopquot R). apply ismonoidquot. Defined.
 
 Lemma ismonoidfun_setquotpr {X : monoid} (R : binopeqrel X) : @ismonoidfun X (monoidquot R) (setquotpr R).
 Proof.
-  use make_ismonoidfun.
-  - intros x y. reflexivity.
-  - reflexivity.
+  easy.
 Defined.
 
 Definition monoidquotpr {X : monoid} (R : binopeqrel X) : monoidfun X (monoidquot R) :=
