@@ -408,7 +408,7 @@ Local Lemma isarchrig_isarchmonoid_1_aux {X : rig} (R : hrel X)
 Proof.
   intros.
   rewrite !nattorig_natmult in Hm.
-  destruct n.
+  induction n.
   + rewrite riglunax1 in Hn.
     eapply Hr.
     apply (pr1 Hop1).
@@ -450,7 +450,7 @@ Local Lemma isarchrig_isarchmonoid_2_aux {X : rig} (R : hrel X)
 Proof.
   intros.
   rewrite !nattorig_natmult in Hm.
-  destruct n.
+  induction n.
   + eapply Hr.
     exact Hm.
     rewrite rigcomm1.
@@ -775,7 +775,7 @@ Proof.
     apply hinhfun2.
     intros (m,Hm) (n,Hn).
     exists (max 1 n * m)%nat.
-    destruct n ; simpl max.
+    induction n ; simpl max.
     + apply hinhpr ; simpl.
       exists c.
       rewrite (ringrunax2 X), (ringlunax2 X), (ringassoc2 X).
@@ -815,7 +815,7 @@ Proof.
     apply hinhfun2.
     intros (m,Hm) (n,Hn).
     exists (max 1 n * m)%nat.
-    destruct n ; simpl max.
+    induction n ; simpl max.
     + apply hinhpr ; simpl.
       exists (pr2 x).
       apply (isringmultgttoisrringmultgt X).

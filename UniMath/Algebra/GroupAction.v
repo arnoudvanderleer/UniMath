@@ -83,7 +83,7 @@ Definition is_equivariant_identity {G:gr} {X Y:Action G}
 Proof.
   revert X Y p; intros [X [Xm [Xu Xa]]] [Y [Ym [Yu Ya]]] ? .
   (* should just apply hPropUnivalence at this point, as in Poset_univalence_prelim! *)
-  simpl in p. destruct p; simpl. unfold transportf; simpl.
+  simpl in p. induction p; simpl. unfold transportf; simpl.
   simple refine (make_weq _ _).
   { intros p g x. simpl in x. simpl.
     exact (eqtohomot (eqtohomot (maponpaths act_mult p) g) x). }
@@ -93,12 +93,12 @@ Proof.
     assert (p:Xm=Ym).
     { apply funextsec; intro g. apply funextsec; intro x; simpl in x.
       exact (i g x). }
-    destruct p. clear i. assert (p:Xu=Yu).
+    induction p. clear i. assert (p:Xu=Yu).
     { apply funextsec; intro x; simpl in x. apply setproperty. }
-    destruct p. assert (p:Xa=Ya).
+    induction p. assert (p:Xa=Ya).
     { apply funextsec; intro g. apply funextsec; intro h.
       apply funextsec; intro x. apply setproperty. }
-    destruct p. apply idpath. }
+    now induction p. }
   { intro p. apply isaset_ActionStructure. }
   { intro is. apply proofirrelevance.
     apply impred; intros g.
@@ -174,7 +174,7 @@ Definition composeActionIso {G:gr} {X Y Z:Action G}
            (e:ActionIso X Y) (f:ActionIso Y Z) : ActionIso X Z.
 Proof.
   revert e f; intros [e i] [f j]. exists (weqcomp e f).
-  destruct e as [e e'], f as [f f']; simpl.
+  induction e as [e e'], f as [f f']; simpl.
   apply is_equivariant_comp. exact i. exact j.
 Defined.
 
@@ -198,7 +198,7 @@ Defined.
 
 Definition path_to_ActionIso {G:gr} {X Y:Action G} (e:X = Y) : ActionIso X Y.
 Proof.
-  intros. destruct e. exact (idActionIso X).
+  intros. induction e. exact (idActionIso X).
 Defined.
 
 Definition castAction {G:gr} {X Y:Action G} (e:X = Y) : X → Y.
@@ -222,7 +222,7 @@ Defined.
 Definition Action_univalence_prelim_comp {G:gr} {X Y:Action G} (p:X = Y) :
    Action_univalence_prelim p = path_to_ActionIso p.
 Proof.
-  intros. destruct p. apply (maponpaths (λ x, _ ,, x)). apply funextsec; intro g.
+  intros. induction p. apply (maponpaths (λ x, _ ,, x)). apply funextsec; intro g.
   apply funextsec; intro x. apply setproperty.
 Defined.
 
@@ -673,7 +673,7 @@ Proof.
   { intros.
     exact (weqcomp (weqonpathsincl underlyingAction underlyingAction_incl X Y)
                    Action_univalence). }
-  destruct X as [X x], Y as [Y y]; simpl. intro p. destruct p; simpl.
+  induction X as [X x], Y as [Y y]; simpl. intro p. induction p; simpl.
   exact (idweq _).
 Defined.
 

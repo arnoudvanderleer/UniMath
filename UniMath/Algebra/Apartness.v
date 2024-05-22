@@ -122,7 +122,7 @@ Lemma tightapSet_dec {X : tightapSet} :
   LEM → ∏ x y : X, (x != y <-> x ≠ y).
 Proof.
   intros Hdec x y.
-  destruct (Hdec (x ≠ y)) as [ Hneq | Heq ].
+  induction (Hdec (x ≠ y)) as [ Hneq | Heq ].
   - split.
     + intros _ ; apply Hneq.
     + intros _ Heq.
