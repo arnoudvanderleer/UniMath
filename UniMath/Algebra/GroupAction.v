@@ -167,7 +167,7 @@ Definition underlyingActionMap {G:gr} {X Y:Action G} (e:ActionIso X Y) : ActionM
 
 Definition idActionIso {G:gr} (X:Action G) : ActionIso X X.
 Proof.
-  intros. exists (idweq _). easy.
+  intros. now exists (idweq _).
 Defined.
 
 Definition composeActionIso {G:gr} {X Y Z:Action G}
