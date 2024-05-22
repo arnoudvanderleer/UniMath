@@ -42,7 +42,7 @@ Proof.
   apply hlevelntosn. apply setproperty.
 Qed.
 
-Definition Action (G:gr) := total2 (ActionStructure G).
+Definition Action (G:gr) := ∑ X, ActionStructure G X.
 Definition makeAction {G:gr} (X:hSet) (ac:ActionStructure G X) :=
   X,,ac : Action G.
 
@@ -108,12 +108,12 @@ Defined.
 
 Definition is_equivariant_comp {G:gr} {X Y Z:Action G}
            (p:X->Y) (i:is_equivariant p)
-           (q:Y->Z) (j:is_equivariant q) : is_equivariant (funcomp p q).
+           (q:Y->Z) (j:is_equivariant q) : is_equivariant (q ∘ p).
 Proof.
   intros. intros g x. exact (maponpaths q (i g x) @ j g (p x)).
 Defined.
 
-Definition ActionMap {G:gr} (X Y:Action G) := total2 (@is_equivariant _ X Y).
+Definition ActionMap {G:gr} (X Y:Action G) := ∑ (f : X → Y), is_equivariant f.
 
 Definition underlyingFunction {G:gr} {X Y:Action G} (f:ActionMap X Y) := pr1 f.
 
@@ -125,7 +125,7 @@ Definition equivariance {G:gr} {X Y:Action G} (f:ActionMap X Y) : is_equivariant
 Definition composeActionMap {G:gr} (X Y Z:Action G)
            (p:ActionMap X Y) (q:ActionMap Y Z) : ActionMap X Z.
 Proof.
-  revert p q; intros [p i] [q j]. exists (funcomp p q).
+  revert p q; intros [p i] [q j]. exists (q ∘ p).
   apply is_equivariant_comp. assumption. assumption.
 Defined.
 
@@ -167,7 +167,7 @@ Definition underlyingActionMap {G:gr} {X Y:Action G} (e:ActionIso X Y) : ActionM
 
 Definition idActionIso {G:gr} (X:Action G) : ActionIso X X.
 Proof.
-  intros. exists (idweq _). intros g x. reflexivity.
+  intros. exists (idweq _). easy.
 Defined.
 
 Definition composeActionIso {G:gr} {X Y Z:Action G}
@@ -222,7 +222,7 @@ Defined.
 Definition Action_univalence_prelim_comp {G:gr} {X Y:Action G} (p:X = Y) :
    Action_univalence_prelim p = path_to_ActionIso p.
 Proof.
-  intros. destruct p. apply (maponpaths (tpair _ _)). apply funextsec; intro g.
+  intros. destruct p. apply (maponpaths (λ x, _ ,, x)). apply funextsec; intro g.
   apply funextsec; intro x. apply setproperty.
 Defined.
 
@@ -280,7 +280,7 @@ Proof.
   { apply impred; intro x. apply isapropisweq. }
 Qed.
 
-Definition Torsor (G:gr) := total2 (@is_torsor G).
+Definition Torsor (G:gr) := ∑ (X : Action G), is_torsor X.
 
 #[reversible=no] Coercion underlyingAction {G} (X:Torsor G) := pr1 X : Action G.
 
@@ -300,13 +300,15 @@ Proof.
     - exact (left_mult (grinv G g)).
     - intros x. unfold left_mult.
       intermediate_path ((grinv G g * g)%multmonoid * x).
-      + apply pathsinv0,act_assoc.
+      + symmetry.
+        apply act_assoc.
       + intermediate_path (unel G * x).
         * apply (maponpaths (right_mult x)). apply grlinvax.
         * apply act_unit.
     - intros x. unfold left_mult.
       intermediate_path ((g * grinv G g)%multmonoid * x).
-      + apply pathsinv0,act_assoc.
+      + symmetry.
+        apply act_assoc.
       + intermediate_path (unel G * x).
         * apply (maponpaths (right_mult x)). apply grrinvax.
         * apply act_unit.
@@ -394,12 +396,12 @@ Defined.
 
 Lemma quotient_mult {G} (X:Torsor G) (g:G) (x:X) : (g*x)/x = g.
 Proof.
-  intros. apply pathsinv0. apply quotient_uniqueness. reflexivity.
+  intros. symmetry. now apply quotient_uniqueness.
 Defined.
 
 Lemma quotient_1 {G} (X:Torsor G) (x:X) : x/x = 1%multmonoid.
 Proof.
-  intros. apply pathsinv0. apply quotient_uniqueness. apply act_unit.
+  intros. symmetry. apply quotient_uniqueness. apply act_unit.
 Defined.
 
 Lemma quotient_product {G} (X:Torsor G) (z y x:X) : op (z/y) (y/x) = z/x.
@@ -709,7 +711,7 @@ Defined.
 Lemma iscontr_EG (G:gr) : iscontr (E G).
 Proof.
   intros. exists (pointedTrivialTorsor G). intros [X x].
-  apply pathsinv0. apply (invweq Pointedtorsor_univalence).
+  symmetry. apply (invweq Pointedtorsor_univalence).
   apply pointed_triviality_isomorphism.
 Defined.
 
