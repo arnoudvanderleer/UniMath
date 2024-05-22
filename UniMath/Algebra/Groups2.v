@@ -176,15 +176,13 @@ Proof. apply (invmaponpathsweq (weqrmultingr X c) _ _ e). Defined.
 Lemma grinvunel (X : gr) : (1 : X)^-1 = 1.
 Proof.
   apply (grrcan X 1).
-  rewrite (grlinvax X). rewrite (runax X).
-  apply idpath.
+  rewrite (grlinvax X). now rewrite (runax X).
 Defined.
 
 Lemma grinvinv (X : gr) (a : X) : (a^-1)^-1 = a.
 Proof.
   apply (grlcan X (a^-1)).
-  rewrite (grlinvax X a). rewrite (grrinvax X _).
-  apply idpath.
+  rewrite (grlinvax X a). now rewrite (grrinvax X _).
 Defined.
 
 Lemma grinvmaponpathsinv (X : gr) {a b : X} (e : a^-1 = b^-1) : a = b.
@@ -217,8 +215,7 @@ Proof.
   apply (grrcan Y y1).
   rewrite (assocax Y). rewrite (grlinvax Y). rewrite (runax Y).
   apply (grrcan Y y2).
-  rewrite (grlinvax Y). rewrite (assocax Y). rewrite (grlinvax Y).
-  apply idpath.
+  rewrite (grlinvax Y). rewrite (assocax Y). now rewrite (grlinvax Y).
 Qed.
 
 
@@ -435,8 +432,7 @@ Section GrCosets.
     refine (maponpaths (λ z, z * _) (!grlinvax X x) @ _ @
             maponpaths (λ z, z * _) (grlinvax X x)).
     refine (assocax _ _ _ _ @ _ @ !assocax _ _ _ _).
-    refine (maponpaths _ (pr2 z1) @ _ @ !maponpaths _ (pr2 z2)).
-    reflexivity.
+    exact (maponpaths _ (pr2 z1) @ !maponpaths _ (pr2 z2)).
   Defined.
 
   Local Lemma isaprop_mult_eq_l (x y : X) : isaprop (∑ z : X, z * x = y).
@@ -448,8 +444,7 @@ Section GrCosets.
     refine (maponpaths (λ z, _ * z) (!grrinvax X x) @ _ @
             maponpaths (λ z, _ * z) (grrinvax X x)).
     refine (!assocax _ _ _ _ @ _ @ assocax _ _ _ _).
-    refine (maponpaths (λ z, z * _) (pr2 z1) @ _ @ !maponpaths (λ z, z * _) (pr2 z2)).
-    reflexivity.
+    exact (maponpaths (λ z, z * _) (pr2 z1) @ !maponpaths (λ z, z * _) (pr2 z2)).
   Defined.
 
   Context (Y : subgr X).
@@ -623,13 +618,11 @@ Section NormalSubGroups.
     simpl.
     unfold lcoset_in_rcoset.
     intros g n1.
-    use tpair.
-    - exact (g * pr1 n1 / g ,, normalprop g n1).
-    - simpl.
-      rewrite (assocax _ _ _ g).
-      rewrite (grlinvax X _).
-      rewrite (runax X).
-      reflexivity.
+    exists (g * pr1 n1 / g ,, normalprop g n1).
+    simpl.
+    rewrite (assocax _ _ _ g).
+    rewrite (grlinvax X _).
+    now rewrite (runax X).
   Defined.
 
   Definition normal_rcoset_in_lcoset {X : gr} (N : normalsubgr X) : rcoset_in_lcoset N.
@@ -645,8 +638,7 @@ Section NormalSubGroups.
       rewrite <- (assocax _ g _ _).
       rewrite (grrinvax X).
       rewrite (lunax X).
-      rewrite (grinvinv X).
-      reflexivity.
+      now rewrite (grinvinv X).
   Defined.
 
   Definition normal_lcoset_equal_rcoset {X : gr} (N : normalsubgr X) : lcoset_equal_rcoset N :=
@@ -662,12 +654,11 @@ Section NormalSubGroups.
       simpl.
       unfold in_same_left_coset.
       intros ab_same_lcoset.
-      use tpair.
-      + exact (pr1 ab_same_lcoset).
-      + simpl.
-        rewrite (assocax _ c _ _).
-        apply maponpaths.
-        exact (pr2 ab_same_lcoset).
+      exists (pr1 ab_same_lcoset).
+      simpl.
+      rewrite (assocax _ c _ _).
+      apply maponpaths.
+      exact (pr2 ab_same_lcoset).
     - intros a b c.
       unfold in_same_left_coset_eqrel.
       simpl.
