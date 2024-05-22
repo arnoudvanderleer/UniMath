@@ -97,7 +97,7 @@ Definition monoidfunconstr {X Y : monoid} {f : X → Y} (is : ismonoidfun f) : m
 
 Definition pr1monoidfun (X Y : monoid) : monoidfun X Y → (X → Y) := @pr1 _ _.
 
-Definition monoidfuntobinopfun (X Y : monoid) : monoidfun X Y -> binopfun X Y :=
+Definition monoidfuntobinopfun (X Y : monoid) : monoidfun X Y → binopfun X Y :=
   λ f, make_binopfun (pr1 f) (pr1 (pr2 f)).
 Coercion monoidfuntobinopfun : monoidfun >-> binopfun.
 

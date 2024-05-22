@@ -60,10 +60,10 @@ Definition ac_assoc {G:gr} (X:Action G) := act_assoc _ _ (pr2 X) : ∏ g h x, (o
 Definition right_mult {G:gr} {X:Action G} (x:X) := λ g, g*x.
 Definition left_mult {G:gr} {X:Action G} (g:G) := λ x:X, g*x.
 
-Definition is_equivariant {G:gr} {X Y:Action G} (f:X->Y) : hProp :=
+Definition is_equivariant {G:gr} {X Y:Action G} (f:X → Y) : hProp :=
   (∀ g x, f (g*x) = g*(f x))%logic.
 
-Definition is_equivariant_isaprop {G:gr} {X Y:Action G} (f:X->Y) :
+Definition is_equivariant_isaprop {G:gr} {X Y:Action G} (f:X → Y) :
   isaprop (is_equivariant f).
 Proof.
   apply propproperty.
@@ -107,8 +107,8 @@ Proof.
 Defined.
 
 Definition is_equivariant_comp {G:gr} {X Y Z:Action G}
-           (p:X->Y) (i:is_equivariant p)
-           (q:Y->Z) (j:is_equivariant q) : is_equivariant (q ∘ p).
+           (p:X → Y) (i:is_equivariant p)
+           (q:Y → Z) (j:is_equivariant q) : is_equivariant (q ∘ p).
 Proof.
   intros. intros g x. exact (maponpaths q (i g x) @ j g (p x)).
 Defined.
