@@ -92,9 +92,8 @@ Section BinaryOperations.
   Proof.
     generalize x; clear x.
     apply (list_ind (λ xs, ∏ x : X, iterop_list (x :: xs) = op x (iterop_list xs))).
-    { intro x. simpl. apply pathsinv0,runax. }
-    intros y rest IH x.
-    reflexivity.
+    { intro x. simpl. symmetry. apply runax. }
+    easy.
   Defined.
 
   Definition iterop_fun_step' (lunax : islunit op unel) {m} (xs:stn m → X) (x:X) :
@@ -103,7 +102,7 @@ Section BinaryOperations.
     unfold iterop_fun at 1.
     simpl.
     induction m as [|m _].
-    - simpl. rewrite append_vec_compute_2. apply pathsinv0. apply lunax.
+    - simpl. rewrite append_vec_compute_2. exact (!lunax _).
     - simpl. rewrite append_vec_compute_2.
       apply (maponpaths (λ y, op y x)). apply maponpaths.
       apply append_and_drop_fun.
@@ -116,8 +115,8 @@ Section BinaryOperations.
     unfold iterop_fun at 1.
     simpl.
     induction m as [|m _].
-    - simpl. apply pathsinv0, lunax.
-    - simpl. reflexivity.
+    - exact (!lunax _).
+    - easy.
   Defined.
 
   Definition iterop_fun_append (lunax : islunit op unel) {m} (x:stn m → X) (y:X) :
@@ -128,8 +127,7 @@ Section BinaryOperations.
     apply (maponpaths (λ x, op (iterop_fun x) y)).
     apply funextfun; intro i.
     simpl.
-    rewrite append_vec_compute_1.
-    reflexivity.
+    now rewrite append_vec_compute_1.
   Defined.
 
 End BinaryOperations.
@@ -168,7 +166,7 @@ Section Monoids.
     iterop_seq_mon (S n,,x) = iterop_seq_mon (n,,x ∘ dni lastelement) * x lastelement.
   Proof.
     intros. induction n as [|n _].
-    - cbn. apply pathsinv0, lunax.
+    - exact (!lunax _ _).
     - reflexivity.
   Defined.
 
@@ -205,7 +203,7 @@ Section Monoids.
   Proof.
     intros.
     induction n as [|n _].
-    - simpl. apply pathsinv0,lunax.
+    - exact (!lunax _ _).
     - reflexivity.
   Defined.
 
@@ -246,7 +244,7 @@ Lemma iterop_list_mon_concatenate {M : monoid} (l s : list M) :
   iterop_list_mon (Lists.concatenate l s) = iterop_list_mon l * iterop_list_mon s.
 Proof.
   revert l. apply list_ind.
-  - apply pathsinv0, lunax.
+  - apply (!lunax _ _).
   - intros x xs J. rewrite Lists.concatenateStep.
     unfold iterop_list_mon.
     rewrite 2 (iterop_list_step _ _ (runax M)).
@@ -259,7 +257,7 @@ Proof.
   (* this proof comes from the Associativity theorem, Bourbaki, Algebra, § 1.3, Theorem 1, page 4. *)
   unfold isAssociative_list.
   apply list_ind.
-  - simpl. reflexivity.
+  - reflexivity.
   - intros x xs I. simpl in I.
     rewrite Lists.flattenStep. refine (iterop_list_mon_concatenate _ _ @ _).
     unfold iterop_list_list. rewrite mapStep.
@@ -301,17 +299,17 @@ Corollary associativityOfProducts' {M:monoid} {n} (f:stn n → nat) (x:stn (stns
   iterop_seq_mon (stnsum f,,x) = iterop_seq_seq_mon (partition f x).
 Proof.
   intros. refine (_ @ associativityOfProducts_seq M (partition f x)).
-  assert (L := flatten_partition f x). apply pathsinv0. exact (iterop_seq_mon_homot _ _ L).
+  assert (L := flatten_partition f x). exact (!iterop_seq_mon_homot _ _ L).
 Defined.
 
 (** generalized commutativity *)
 
 Local Notation "s □ x" := (append s x) (at level 64, left associativity).
 
-Ltac change_lhs a := match goal with |- @paths ?T ?x ?y
-                                     => change (@paths T x y) with (@paths T a y) end.
-Ltac change_rhs a := match goal with |- @paths ?T ?x ?y
-                                     => change (@paths T x y) with (@paths T x a) end.
+Ltac change_lhs a := match goal with |- ?x = ?y
+                                     => change (x = y) with (a = y) end.
+Ltac change_rhs a := match goal with |- ?x = ?y
+                                     => change (x = y) with (x = a) end.
 
 Local Open Scope stn.
 
@@ -332,8 +330,7 @@ Proof.
   intermediate_path (iterop_seq_mon (stnsum f,, x')).
   { induction B. apply iterop_seq_mon_homot. intros i. unfold x'.
     simpl. apply maponpaths.
-    apply ( invmaponpathsincl _ ( isinclstntonat _ ) _ _).
-    reflexivity. }
+    now apply ( invmaponpathsincl _ ( isinclstntonat _ ) _ _). }
   unfold iterop_seq_mon. unfold iterop_seq.
   refine (associativityOfProducts' f x' @ _).
   unfold partition.
@@ -382,16 +379,14 @@ Proof.
         match goal with |- context [ match ?x with _ => _ end ]
                         => induction x as [c|c] end.
         { apply fromempty. exact (negnatlthplusnmn j i c). }
-        { change_rhs (1 + (j + i)). rewrite <- natplusassoc. rewrite (natpluscomm j 1).
-          reflexivity. } } }
+        { change_rhs (1 + (j + i)). rewrite <- natplusassoc. now rewrite (natpluscomm j 1). } } }
     unfold x'; simpl. apply maponpaths.
     apply subtypePath_prop. change (j+0 = j). apply natplusr0. }
   { apply (maponpaths (λ k, k * _)). induction (!B').
     change_rhs (iterop_seq_mon (n,, x ∘ dni (j,, jlt))).
     apply iterop_seq_mon_homot; intros i.
     unfold x''; simpl. apply maponpaths.
-    apply ( invmaponpathsincl _ ( isinclstntonat _ ) _ _).
-    reflexivity. }
+    now apply ( invmaponpathsincl _ ( isinclstntonat _ ) _ _). }
 Qed.
 
 Theorem commutativityOfProducts {M:abmonoid} {n} (x:stn n->M) (f:stn n ≃ stn n) :
@@ -407,7 +402,7 @@ Proof.
     apply (maponpaths (λ k, k*_)).
     set (f' := weqoncompl_ne f i (stnneq i) (stnneq i') : stn_compl i ≃ stn_compl i').
     set (g := weqdnicompl i); set (g' := weqdnicompl i').
-    apply pathsinv0.
+    symmetry.
     set (h := (invweq g' ∘ f' ∘ g)%weq).
     assert (L : x ∘ f ∘ dni lastelement ~ x ∘ dni i' ∘ h).
     { intro j. unfold funcomp. apply maponpaths.
@@ -448,7 +443,7 @@ Section NatCard.
     { exact (weqtotal2asstol (stn ∘ m) (stn ∘ k)). }
     intermediate_weq (∑ ij, stn (k (lexicalEnumeration m ij))).
     { apply (weqbandf (inverse_lexicalEnumeration m)). intro ij. apply eqweqmap.
-      apply (maponpaths stn), (maponpaths k). apply pathsinv0, homotinvweqweq. }
+      apply (maponpaths stn), (maponpaths k). exact (!homotinvweqweq _ _). }
     apply inverse_lexicalEnumeration.
   Defined.
 
@@ -469,7 +464,7 @@ Section NatCard.
 
   Theorem associativityNat : isAssociative_fun 0 add.
   Proof.
-    intros n m x. unfold iterop_fun_fun. apply pathsinv0. rewrite 2 iterop_fun_nat.
+    intros n m x. unfold iterop_fun_fun. symmetry. rewrite 2 iterop_fun_nat.
     intermediate_path (stnsum (λ i : stn n, stnsum (x i))).
     - apply maponpaths. apply funextfun; intro. apply iterop_fun_nat.
     - now apply nat_plus_associativity'.
