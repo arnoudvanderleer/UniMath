@@ -286,8 +286,7 @@ Section Weighting.
   Proof.
     refine (_ @ !matrix_mult_vectors _ _).
     do 2 apply maponpaths.
-    apply pathsinv0.
-    refine (pointwise_lunit 1%rig _ vec).
+    refine (!pointwise_lunit 1%rig _ vec).
     apply riglunax2.
   Defined.
 
@@ -296,8 +295,7 @@ Section Weighting.
   Proof.
     refine (_ @ !matrix_mult_vectors _ _).
     do 2 apply maponpaths.
-    apply pathsinv0.
-    refine (pointwise_runit 1%rig _ vec).
+    refine (!pointwise_runit 1%rig _ vec).
     apply rigrunax2.
   Defined.
 
@@ -320,7 +318,8 @@ Section Weighting.
     - refine (!maponpaths (λ z, z ** _) (pr2 cowei) @ _).
       refine (assocax _ _ _ _ _ _ _ @ _).
       refine (maponpaths (λ z, _ ** z) (pr2 wei) @ _).
-      apply pathsinv0, sum_entries2 .
+      symmetry.
+      apply sum_entries2 .
   Defined.
 
   (** Definition 1.1.3 in arXiv:1012.5857v3 *)
