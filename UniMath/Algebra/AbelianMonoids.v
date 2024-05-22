@@ -326,9 +326,8 @@ Proof.
     rewrite (assoc (c + b) (x2 + x1) f). rewrite (assoc (c + f) (x2 + x1) b).
     rewrite (comm (x2 + x1) f). rewrite (comm (x2 + x1) b).
     induction (assoc (c + b) f (x2 + x1)). induction (assoc (c + f) b (x2 + x1)).
-    rewrite (assoc c b f). rewrite (assoc c f b). rewrite (comm b f).
-    apply idpath.
-  - intro xa. simpl. apply hinhpr. exists (pr2 xa). apply idpath.
+    rewrite (assoc c b f). rewrite (assoc c f b). now rewrite (comm b f).
+  - intro xa. simpl. apply hinhpr. now exists (pr2 xa).
   - intros xa yb. unfold R. simpl. apply hinhfun. intro eq1.
     induction eq1 as [ x1 eq1 ]. exists x1. induction x1 as [ x1 isx1 ].
     simpl. apply (!eq1).
@@ -356,8 +355,7 @@ Proof.
   rewrite (rer a c b' d'). rewrite (rer b d a' c').
   rewrite (rer (a + b') (c + d') a1 a2).
   rewrite (rer (b + a') (d + c') a1 a2).
-  induction eq1. induction eq2.
-  apply idpath.
+  induction eq1. now induction eq2.
 Qed.
 
 Definition abmonoidfracop (X : abmonoid) (A : submonoid X) :
@@ -406,8 +404,7 @@ Proof.
       set (e := commax X (pr1 a) (pr1 a')).
       simpl in e. induction e.
       set (e := commax X (pr1 a + pr1 a') (pr1 xb)).
-      simpl in e. induction e.
-      apply idpath.
+      simpl in e. now induction e.
     }
     assert (efg : ∏ x0, f (g x0) = x0).
     {
@@ -425,8 +422,7 @@ Proof.
       set (e := commax X (pr1 a') (pr1 a)).
       simpl in e. induction e.
       set (e := commax X (pr1 a' + pr1 a) (pr1 xb)).
-      simpl in e. induction e.
-      apply idpath.
+      simpl in e. now induction e.
     }
     apply (isweq_iso _ _ egf efg).
   }
@@ -448,8 +444,8 @@ Proof.
           = setquotpr (eqrelabmonoidfrac X A) (x1 + x2 ,, unel A + unel A)).
   apply (maponpaths (setquotpr _)).
   apply (@pathsdirprod X A).
-  apply idpath.
-  exact (!lunax A 0).
+  - apply idpath.
+  - exact (!lunax A 0).
 Defined.
 
 Lemma isunitalfuntoabmonoidfrac (X : abmonoid) (A : submonoid X) :
@@ -608,7 +604,7 @@ Proof.
     rewrite (assoc x2 a1 _). rewrite (assoc x2 a3 _).
     induction (assoc a1 c1 (c2 + a3)). induction (assoc a3 c2 (a1 + c1)).
     induction (comm (c2 + a3) (a1 + c1)).
-    rewrite (comm a3 c2). apply idpath.
+    now rewrite (comm a3 c2).
   }
   induction e. apply (isl _ _ _ ll1 ll2).
 Qed.
@@ -846,8 +842,8 @@ Lemma isantisymmnegabmonoidfracrel (X : abmonoid) (A : subabmonoid X) {L : hrel 
       (is : ispartbinophrel A L) (isl : isantisymmneg L) : isantisymmneg (abmonoidfracrel X A is).
 Proof.
   intros.
-  assert (int : ∏ x1 x2, isaprop (neg (abmonoidfracrel X A is x1 x2) →
-                                  neg (abmonoidfracrel X A is x2 x1) →
+  assert (int : ∏ x1 x2, isaprop (¬ abmonoidfracrel X A is x1 x2 →
+                                  ¬ abmonoidfracrel X A is x2 x1 →
                                   x1 = x2)).
   {
     intros x1 x2.
@@ -859,9 +855,9 @@ Proof.
   apply (setquotuniv2prop _ (λ x1 x2, make_hProp _ (int x1 x2))).
   intros xa1 xa2. intros r r'. apply (weqpathsinsetquot _).
   generalize r r'. clear r r'.
-  change (neg (abmonoidfracrelint X A L xa1 xa2) →
-          neg (abmonoidfracrelint X A L xa2 xa1) →
-          (eqrelabmonoidfrac X A xa1 xa2)).
+  change (¬ abmonoidfracrelint X A L xa1 xa2 →
+          ¬ abmonoidfracrelint X A L xa2 xa1 →
+          eqrelabmonoidfrac X A xa1 xa2).
   intros nr12 nr21.
   set (nr12' := neghexisttoforallneg _ nr12 (unel A)).
   set (nr21' := neghexisttoforallneg _ nr21 (unel A)).
@@ -1051,7 +1047,7 @@ Proof.
   intros xa1 xa2.
   set (x1 := pr1 xa1). set (a1 := pr1 (pr2 xa1)).
   set (x2 := pr1 xa2). set (a2 := pr1 (pr2 xa2)).
-  assert (int : coprod (L (x1 + a2) (x2 + a1)) (neg (L (x1 + a2) (x2 + a1)))) by apply (isl _ _).
+  assert (int : L (x1 + a2) (x2 + a1) ⨿ ¬ L (x1 + a2) (x2 + a1)) by apply (isl _ _).
   induction int as [ l | nl ].
   - apply ii1. unfold abmonoidfracrelint.
     apply hinhpr. exists (unel A).
