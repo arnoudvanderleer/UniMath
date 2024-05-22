@@ -76,8 +76,7 @@ Proof.
   rewrite <- (assocax _ _ x y).
   rewrite (pr2 x').
   rewrite (lunax _ y).
-  rewrite (pr2 y').
-  apply idpath.
+  now rewrite (pr2 y').
 Defined.
 
 Definition lcanfromlinv (X : monoid) (a b c : X) (c' : linvpair X c) (e : c * a = c * b) :
@@ -105,8 +104,7 @@ Proof.
   rewrite <- (assocax _ y _ _).
   rewrite (pr2 y').
   rewrite (lunax _ _).
-  rewrite (pr2 x').
-  apply idpath.
+  now rewrite (pr2 x').
 Defined.
 
 Definition rcanfromrinv (X : monoid) (a b c : X) (c' : rinvpair X c) (e : a * c = b * c) :
@@ -638,8 +636,7 @@ Proof.
   simpl in e'. generalize e'.
   apply negf. intro e. apply hinhpr. exists (unel S).
   change (x * 1 * 1 = 0 * pr1 aa * 1). rewrite e.
-  repeat rewrite (ringmult0x X _).
-  apply idpath.
+  now repeat rewrite (ringmult0x X _).
 Qed.
 
 Lemma zeroincommringfrac (X : intdom) (S : @submonoid (ringmultmonoid X))
@@ -693,8 +690,7 @@ Proof.
     exists ((1 : X) ,, nonzeroax X).
     set (x := (pr1 xa) : X). set (aa := pr2 xa). set (a := (pr1 aa) : X).
     simpl. change (a * x * 1  * 1 = 1 * (x * a) * 1).
-    rewrite (ringcomm2 X a x). repeat rewrite (ringrunax2 X _). rewrite (ringlunax2 X _).
-    apply idpath.
+    rewrite (ringcomm2 X a x). repeat rewrite (ringrunax2 X _). now rewrite (ringlunax2 X _).
 Qed.
 
 Lemma isrinvinfldfrac (X : intdom) (is : isdeceq X) (x : commringfrac X (intdomnonzerosubmonoid X))
@@ -728,7 +724,7 @@ Definition isbinop1funtofldfrac (X : intdom) (is : isdeceq X) :
 
 Lemma isunital1funtofldfrac (X : intdom) (is : isdeceq X) : (tofldfrac X is 0) = 0.
 Proof.
-  intros. apply idpath.
+  easy.
 Defined.
 
 Definition isaddmonoidfuntofldfrac (X : intdom) (is : isdeceq X) :
@@ -751,7 +747,7 @@ Qed.
 
 Lemma isunital2funtofldfrac (X : intdom) (is : isdeceq X) : (tofldfrac X is 1) = 1.
 Proof.
-  intros. apply idpath.
+  easy.
 Qed.
 
 Definition ismultmonoidfuntofldfrac (X : intdom) (is : isdeceq X) :
@@ -869,10 +865,9 @@ Proof.
     exists ((1 : X) ,, nonzeroax X). simpl.
     unfold weqfldfracgtint_f.
     induction (nc (pr1 (pr2 xa)) 0 (pr2 (pr2 xa))) as [ g' | l' ].
-    - simpl. apply idpath.
+    - apply idpath.
     - simpl.
-      rewrite (ringrmultminus X _ _). rewrite (ringlmultminus X _ _).
-      apply idpath.
+      rewrite (ringrmultminus X _ _). now rewrite (ringlmultminus X _ _).
   }
   assert (efg : ∏ a, f (g a) = a).
   {
@@ -887,10 +882,9 @@ Proof.
     set (int := nc (pr1 (pr2 xa)) 0 (rtoneq ir (pr2 (pr2 xa))) ).
     change (nc (pr1 (pr2 xa)) 0 (rtoneq ir (pr2 (pr2 xa)))) with int.
     induction int as [ g' | l' ].
-    - simpl. apply idpath.
+    - apply idpath.
     - simpl.
-      rewrite (ringrmultminus X _ _). rewrite (ringlmultminus X _ _).
-      apply idpath.
+      rewrite (ringrmultminus X _ _). now rewrite (ringlmultminus X _ _).
   }
   apply (isweq_iso _ _ egf efg).
 Defined.
@@ -931,9 +925,8 @@ Proof.
       unfold g0. unfold weqfldfracgtint_b. simpl.
       apply pathsdirprod.
       * apply idpath.
-      * apply (invmaponpathsincl (@pr1 _ _) (isinclpr1 _ (λ a, (isapropneg (a = 0))))
+      * now apply (invmaponpathsincl (@pr1 _ _) (isinclpr1 _ (λ a, (isapropneg (a = 0))))
                                  (1 ,, rtoneq ir is2) (1 ,, nonzeroax X)).
-        simpl. apply idpath.
   - split.
     + unfold isbinopfun.
       change (∏ x x' : commringfrac X (ringpossubmonoid X is1 is2),
@@ -965,9 +958,8 @@ Proof.
       unfold g0. unfold weqfldfracgtint_b. simpl.
       apply pathsdirprod.
       * apply idpath.
-      * apply (invmaponpathsincl (@pr1 _ _) (isinclpr1 _ (λ a, (isapropneg (a = 0))))
+      * now apply (invmaponpathsincl (@pr1 _ _) (isinclpr1 _ (λ a, (isapropneg (a = 0))))
                                  (1 ,, rtoneq ir is2) (1 ,, nonzeroax X)).
-        simpl. apply idpath.
 Qed.
 
 Lemma isringfunweqfldfracgt_f (X : intdom) (is : isdeceq X) {R : hrel X} (is0 : @isbinophrel X R)
@@ -1102,8 +1094,7 @@ Proof.
     induction (nc 1 0 (nonzeroax X) ) as [ l' | nl ].
     - apply pathsdirprod.
       + apply idpath.
-      + apply (invmaponpathsincl _ (isinclpr1 _ (λ a, (pr2 (L a 0))))).
-        apply idpath.
+      + now apply (invmaponpathsincl _ (isinclpr1 _ (λ a, (pr2 (L a 0))))).
     - induction (isa _ _ is2 nl).
   }
   assert (int' := int x1 x2).
