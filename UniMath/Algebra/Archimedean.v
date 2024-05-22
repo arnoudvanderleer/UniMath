@@ -63,11 +63,9 @@ Lemma natmult_plus :
     natmult (n + m) x = (natmult n x + natmult m x)%addmonoid.
 Proof.
   induction n as [|n IHn] ; intros m x.
-  - rewrite lunax.
-    reflexivity.
+  - now rewrite lunax.
   - change (S n + m)%nat with (S (n + m))%nat.
-    rewrite !natmultS, IHn, assocax.
-    reflexivity.
+    now rewrite !natmultS, IHn, assocax.
 Qed.
 Lemma nattorig_plus :
   ∏ {X : rig} (n m : nat),
@@ -85,11 +83,9 @@ Proof.
   - reflexivity.
   - simpl (_ * _)%nat.
     assert (H : S n = (n + 1)%nat).
-    { rewrite <- plus_n_Sm, natplusr0.
-      reflexivity. }
+    { now rewrite <- plus_n_Sm, natplusr0. }
     rewrite H ; clear H.
-    rewrite !natmult_plus, IHn.
-    reflexivity.
+    now rewrite !natmult_plus, IHn.
 Qed.
 Lemma nattorig_mult :
   ∏ {X : rig} (n m : nat),
@@ -97,8 +93,7 @@ Lemma nattorig_mult :
 Proof.
   intros X n m.
   unfold nattorig.
-  rewrite (natmult_mult (X := rigaddabmonoid X)), <- nattorig_natmult.
-  reflexivity.
+  now rewrite (natmult_mult (X := rigaddabmonoid X)), <- nattorig_natmult.
 Qed.
 
 Lemma natmult_op {X : monoid} :
@@ -108,18 +103,14 @@ Lemma natmult_op {X : monoid} :
 Proof.
   intros.
   induction n as [|n IHn].
-  - rewrite lunax.
-    reflexivity.
+  - now rewrite lunax.
   - rewrite natmultS, assocax, IHn, <- (assocax _ y).
     assert (X1 : (y + natmult n x = natmult n x + y)%addmonoid).
     { clear IHn.
       induction n as [|n IHn].
-      - rewrite lunax, runax.
-        reflexivity.
-      - rewrite !natmultS, <- assocax, <- X0, !assocax, IHn.
-        reflexivity. }
-    rewrite X1, assocax, <- natmultS, <- assocax, <- natmultS.
-    reflexivity.
+      - now rewrite lunax, runax.
+      - now rewrite !natmultS, <- assocax, <- X0, !assocax, IHn. }
+    now rewrite X1, assocax, <- natmultS, <- assocax, <- natmultS.
 Qed.
 
 Lemma natmult_binophrel {X : monoid} (R : hrel X) :
@@ -281,9 +272,8 @@ Proof.
   assert (H0 : ∏ n y, natmult (X := abgrdiff X) n (setquotpr (binopeqrelabgrdiff X) y) = setquotpr (binopeqrelabgrdiff X) (natmult n (pr1 y) ,, natmult n (pr2 y))).
   { intros n y.
     induction n as [|n IHn].
-    reflexivity.
-    rewrite !natmultS, IHn.
-    reflexivity. }
+    - reflexivity.
+    - now rewrite !natmultS, IHn. }
   rewrite !H0.
   revert Hn1 Hn2.
   apply hinhfun2 ; simpl.
@@ -291,7 +281,8 @@ Proof.
   exists (c1 * c2)%multmonoid.
   eapply Hr'.
   assert (X0 : (natmult (n1 + n2) (pr1 y1) * pr1 x * natmult (n1 + n2) (pr2 y2) * (c1 * c2) = (natmult n1 (pr1 y1 * pr2 y2) * pr1 x * c1) * (natmult n2 (pr1 y1 * pr2 y2) * c2))%multmonoid).
-  { rewrite !natmult_op, !natmult_plus, !assocax.
+  { rewrite !(natmult_op _ _ _ (commax X _ _)).
+    rewrite !natmult_plus, !assocax.
     apply maponpaths.
     rewrite commax, !assocax.
     rewrite commax, !assocax.
@@ -303,26 +294,21 @@ Proof.
     apply maponpaths.
     rewrite commax, !assocax.
     apply maponpaths.
-    rewrite commax, !assocax.
-    reflexivity.
-    apply commax.
-    apply commax. }
+    now rewrite commax, !assocax. }
   simpl in X0 |- *.
   rewrite X0 ; clear X0.
   apply (pr2 Hr).
   apply Hc1.
   assert (X0 : (natmult (n1 + n2) (pr1 y2) * (natmult (n1 + n2) (pr2 y1) * pr2 x) * (c1 * c2) = (natmult n1 (pr1 y2 * pr2 y1) * c1) * (natmult n2 (pr1 y2 * pr2 y1) * pr2 x * c2))%multmonoid).
-  { rewrite !natmult_op, !natmult_plus, !assocax.
+  { rewrite !(natmult_op _ _ _ (commax X _ _)).
+    rewrite !natmult_plus, !assocax.
     apply maponpaths.
     rewrite commax, !assocax.
     apply maponpaths.
     rewrite commax, !assocax.
     rewrite commax, !assocax.
     apply maponpaths.
-    rewrite commax, !assocax.
-    reflexivity.
-    apply commax.
-    apply commax. }
+    now rewrite commax, !assocax. }
   simpl in X0 |- *.
   rewrite X0 ; clear X0.
   apply (pr1 Hr).
@@ -683,8 +669,7 @@ Proof.
     nattorig n * pr2 x))%ring).
     { clear.
       induction n as [|n IHn].
-      - rewrite !rigmult0x, ringmult0x.
-        reflexivity.
+      - now rewrite !rigmult0x, ringmult0x.
       - unfold nattoring.
         rewrite !nattorigS, !rigrdistr, ringrdistr, !riglunax2, ringlunax2.
         simpl.
@@ -738,8 +723,7 @@ Proof.
       rewrite rigcomm1, !rigassoc1.
       rewrite rigcomm1, !rigassoc1.
       apply maponpaths.
-      rewrite rigcomm1, !rigassoc1.
-      reflexivity. }
+      now rewrite rigcomm1, !rigassoc1. }
     simpl in X0 |- * ; rewrite X0 ; clear X0.
     apply (pr2 Hadd).
     exact Hc1.
@@ -757,16 +741,14 @@ Proof.
   - apply (iscompsetquotpr (eqrelcommringfrac X S)).
     apply hinhpr ; simpl.
     exists (pr2 x).
-    rewrite !(ringmult0x X).
-    reflexivity.
+    now rewrite !(ringmult0x X).
   - rewrite !natmultS, IHn.
     apply (iscompsetquotpr (eqrelcommringfrac X S)).
     apply hinhpr ; simpl.
     exists (pr2 x) ; simpl.
     rewrite <- (ringldistr X).
     rewrite (ringcomm2 X (pr1 (pr2 x))).
-    rewrite !(ringassoc2 X).
-    reflexivity.
+    now rewrite !(ringassoc2 X).
 Qed.
 
 Lemma isarchcommringfrac {X : commring} {S : subabmonoid _} (R : hrel X) Hop1 Hop2 Hs:
