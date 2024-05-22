@@ -503,7 +503,7 @@ Proof.
   apply (isapropsubtype (λ i, make_hProp _ (int i))).
   intros inv1 inv2. simpl. intro ax1. intro ax2. apply funextfun. intro x0.
   apply (invmaponpathsweq (make_weq _ (isweqrmultingr_is (is ,, is0) x0))).
-  simpl. rewrite (pr1 ax1 x0). rewrite (pr1 ax2 x0). apply idpath.
+  simpl. rewrite (pr1 ax1 x0). now rewrite (pr1 ax2 x0).
 Defined.
 
 Lemma isapropisgrop {X : hSet} (opp : binop X) : isaprop (isgrop opp).
@@ -555,7 +555,7 @@ Proof.
     induction s1 as [ x' eq ]. apply hinhpr. exists x'. simpl.
     apply (invmaponpathsincl _ (l1 x')).
     rewrite (assoc x' x x'). rewrite eq. rewrite (pr1 unaxs0 x').
-    unfold unel_is. simpl. rewrite (pr2 unaxs0 x'). apply idpath.
+    unfold unel_is. simpl. now rewrite (pr2 unaxs0 x').
   }
   assert (l1' : ∏ x' : X, isincl (λ x0 : X, opp x' x0)).
   {
@@ -570,14 +570,14 @@ Proof.
         induction int1 as [ invx' eq ]. rewrite <- eq.
         induction (!assoc invx' x' a).
         induction (!assoc invx' x' b).
-        rewrite e. apply idpath.
+        now rewrite e.
     - apply (is' x').
   }
   assert (int : ∏ x : X, isaprop (∑ (x0 : X), opp x0 x = un0)%logic).
   {
     intro x. apply isapropsubtype. intros x1 x2. intros eq1 eq2.
     apply (invmaponpathsincl _ (l1 x)).
-    rewrite eq1. rewrite eq2. apply idpath.
+    rewrite eq1. now rewrite eq2.
   }
   simpl.
   set (linv0 := λ x : X, hinhunivcor1 (make_hProp _ (int x)) (is' x)).
@@ -587,7 +587,7 @@ Proof.
   apply (invmaponpathsincl _ (l1 x)).
   rewrite (assoc x (inv0 x) x). change (inv0 x) with (pr1 (linv0 x)).
   rewrite (pr2 (linv0 x)). unfold unel_is. simpl.
-  rewrite (pr1 unaxs0 x). rewrite (pr2 unaxs0 x). apply idpath.
+  rewrite (pr1 unaxs0 x). now rewrite (pr2 unaxs0 x).
 Defined.
 
 (** *)
@@ -628,7 +628,7 @@ Proof.
   simpl in *.
   induction (assoc (opp a b) c d). induction (assoc (opp a c) b d).
   induction (!assoc a b c). induction (!assoc a c b).
-  induction (comm b c). apply idpath.
+  now induction (comm b c).
 Defined.
 
 (** *)
@@ -906,7 +906,7 @@ Proof.
   induction is1 as [ [ assoc1 [ un1 [ lun1 run1 ] ] ] [ inv0 [ linv0 rinv0 ] ] ].
   unfold unel_is. simpl in *.
   rewrite (lun1 (opp2 x un2)). induction (ldistr0 un1 un2 x).
-  rewrite (run2 x). rewrite (lun1 un2). rewrite (run2 x). apply idpath.
+  rewrite (run2 x). rewrite (lun1 un2). now rewrite (run2 x).
 Defined.
 Opaque multx0_is_l.
 
@@ -920,7 +920,7 @@ Proof.
   induction is1 as [ [ assoc1 [ un1 [ lun1 run1 ] ] ] [ inv0 [ linv0 rinv0 ] ] ].
   unfold unel_is. simpl in *.
   rewrite (lun1 (opp2 un2 x)). induction (rdistr0 un1 un2 x).
-  rewrite (lun2 x). rewrite (lun1 un2). rewrite (lun2 x). apply idpath.
+  rewrite (lun2 x). rewrite (lun1 un2). now rewrite (lun2 x).
 Defined.
 Opaque mult0x_is_l.
 
@@ -960,7 +960,7 @@ Lemma isminusmultwithminus1_is_l {X : UU} {opp1 opp2 : binop X} (is1 : isgrop op
 Proof.
   apply (invmaponpathsweq (make_weq _ (isweqrmultingr_is is1 x))).
   simpl. rewrite (islinvmultwithminus1_is_l is1 is2 is12 x).
-  unfold grinv_is. rewrite (grlinvax_is is1 x). apply idpath.
+  unfold grinv_is. now rewrite (grlinvax_is is1 x).
 Defined.
 Opaque isminusmultwithminus1_is_l.
 
@@ -980,8 +980,7 @@ Proof.
       rewrite (assoc1 y x _).
       induction (!isrinvmultwithminus1_is_l is1 is2 is12 x).
       unfold unel_is. rewrite (runax_is (pr1 is1) y).
-      rewrite (isrinvmultwithminus1_is_l is1 is2 is12 y).
-      apply idpath.
+      now rewrite (isrinvmultwithminus1_is_l is1 is2 is12 y).
     + apply is2.
   - apply is12.
 Defined.
@@ -1245,8 +1244,8 @@ Proof.
   split.
   - use tpair.
     + split.
-      apply isabmonoidop_weq_fwd, (pr1 (pr1 (pr1 is))).
-      apply ismonoidop_weq_fwd, (pr2 (pr1 (pr1 is))).
+      * apply isabmonoidop_weq_fwd, (pr1 (pr1 (pr1 is))).
+      * apply ismonoidop_weq_fwd, (pr2 (pr1 (pr1 is))).
     + split ; simpl.
       * intros x.
         apply (maponpaths H).
@@ -1393,8 +1392,8 @@ Lemma isgrop_weq_bck {X Y : UU} (H : X ≃ Y) (opp : binop Y) :
 Proof.
   intro is.
   use tpair.
-  apply ismonoidop_weq_bck, (pr1 is).
-  apply invstruct_weq_bck, (pr2 is).
+  - apply ismonoidop_weq_bck, (pr1 is).
+  - apply invstruct_weq_bck, (pr2 is).
 Defined.
 
 Lemma iscomm_weq_bck {X Y : UU} (H : X ≃ Y) (opp : binop Y) :
@@ -1475,8 +1474,8 @@ Proof.
   split.
   - use tpair.
     + split.
-      apply isabmonoidop_weq_bck, (pr1 (pr1 (pr1 is))).
-      apply ismonoidop_weq_bck, (pr2 (pr1 (pr1 is))).
+      * apply isabmonoidop_weq_bck, (pr1 (pr1 (pr1 is))).
+      * apply ismonoidop_weq_bck, (pr2 (pr1 (pr1 is))).
     + split ; simpl.
       * intros x.
         apply (maponpaths (invmap H)).
@@ -1604,8 +1603,7 @@ Lemma isbinopfuncomp {X Y Z : setwithbinop} (f : binopfun X Y) (g : binopfun Y Z
 Proof.
   set (axf := binopfunisbinopfun f). set (axg := binopfunisbinopfun g).
   intros a b. simpl.
-  rewrite (axf a b). rewrite (axg (f a) (f b)).
-  apply idpath.
+  rewrite (axf a b). now rewrite (axg (f a) (f b)).
 Qed.
 
 Definition binopfuncomp {X Y Z : setwithbinop} (f : binopfun X Y) (g : binopfun Y Z) :
@@ -1657,8 +1655,7 @@ Proof.
   rewrite (homotweqinvweq (pr1 f) (op a b)).
   rewrite (axf (invmap (pr1 f) a) (invmap (pr1 f) b)).
   rewrite (homotweqinvweq (pr1 f) a).
-  rewrite (homotweqinvweq (pr1 f) b).
-  apply idpath.
+  now rewrite (homotweqinvweq (pr1 f) b).
 Qed.
 
 Definition invbinopiso {X Y : setwithbinop} (f : binopiso X Y) :
@@ -2226,9 +2223,9 @@ Proof.
     + intros x x'. exact (make_hProp (x = x') (pr2 (pr1 X) _ _)).
     + apply iseqrelconstr.
       * intros x1 x2 x3 r1 r2. exact (r1 @ r2).
-      * intro x. reflexivity.
+      * easy.
       * intros x x' r. exact (!r).
-  - apply make_isbinophrel; simpl; intros x1 x2 x3 r; rewrite r; reflexivity.
+  - now apply make_isbinophrel; simpl; intros x1 x2 x3 r; rewrite r.
 Defined.
 
 Definition binopeqrel_of_binopfun {X Y : setwithbinop} (f : binopfun X Y) : binopeqrel X :=
@@ -2505,11 +2502,9 @@ Proof.
   set (ax1g := pr1 (pr2 g)). set (ax2g := pr2 (pr2 g)).
   split.
   - intros a b. simpl.
-    rewrite (ax1f a b). rewrite (ax1g (pr1 f a) (pr1 f b)).
-    apply idpath.
+    rewrite (ax1f a b). now rewrite (ax1g (pr1 f a) (pr1 f b)).
   - intros a b. simpl.
-    rewrite (ax2f a b). rewrite (ax2g (pr1 f a) (pr1 f b)).
-    apply idpath.
+    rewrite (ax2f a b). now rewrite (ax2g (pr1 f a) (pr1 f b)).
 Qed.
 
 Definition twobinopfuncomp {X Y Z : setwith2binop} (f : twobinopfun X Y) (g : twobinopfun Y Z) :
@@ -2580,14 +2575,12 @@ Proof.
     rewrite (homotweqinvweq (pr1 f) (op1 a b)).
     rewrite (ax1f (invmap (pr1 f) a) (invmap (pr1 f) b)).
     rewrite (homotweqinvweq (pr1 f) a).
-    rewrite (homotweqinvweq (pr1 f) b).
-    apply idpath.
+    now rewrite (homotweqinvweq (pr1 f) b).
   - intros a b. apply (invmaponpathsweq (pr1 f)).
     rewrite (homotweqinvweq (pr1 f) (op2 a b)).
     rewrite (ax2f (invmap (pr1 f) a) (invmap (pr1 f) b)).
     rewrite (homotweqinvweq (pr1 f) a).
-    rewrite (homotweqinvweq (pr1 f) b).
-    apply idpath.
+    now rewrite (homotweqinvweq (pr1 f) b).
 Qed.
 
 Definition invtwobinopiso {X Y : setwith2binop} (f : twobinopiso X Y) :
