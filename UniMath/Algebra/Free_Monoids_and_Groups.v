@@ -71,7 +71,7 @@ Proof.
   use weq_iso.
   - apply free_monoid_extend.
   - intro g. exact (g ∘ free_monoid_unit).
-  - intro f. apply funextfun. intro x. reflexivity.
+  - intro f. now apply funextfun.
   - intro g. apply monoidfun_paths. apply funextfun. exact (free_monoid_extend_comp g).
 Defined.
 
@@ -104,8 +104,7 @@ Lemma free_monoid_extend_funcomp2
   (g: (Y → Z))
   : monoidfuncomp (free_monoid_extend f) (free_monoid_extend g) = free_monoid_extend (λ x, free_monoid_extend g (f x)).
 Proof.
-  apply (invmaponpathsweq (invweq (free_monoid_universal_property _ _)) _ _).
-  now apply idpath.
+  now apply (invmaponpathsweq (invweq (free_monoid_universal_property _ _)) _ _).
 Qed.
 
 (** Functoriality of the [free_monoidfun] *)
@@ -172,7 +171,7 @@ Proof.
   - intro f. exact (presented_monoid_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_monoid_extend_comp.
   - intro f. use total2_paths_f.
-    + apply funextfun. intro x. reflexivity.
+    + apply idpath.
     + apply isapropiscomprelfun.
 Defined.
 
@@ -195,7 +194,8 @@ Definition free_abmonoid_hrel (X : hSet) : hrel (free_monoid X) :=
 Lemma free_abmonoid_hrel_intro {X : hSet} (l1 l2 : free_monoid X) :
   free_abmonoid_hrel X (l1 * l2) (l2 * l1).
 Proof.
-  apply wittohexists with l1. split with l2. split; reflexivity.
+  apply wittohexists with l1.
+  now exists l2.
 Defined.
 
 Lemma free_abmonoid_hrel_univ {X : hSet} (P : free_monoid X → free_monoid X → UU)
@@ -255,7 +255,7 @@ Proof.
   use weq_iso.
   - apply free_abmonoid_extend.
   - intro g. exact (g ∘ free_abmonoid_unit).
-  - intro f. apply funextfun. intro x. reflexivity.
+  - apply idpath.
   - intro g. apply monoidfun_paths, funextfun, free_abmonoid_extend_comp.
 Defined.
 
@@ -343,7 +343,7 @@ Proof.
   - intro f. exact (presented_abmonoid_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_abmonoid_extend_comp.
   - intro f. use total2_paths_f.
-    + apply funextfun. intro x. reflexivity.
+    + apply idpath.
     + apply isapropiscomprelfun.
 Defined.
 
@@ -366,7 +366,7 @@ Definition free_gr_hrel (X : hSet) : hrel (free_monoid (setcoprod X X)) :=
 
 Lemma free_gr_hrel_in {X : hSet} (x : X ⨿ X) : free_gr_hrel X (x::coprodcomm X X x::[]) [].
 Proof.
-  apply wittohexists with x. split; reflexivity.
+  now apply wittohexists with x.
 Defined.
 
 Lemma free_gr_hrel_in_rev {X : hSet} (x : X ⨿ X) : free_gr_hrel X (coprodcomm X X x::x::[]) [].
@@ -494,7 +494,7 @@ Proof.
     apply (maponpaths iterop_list_mon). apply map_homot. intro x.
     induction x as [x|x].
     + reflexivity.
-    + simpl. refine (!monoidfuninvtoinv g _ @ _). reflexivity.
+    + simpl. exact (!monoidfuninvtoinv g _).
 Defined.
 
 Definition free_gr_universal_property (X : hSet) (Y : gr) : (X → Y) ≃ monoidfun (free_gr X) Y.
@@ -502,7 +502,7 @@ Proof.
   use weq_iso.
   - apply free_gr_extend.
   - intro g. exact (g ∘ free_gr_unit).
-  - intro f. apply funextfun. intro x. reflexivity.
+  - apply idpath.
   - intro g. apply monoidfun_paths, funextfun, free_gr_extend_comp.
 Defined.
 
@@ -514,7 +514,7 @@ Lemma sumofmaps_free_gr_unit {X : hSet} :
   sumofmaps free_gr_unit (grinv (free_gr X) ∘ free_gr_unit) ~
             @presented_monoid_intro (setcoprod X X) (free_gr_hrel X).
 Proof.
-  intro x. induction x as [x|x]; reflexivity.
+  intro x. now induction x as [x|x].
 Defined.
 
 Lemma free_grfun_setquotpr {X Y : hSet} (f : X → Y) (x : free_monoid (setcoprod X X)) :
@@ -591,7 +591,7 @@ Proof.
   - intro f. exact (presented_gr_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_gr_extend_comp.
   - intro f. use total2_paths_f.
-    + apply funextfun. intro x. reflexivity.
+    + apply idpath.
     + apply isapropiscomprelfun.
 Defined.
 
@@ -614,7 +614,7 @@ Definition free_abgr_hrel (X : hSet) : hrel (free_gr X) :=
 Lemma free_abgr_hrel_intro {X : hSet} (l1 l2 : free_gr X) :
   free_abgr_hrel X (l1 * l2) (l2 * l1).
 Proof.
-  apply wittohexists with l1. split with l2. split; reflexivity.
+  apply wittohexists with l1. now exists l2.
 Defined.
 
 Lemma free_abgr_hrel_univ {X : hSet} (P : free_gr X → free_gr X → UU)
@@ -674,7 +674,7 @@ Proof.
   use weq_iso.
   - apply free_abgr_extend.
   - intro g. exact (g ∘ free_abgr_unit).
-  - intro f. apply funextfun. intro x. reflexivity.
+  - apply idpath.
   - intro g. apply monoidfun_paths, funextfun, free_abgr_extend_comp.
 Defined.
 
@@ -750,7 +750,7 @@ Proof.
   - intro f. exact (presented_abgr_extend (pr1 f) (pr2 f)).
   - intro g. apply monoidfun_paths, funextfun, presented_abgr_extend_comp.
   - intro f. use total2_paths_f.
-    + apply funextfun. intro x. reflexivity.
+    + apply idpath.
     + apply isapropiscomprelfun.
 Defined.
 
