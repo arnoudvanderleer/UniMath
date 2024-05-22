@@ -989,8 +989,7 @@ Proof.
   intros. apply (@grrcan X _ _ (a * b)).
   change (-a * b + a * b = - (a * b) + a * b).
   rewrite (ringlinvax1 X _). rewrite <- (ringrdistr X _ _ _).
-  rewrite (ringlinvax1 X _). rewrite (ringmult0x X _).
-  apply idpath.
+  rewrite (ringlinvax1 X _). now rewrite (ringmult0x X _).
 Qed.
 
 Lemma ringrmultminus (X : ring) (a b : X) : a * -b = -(a * b).
@@ -998,8 +997,7 @@ Proof.
   intros. apply (@grrcan X _ _ (a * b)).
   change (a * (- b) + a * b = - (a * b) + a * b).
   rewrite (ringlinvax1 X _). rewrite <- (ringldistr X _ _ _).
-  rewrite (ringlinvax1 X _). rewrite (ringmultx0 X _).
-  apply idpath.
+  rewrite (ringlinvax1 X _). now rewrite (ringmultx0 X _).
 Qed.
 
 Lemma ringmultminusminus (X : ring) (a b : X) : -a * -b = a * b.
@@ -1008,8 +1006,7 @@ Proof.
   rewrite <- (ringldistr X _ _ (- a)).
   rewrite <- (ringrdistr X _ _ b).
   rewrite (ringlinvax1 X b). rewrite (ringrinvax1 X a).
-  rewrite (ringmult0x X _). rewrite (ringmultx0 X _).
-  apply idpath.
+  rewrite (ringmult0x X _). now rewrite (ringmultx0 X _).
 Qed.
 
 Lemma ringminusminus (X : ring) (a : X) : --a = a.
@@ -1534,7 +1531,7 @@ Proof.
                 ((pr1 xx' + pr2 xx) * pr1 aa) (x0 * pr2 aa) (x0 * pr1 aa)).
     induction (rd (pr1 xx + pr2 xx') x0 (pr2 aa)).
     induction (rd (pr1 xx' + pr2 xx) x0 (pr1 aa)).
-    induction e. apply idpath.
+    now induction e.
 
   - intros aa xx xx'. simpl. apply @hinhfun. intro tt1.
     induction tt1 as [ x0 e ]. exists (pr1 aa * x0 + pr2 aa * x0).
@@ -1556,7 +1553,7 @@ Proof.
     induction (ld (pr2 xx' + pr1 xx) x0 (pr2 aa)).
     rewrite (cm1 (pr2 xx) (pr1 xx')).
     rewrite (cm1 (pr2 xx') (pr1 xx)).
-    induction e. apply idpath.
+    now induction e.
 Qed.
 
 Definition rigtoringop2 (X : rig) : binop (rigtoringcarrier X) :=
@@ -1575,26 +1572,22 @@ Proof.
   set (cm1 := rigcomm1 X).
   set (as1 := rigassoc1 X). set (as2 := rigassoc2 X).
   set (rr := abmonoidoprer (rigop1axs X)). apply pathsdirprod.
-
-  rewrite (rd _ _ (pr1 x'')). rewrite (rd _ _ (pr2 x'')).
-  rewrite (ld _ _ (pr1 x)). rewrite (ld _ _ (pr2 x)).
-  induction (as2 (pr1 x) (pr1 x') (pr1 x'')).
-  induction (as2 (pr1 x) (pr2 x') (pr2 x'')).
-  induction (as2 (pr2 x) (pr1 x') (pr2 x'')).
-  induction (as2 (pr2 x) (pr2 x') (pr1 x'')).
-  induction (cm1 (pr2 x * pr2 x' * pr1 x'') (pr2 x * pr1 x' * pr2 x'')).
-  rewrite (rr _ (pr2 x * pr2 x' * pr1 x'') (pr1 x * pr2 x' * pr2 x'') _).
-  apply idpath.
-
-  rewrite (rd _ _ (pr1 x'')). rewrite (rd _ _ (pr2 x'')).
-  rewrite (ld _ _ (pr1 x)). rewrite (ld _ _ (pr2 x)).
-  induction (as2 (pr1 x) (pr1 x') (pr2 x'')).
-  induction (as2 (pr1 x) (pr2 x') (pr1 x'')).
-  induction (as2 (pr2 x) (pr1 x') (pr1 x'')).
-  induction (as2 (pr2 x) (pr2 x') (pr2 x'')).
-  induction (cm1 (pr2 x * pr2 x' * pr2 x'') (pr2 x * pr1 x' * pr1 x'')).
-  rewrite (rr _ (pr1 x * pr2 x' * pr1 x'') (pr2 x * pr2 x' * pr2 x'') _).
-  apply idpath.
+  - rewrite (rd _ _ (pr1 x'')). rewrite (rd _ _ (pr2 x'')).
+    rewrite (ld _ _ (pr1 x)). rewrite (ld _ _ (pr2 x)).
+    induction (as2 (pr1 x) (pr1 x') (pr1 x'')).
+    induction (as2 (pr1 x) (pr2 x') (pr2 x'')).
+    induction (as2 (pr2 x) (pr1 x') (pr2 x'')).
+    induction (as2 (pr2 x) (pr2 x') (pr1 x'')).
+    induction (cm1 (pr2 x * pr2 x' * pr1 x'') (pr2 x * pr1 x' * pr2 x'')).
+    now rewrite (rr _ (pr2 x * pr2 x' * pr1 x'') (pr1 x * pr2 x' * pr2 x'') _).
+  - rewrite (rd _ _ (pr1 x'')). rewrite (rd _ _ (pr2 x'')).
+    rewrite (ld _ _ (pr1 x)). rewrite (ld _ _ (pr2 x)).
+    induction (as2 (pr1 x) (pr1 x') (pr2 x'')).
+    induction (as2 (pr1 x) (pr2 x') (pr1 x'')).
+    induction (as2 (pr2 x) (pr1 x') (pr1 x'')).
+    induction (as2 (pr2 x) (pr2 x') (pr2 x'')).
+    induction (cm1 (pr2 x * pr2 x' * pr2 x'') (pr2 x * pr1 x' * pr1 x'')).
+    now rewrite (rr _ (pr1 x * pr2 x' * pr1 x'') (pr2 x * pr2 x' * pr2 x'') _).
 Qed.
 
 Definition rigtoringunel2 (X : rig) : rigtoringcarrier X :=
@@ -1715,9 +1708,8 @@ Proof.
         = setquotpr _ (rigtoringop2int X (x ,, 0) (x' ,, 0))).
   apply (maponpaths (setquotpr _)). unfold rigtoringop2int. simpl.
   apply pathsdirprod.
-  - rewrite (rigmultx0 X _). rewrite (rigrunax1 X _). apply idpath.
-  - rewrite (rigmult0x X _). rewrite (rigmultx0 X _). rewrite (rigrunax1 X _).
-    apply idpath.
+  - rewrite (rigmultx0 X _). now rewrite (rigrunax1 X _).
+  - rewrite (rigmult0x X _). rewrite (rigmultx0 X _). now rewrite (rigrunax1 X _).
 Defined.
 
 Lemma isunital2funtoringdiff  (X : rig) : (toringdiff X 1) = 1%ring.
@@ -2062,8 +2054,7 @@ Proof.
   unfold rigtoringop2int.
   set (cm1 := rigcomm1 X). set (cm2 := rigcomm2 X).
   apply pathsdirprod.
-  - rewrite (cm2 (pr1 x) (pr1 x')). rewrite (cm2 (pr2 x) (pr2 x')).
-    apply idpath.
+  - rewrite (cm2 (pr1 x) (pr1 x')). now rewrite (cm2 (pr2 x) (pr2 x')).
   - rewrite (cm2 (pr1 x) (pr2 x')). rewrite (cm2 (pr2 x) (pr1 x')).
     apply cm1.
 Qed.
@@ -2129,8 +2120,7 @@ Proof.
     rewrite (assoc2 s4 x2 s1). rewrite (rer (s4 * (x2 * s1)) s3 a1 a2).
     rewrite (assoc2 s4 (x2 * s1) a1). induction eq1.
     rewrite (comm2 s3 ((x1 * s2) * a1)). rewrite (comm2 s4 ((x1 * s2) * a1)).
-    rewrite (rer ((x1 * s2) * a1) s3 s4 a2).
-    apply idpath.
+    now rewrite (rer ((x1 * s2) * a1) s3 s4 a2).
   }
   assert (e2 : ((s1 * x3) * (s2 * s4)) * (a1 * a2)
              = ((s2 * x4) * (s1 * s3)) * (a1 * a2)).
@@ -2144,10 +2134,9 @@ Proof.
     rewrite (assoc2 s2 (x4 * s3) a2).
     induction eq2. induction (comm2 ((x3 * s4) * a2) s1).
     induction (comm2 ((x3 *s4) * a2) s2).
-    rewrite (rer ((x3 * s4) * a2) s1 s2 a1).
-    apply idpath.
+    now rewrite (rer ((x3 * s4) * a2) s1 s2 a1).
   }
-  induction e1. induction e2. apply idpath.
+  now induction e1, e2.
 Qed.
 
 Lemma commringfracop1comp (X : commring) (S : @subabmonoid (ringmultabmonoid X)) :
@@ -2225,7 +2214,7 @@ Proof.
   simpl.
   apply pathsdirprod.
   - change (s' * x + s * x' = s * x' + s' * x).
-    induction (ringcomm1 X (s' * x) (s * x')). apply idpath.
+    now induction (ringcomm1 X (s' * x) (s * x')).
   - apply (invmaponpathsincl _ (isinclpr1carrier (pr1 S))).
     simpl. change (s * s' = s' * s). apply (ringcomm2 X).
 Qed.
@@ -2304,8 +2293,7 @@ Proof.
     - simpl. change (s * 0 + 1 * x = x).
       rewrite (@ringmultx0 X s).
       rewrite (ringlunax2 X x).
-      rewrite (ringlunax1 X x).
-      apply idpath.
+      now rewrite (ringlunax1 X x).
     - apply (invmaponpathsincl _ (isinclpr1carrier (pr1 S))).
       change (1 * s = s). apply (ringlunax2 X s).
   }
@@ -2373,8 +2361,7 @@ Proof.
     rewrite (assoc s' x'' x). induction (comm (x'' * x) s').
     induction (comm (x'' * x) (s'' * s')). induction (assoc s'' s s').
     induction (comm (s'' * s') (s'' * s)). induction (comm s' (s'' * s)).
-    induction (rer (x'' * x) s' (s'' * s') (s'' * s)).
-    apply idpath.
+    now induction (rer (x'' * x) s' (s'' * s') (s'' * s)).
   }
   assert (e2 : (x'' * (s * x')) * ((s'' * s) * (s'' * s'))
              = ((s'' * s) * (x'' * x')) * (s'' * (s * s'))).
@@ -2384,10 +2371,9 @@ Proof.
     induction (comm (x'' * x') (s'' * s)).
     induction (rer (x'' * x') (s'' * s) s (s'' * s')).
     induction (assoc s s'' s'). induction (assoc s'' s s').
-    induction (comm s s'').
-    apply idpath.
+    now induction (comm s s'').
   }
-  rewrite e1. rewrite e2. apply idpath.
+  now rewrite e1, e2.
 Qed.
 
 Lemma commringfracrdistr (X : commring) (S : @subabmonoid (ringmultabmonoid X)) :
@@ -2450,7 +2436,7 @@ Proof.
         = setquotpr _ (commringfracop1int X S (x ,, unel S) (x' ,, unel S))).
   apply (maponpaths (setquotpr _)). unfold commringfracop1int.
   simpl. apply pathsdirprod.
-  - rewrite (ringlunax2 X _). rewrite (ringlunax2 X _). apply idpath.
+  - rewrite (ringlunax2 X _). now rewrite (ringlunax2 X _).
   - change (unel S = op (unel S) (unel S)).
     exact (!runax S _).
 Qed.
@@ -2458,7 +2444,6 @@ Qed.
 Lemma isunital1funtocommringfrac (X : commring) (S : @subabmonoid (ringmultabmonoid X)) :
   (tocommringfrac X S 0) = 0.
 Proof.
-  intros.
   apply idpath.
 Qed.
 
@@ -2477,8 +2462,7 @@ Proof.
   rewrite ((isbinop1funtocommringfrac X S x (- y)) :
              tocommringfrac X S (x - y)
            = tocommringfrac X S x + tocommringfrac X S (- y)).
-  rewrite (tocommringfracandminus0 X S y).
-  apply idpath.
+  now rewrite (tocommringfracandminus0 X S y).
 Qed.
 
 Definition isbinop2funtocommringfrac (X : commring) (S : @subabmonoid (ringmultabmonoid X)) :
@@ -2488,7 +2472,6 @@ Definition isbinop2funtocommringfrac (X : commring) (S : @subabmonoid (ringmulta
 Lemma isunital2funtocommringfrac (X : commring) (S : @subabmonoid (ringmultabmonoid X)) :
   (tocommringfrac X S 1) = 1.
 Proof.
-  intros.
   apply idpath.
 Qed.
 
