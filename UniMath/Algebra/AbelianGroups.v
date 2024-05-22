@@ -271,22 +271,20 @@ Proof.
       use (hinhuniv _ (pr2 a)). intros ae.
       use (hinhuniv _ (pr2 a')). intros a'e.
       use hinhpr.
-      use tpair.
-      * exact (@op A (pr1 ae) (pr1 a'e)).
-      * refine (binopfunisbinopfun f (pr1 ae) (pr1 a'e) @ _).
-        use two_arg_paths.
-          exact (pr2 ae).
-          exact (pr2 a'e).
-    + use hinhpr. use tpair.
-      * exact (unel A).
-      * exact (monoidfununel f).
+      exists (@op A (pr1 ae) (pr1 a'e)).
+      refine (binopfunisbinopfun f (pr1 ae) (pr1 a'e) @ _).
+      use two_arg_paths.
+        exact (pr2 ae).
+        exact (pr2 a'e).
+    + use hinhpr.
+      exists (unel A).
+      exact (monoidfununel f).
   - intros b b'.
     use (hinhuniv _ b'). intros eb.
     use hinhpr.
-    use tpair.
-    + exact (grinv A (pr1 eb)).
-    + refine (_ @ maponpaths (λ bb : B, (grinv B bb)) (pr2 eb)).
-      use monoidfuninvtoinv.
+    exists (grinv A (pr1 eb)).
+    refine (_ @ maponpaths (λ bb : B, (grinv B bb)) (pr2 eb)).
+    apply monoidfuninvtoinv.
 Qed.
 
 Definition abgr_image {A B : abgr} (f : monoidfun A B) : @subabgr B :=
@@ -406,8 +404,7 @@ Proof.
     apply (iscompsetquotpr R (@op (abmonoiddirprod X X) (abgrdiffinvint X xs) xs) 0).
     simpl. apply hinhpr. exists (unel X).
     change (s + x + 0 + 0 = 0 + (x + s) + 0).
-    induction (commax X x s). induction (commax X 0 (x + s)).
-    apply idpath.
+    induction (commax X x s). now induction (commax X 0 (x + s)).
   }
   exact (isl ,, weqlinvrinv (@op (abgrdiffcarrier X)) (commax (abgrdiffcarrier X))
                                       0 (abgrdiffinv X) isl).
@@ -749,7 +746,7 @@ Proof.
   intros xa1 xa2.
   set (x1 := pr1 xa1). set (a1 := pr2 xa1).
   set (x2 := pr1 xa2). set (a2 := pr2 xa2).
-  assert (int : coprod (L (x1 + a2) (x2 + a1)) (neg (L (x1 + a2) (x2 + a1)))) by apply (isl _ _).
+  assert (int : L (x1 + a2) (x2 + a1) ⨿ ¬ L (x1 + a2) (x2 + a1)) by apply (isl _ _).
   induction int as [ l | nl ].
   - apply ii1. unfold abgrdiffrelint. apply hinhpr. exists 0.
     rewrite (runax X _). rewrite (runax X _). apply l.
