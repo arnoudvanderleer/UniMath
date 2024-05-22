@@ -340,8 +340,8 @@ Section Pulse_Functions.
     (f_pulse_function : is_pulse_function i f)
     : Σ f = f i.
   Proof.
-    destruct (stn_inhabited_implies_succ i) as [n' e_n_Sn'].
-    destruct (!e_n_Sn').
+    induction (stn_inhabited_implies_succ i) as [n' e_n_Sn'].
+    induction (!e_n_Sn').
     rewrite (vecsum_dni f i).
     rewrite vecsum_eq_zero.
     { rewrite riglunax1. apply idpath. }
@@ -349,7 +349,7 @@ Section Pulse_Functions.
     unfold funcomp.
     unfold const_vec.
     assert (i_neq_dni : i ≠ dni i k). {exact (dni_neq_i i k). }
-    intros; destruct (stn_eq_or_neq i (dni i k) ) as [eq | neq].
+    intros; induction (stn_eq_or_neq i (dni i k) ) as [eq | neq].
       - apply (stnneq_iff_nopath i (dni i k)) in eq.
         apply weqtoempty. intros. apply eq. assumption.
         exact (dni_neq_i i k).
@@ -401,7 +401,7 @@ Section Pulse_Functions.
   Proof.
     apply funextfun. intros j.
     unfold scalar_lmult_vec, vector_fmap, pointwise.
-    destruct (stn_eq_or_neq i j) as [i_eq_j | i_neq_j].
+    induction (stn_eq_or_neq i j) as [i_eq_j | i_neq_j].
     - rewrite i_eq_j; apply idpath.
     - unfold stdb_vector.
       rewrite (stn_eq_or_neq_right i_neq_j).
@@ -418,13 +418,13 @@ Section Pulse_Functions.
                     +pw (scalar_lmult_vec (f j) (stdb_vector j))).
     { apply funextfun. intros k.
       unfold stdb_vector, scalar_lmult_vec, vector_fmap, pointwise.
-      destruct (stn_eq_or_neq i k) as [i_eq_k | i_neq_k].
-      - destruct (stn_eq_or_neq j k) as [j_eq_k | j_neq_k]; destruct i_eq_k.
-        + destruct j_eq_k.
+      induction (stn_eq_or_neq i k) as [i_eq_k | i_neq_k].
+      - induction (stn_eq_or_neq j k) as [j_eq_k | j_neq_k]; induction i_eq_k.
+        + induction j_eq_k.
           now apply isirrefl_natneq in ne_i_j.
         + now rewrite rigmultx0, rigrunax1, rigrunax2.
       - rewrite rigmultx0, riglunax1.
-        destruct (stn_eq_or_neq j k) as [j_eq_k | j_neq_k].
+        induction (stn_eq_or_neq j k) as [j_eq_k | j_neq_k].
         + now rewrite rigrunax2, j_eq_k.
         + rewrite rigmultx0; apply f_two_pulse; now apply issymm_natneq.
     }

@@ -96,7 +96,7 @@ Section Add_Row.
     intros.
     apply funextfun; intros i; apply funextfun; intros j.
     unfold matrix_mult, add_row_mult_matrix, add_row_mult, col, row.
-    destruct (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2]; simpl coprod_rect.
+    induction (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2]; simpl coprod_rect.
     - etrans. { apply maponpaths, (@pointwise_rdistr_vector R). }
       etrans. { apply vecsum_add. }
       apply map_on_two_paths.
@@ -115,9 +115,9 @@ Section Add_Row.
     rewrite add_row_mult_as_matrix; try assumption.
     apply funextfun; intros i; apply funextfun; intros j.
     unfold add_row_mult, add_row_mult_matrix.
-    destruct (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2].
+    induction (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2].
     2: {apply idpath. }
-    destruct i_eq_r2.
+    induction i_eq_r2.
     rewrite stn_eq_or_neq_refl, (stn_eq_or_neq_right ne); simpl.
     unfold scalar_lmult_vec, pointwise, vector_fmap.
     rewrite (@rigrdistr R), rigcomm1, (@rigassoc1 R).
@@ -130,9 +130,9 @@ Section Add_Row.
   Proof.
     apply funextfun; intros i.
     unfold add_row_mult_matrix.
-    destruct (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2].
+    induction (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2].
     2: { apply idpath. }
-    destruct i_eq_r2. simpl.
+    induction i_eq_r2. simpl.
     apply funextfun; intros j.
     unfold scalar_lmult_vec, pointwise, vector_fmap.
     rewrite (@rigmult0x R).
@@ -171,7 +171,7 @@ Section Add_Row.
     intros eq0.
     apply funextfun; intros i'; apply funextfun; intros j'.
     unfold add_row_mult.
-    destruct (stn_eq_or_neq _ _ ) as [i'_eq_j' | i'_neq_j'];
+    induction (stn_eq_or_neq _ _ ) as [i'_eq_j' | i'_neq_j'];
       simpl; try reflexivity.
     rewrite <- i'_eq_j', eq0.
     unfold const_vec ; simpl.
@@ -212,7 +212,7 @@ Section Mult_Row.
   Proof.
     use funextfun; intros i; use funextfun; intros ?.
     unfold matrix_mult, scalar_mult_row_matrix, scalar_mult_row, row.
-    destruct (stn_eq_or_neq i r) as [? | ?].
+    induction (stn_eq_or_neq i r) as [? | ?].
     - simpl coprod_rect.
       etrans.
       { apply maponpaths.
@@ -233,7 +233,7 @@ Section Mult_Row.
     unfold scalar_mult_row_matrix.
     apply funextfun; intros i.
     apply funextfun; intros j.
-    destruct (stn_eq_or_neq i r);
+    induction (stn_eq_or_neq i r);
       simpl coprod_rect.
     2: { reflexivity. }
     unfold pointwise.
@@ -246,7 +246,7 @@ Section Mult_Row.
   Proof.
     unfold scalar_mult_row_matrix.
     apply funextfun; intros i.
-    destruct (stn_eq_or_neq i r); simpl coprod_rect.
+    induction (stn_eq_or_neq i r); simpl coprod_rect.
     2: { reflexivity. }
     apply funextfun; intros j.
     apply (@riglunax2 F).
@@ -307,8 +307,8 @@ Section Switch_Row.
   Proof.
     unfold switch_row.
     rewrite stn_eq_or_neq_refl; simpl.
-    destruct (stn_eq_or_neq r2 r1) as [ e | ? ];
-      simpl; try destruct e; reflexivity.
+    induction (stn_eq_or_neq r2 r1) as [ e | ? ];
+      simpl; try induction e; reflexivity.
   Defined.
 
   Lemma switch_row_other_row
@@ -326,7 +326,7 @@ Section Switch_Row.
       (i : ⟦m⟧%stn) (e : i = r1) (j : ⟦n⟧%stn)
     : switch_row r1 r2 mat i j = mat r2 j.
   Proof.
-    destruct e; apply switch_row_former_row.
+    induction e; apply switch_row_former_row.
   Defined.
 
   Lemma switch_row_latter_row'
@@ -334,7 +334,7 @@ Section Switch_Row.
       (i : ⟦m⟧%stn) (e : i = r2) (j : ⟦n⟧%stn)
     : switch_row r1 r2 mat i j = mat r1 j.
   Proof.
-    destruct e; apply switch_row_latter_row.
+    induction e; apply switch_row_latter_row.
   Defined.
 
   Lemma switch_row_other_row'
@@ -367,8 +367,8 @@ Section Switch_Row.
     apply funextfun; intros i; apply funextfun; intros j.
     rewrite matrix_mult_eq; unfold matrix_mult_unf.
     unfold switch_row_matrix, switch_row.
-    destruct (stn_eq_or_neq i r1) as [i_eq_r1 | i_neq_r1];
-      destruct (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2];
+    induction (stn_eq_or_neq i r1) as [i_eq_r1 | i_neq_r1];
+      induction (stn_eq_or_neq i r2) as [i_eq_r2 | i_neq_r2];
       simpl;
       use sum_stdb_vector_pointwise_prod.
   Defined.
@@ -378,12 +378,12 @@ Section Switch_Row.
     : switch_row r1 r2 (switch_row r1 r2 mat) = mat.
   Proof.
     apply funextfun; intros i; apply funextfun; intros j.
-    destruct (stn_eq_or_neq i r1) as [ e_i_r1 | ne_i_r1 ];
-      [ | destruct (stn_eq_or_neq i r2) as [ e_i_r2 | ne_i_r2 ]].
-    - destruct e_i_r1.
+    induction (stn_eq_or_neq i r1) as [ e_i_r1 | ne_i_r1 ];
+      [ | induction (stn_eq_or_neq i r2) as [ e_i_r2 | ne_i_r2 ]].
+    - induction e_i_r1.
       etrans. { apply switch_row_former_row. }
       apply switch_row_latter_row.
-    - destruct e_i_r2.
+    - induction e_i_r2.
       etrans. { apply switch_row_latter_row. }
       apply switch_row_former_row.
     - etrans; apply switch_row_other_row; assumption.
@@ -399,8 +399,8 @@ Section Switch_Row.
     rewrite switch_row_as_matrix.
     unfold switch_row, switch_row_matrix.
     apply funextfun; intros i.
-    destruct (stn_eq_or_neq i r1) as [eq | neq];
-      destruct (stn_eq_or_neq r1 r2) as [eq' | neq'];
+    induction (stn_eq_or_neq i r1) as [eq | neq];
+      induction (stn_eq_or_neq r1 r2) as [eq' | neq'];
       rewrite stn_eq_or_neq_refl; simpl.
     - rewrite eq'; rewrite stn_eq_or_neq_refl; simpl.
       apply funextfun; intros j.
@@ -412,7 +412,7 @@ Section Switch_Row.
       rewrite (stn_eq_or_neq_right neq); simpl.
       reflexivity.
     - rewrite stn_eq_or_neq_refl; simpl.
-      destruct (stn_eq_or_neq _ _) as [eq | ?]; simpl.
+      induction (stn_eq_or_neq _ _) as [eq | ?]; simpl.
       + now rewrite eq.
       + reflexivity.
   Defined.
@@ -433,12 +433,12 @@ Section Switch_Row.
     intros m_eq.
     unfold switch_row.
     apply funextfun. intros i'.
-    destruct (stn_eq_or_neq _ _) as [eq | neq].
-    - destruct (stn_eq_or_neq _ _) as [eq' | neq'].
+    induction (stn_eq_or_neq _ _) as [eq | neq].
+    - induction (stn_eq_or_neq _ _) as [eq' | neq'].
       + now apply maponpaths.
       + etrans. apply m_eq.
         now apply maponpaths.
-    - destruct (stn_eq_or_neq _ _) as [eq | cec].
+    - induction (stn_eq_or_neq _ _) as [eq | cec].
       + cbn. etrans. apply(!m_eq).
         apply maponpaths, (!eq).
       + apply idpath.
@@ -451,12 +451,12 @@ Section Switch_Row.
   Proof.
     intros j m_eq r3.
     unfold switch_row.
-    destruct (stn_eq_or_neq _ _) as [eq | neq].
-    - destruct (stn_eq_or_neq _ _) as [eq' | neq']; cbn.
+    induction (stn_eq_or_neq _ _) as [eq | neq].
+    - induction (stn_eq_or_neq _ _) as [eq' | neq']; cbn.
       + now apply maponpaths_2.
       + etrans. apply m_eq.
         now apply maponpaths_2.
-    - destruct (stn_eq_or_neq _ _) as [eq | cec]; cbn.
+    - induction (stn_eq_or_neq _ _) as [eq | cec]; cbn.
       + etrans. apply(!m_eq).
         now apply maponpaths_2.
       + apply idpath.

@@ -40,9 +40,7 @@ Section Nat.
     (n : nat) : n > 0 -> n - 1 < n.
   Proof.
     intros n_gt_0.
-    apply natminuslthn.
-    - assumption.
-    - reflexivity.
+    now apply natminuslthn.
   Defined.
 
   (* Next two lemmas are from PAdics.lemmas, restated here for accessibility.
@@ -50,17 +48,17 @@ Section Nat.
 
   Lemma minussn1' ( n : nat ) : ( S n ) - 1 = n.
   Proof.
-    destruct n; apply idpath.
+    now induction n; apply idpath.
   Defined.
 
   Local Lemma pathssminus' ( n m : nat ) ( p : natlth m ( S n ) ) :
     S ( n - m ) = ( S n ) - m.
   Proof.
     revert m p; induction n.
-    intros m p; destruct m. {auto. }
+    intros m p; induction m. {auto. }
     apply fromempty.
     apply nopathstruetofalse. apply pathsinv0. assumption.
-    - intros m p. destruct m.
+    - intros m p. induction m.
         + auto.
         + apply IHn. apply p.
   Defined.
@@ -70,7 +68,7 @@ Section Nat.
   Lemma eq_of_le_le {a b : nat} (le_a_b : a ≤ b) (le_b_a : b ≤ a)
     : a = b.
   Proof.
-    destruct (natlehchoice _ _ le_a_b) as [lt_a_b | e_a_b].
+    induction (natlehchoice _ _ le_a_b) as [lt_a_b | e_a_b].
     2: { assumption. }
     apply fromempty. eapply natlthtonegnatgeh; eassumption.
   Qed.
@@ -78,7 +76,7 @@ Section Nat.
   Lemma prev_nat
     (n : nat) (p : n > 0): ∑ m, S m = n.
   Proof.
-    destruct n as [| n]. { contradiction (negnatlthn0 _ p). }
+    induction n as [| n]. { contradiction (negnatlthn0 _ p). }
     exists n; reflexivity.
   Defined.
 
@@ -87,7 +85,7 @@ Section Nat.
   Proof.
     intros m_eq_n m_neq_n.
     apply fromempty.
-    destruct m_eq_n.
+    induction m_eq_n.
     eapply isirrefl_natneq.
     exact (m_neq_n).
   Defined.
@@ -120,7 +118,7 @@ Section Nat.
     ∏ a b : (nat), min a b ≤ a.
   Proof.
     intros; unfold min; revert a.
-    induction b as [| b IH]; destruct a ; try reflexivity.
+    induction b as [| b IH]; induction a ; try reflexivity.
     apply IH.
   Defined.
 
@@ -128,7 +126,7 @@ Section Nat.
     ∏ a b : (nat), min a b ≤ b.
   Proof.
     intros; unfold min; revert a.
-    induction b as [| b IH]; destruct a ; try reflexivity.
+    induction b as [| b IH]; induction a ; try reflexivity.
     apply IH.
   Defined.
 
@@ -141,9 +139,9 @@ Section Nat.
       + apply min_le_r.
     - revert a c; induction b as [ | b' IH ]; intros a c [le_a_b le_a_c].
       { intros; exact le_a_b. } (* case b = 0 *)
-      destruct c as [ | c' ].
+      induction c as [ | c' ].
       { exact le_a_c. } (* case c = 0 *)
-      destruct a as [ | a' ].
+      induction a as [ | a' ].
       { apply natleh0n. } (* case a = 0 *)
       (* when all successors, done by the reductions
           [ min (S b') (S c')  ~~>  S (min b' c') ]
@@ -172,7 +170,7 @@ Section Nat.
   Lemma min_eq_a_or_eq_b :
     ∏ a b : (nat), coprod (min a b = a) (min a b = b).
   Proof.
-    intros a b. destruct (natleorle a b) as [le_a_b | le_b_a].
+    intros a b. induction (natleorle a b) as [le_a_b | le_b_a].
     - apply inl. apply min_of_le; assumption.
     - apply inr. rewrite min_comm. apply min_of_le; assumption.
   Qed.
@@ -200,9 +198,9 @@ Section Stn.
     {n:nat} (i : ⟦ n ⟧%stn)
   : ∑ m, n = S m.
   Proof.
-    destruct n as [| m].
-    - destruct i as [i le_i_0].
-      destruct (negnatlthn0 _ le_i_0).
+    induction n as [| m].
+    - induction i as [i le_i_0].
+      induction (negnatlthn0 _ le_i_0).
     - exists m. apply idpath.
   Defined.
 
@@ -286,7 +284,7 @@ Section Stn.
   Lemma prev_stn
     {n : nat} (i : ⟦ n ⟧%stn) (p : i > 0) : ∑ j : ⟦ n ⟧%stn, S j = i.
   Proof.
-    destruct (prev_nat i p) as [j Sj_i].
+    induction (prev_nat i p) as [j Sj_i].
     use tpair.
     - exists j.
       refine (istransnatlth _ _ _ (natgthsnn j) _ ).
@@ -303,8 +301,8 @@ Section Stn.
     : coprod_rect (fun _ => Z) (fun _ => z1) (fun _ => z2) de_xy
     = coprod_rect (fun _ => Z) (fun _ => z1) (fun _ => z2) de_yx.
   Proof.
-    destruct de_xy as [e_xy | ne_xy];
-      destruct de_yx as [e_yx | ne_yx];
+    induction de_xy as [e_xy | ne_xy];
+      induction de_yx as [e_yx | ne_yx];
       simpl;
     (** consistent cases: *)
       try reflexivity;
@@ -333,7 +331,7 @@ Section Dual.
   Proof.
     unfold dualelement', dualelement.
     apply subtypePath_prop; simpl.
-    destruct (natchoice0 _) as [eq0 | gt]; reflexivity.
+    induction (natchoice0 _) as [eq0 | gt]; reflexivity.
   Defined.
 
   Lemma dualelement_2x
@@ -387,7 +385,7 @@ Section Dual.
   : i ≤ j -> (dualelement j) ≤ (dualelement i).
   Proof.
     intros le.
-    destruct (natlehchoice i j) as [lt | eq]; try assumption.
+    induction (natlehchoice i j) as [lt | eq]; try assumption.
     { apply natlthtoleh. apply (dualelement_lt_comp _ _ lt). }
     rewrite (stn_eq _ _ eq).
     apply isreflnatgeh.
@@ -482,7 +480,7 @@ Section Dual.
     assert (e : n = S (n - 1)).
     { change (S (n - 1)) with (1 + (n - 1)). rewrite natpluscomm.
       apply pathsinv0, minusplusnmm, (natlthtolehp1 _ _ (stn_implies_ngt0 i)). }
-    now destruct (!e).
+    now induction (!e).
   Defined.
 
   Lemma dualvalue_eq
@@ -529,7 +527,7 @@ Section Rings_and_Fields.
 
   Lemma fldchoice0 {X : fld} (e : X) : coprod (e = 0%ring) (e != 0%ring).
   Proof.
-    destruct (fldchoice e) as [ x_inv | x_0 ].
+    induction (fldchoice e) as [ x_inv | x_0 ].
     - right.
       apply isnonzerofromrinvel. { apply nonzeroax. }
       exact x_inv.
@@ -562,7 +560,7 @@ Section Rings_and_Fields.
 
   Definition fldmultinv' {X : fld} (e : X) : X.
   Proof.
-    destruct (fldchoice0 e) as [eq0 | neq].
+    induction (fldchoice0 e) as [eq0 | neq].
     - exact 0%ring.
     - exact (fldmultinv e neq).
   Defined.
@@ -571,7 +569,7 @@ Section Rings_and_Fields.
     (fldmultinv' e * e)%ring = 1%ring.
   Proof.
     unfold fldmultinv'.
-    destruct (fldchoice0 _).
+    induction (fldchoice0 _).
     - contradiction.
     - apply fldmultinvlax.
   Defined.
@@ -580,7 +578,7 @@ Section Rings_and_Fields.
     (e * fldmultinv' e)%ring = 1%ring.
   Proof.
     unfold fldmultinv'.
-    destruct (fldchoice0 _).
+    induction (fldchoice0 _).
     - contradiction.
     - apply fldmultinvrax.
   Defined.
@@ -629,7 +627,7 @@ Section Maybe.
     {X : UU} (e : maybe X)
   : coprod (e != nothing) (e = nothing).
   Proof.
-    destruct e as [? | u].
+    induction e as [? | u].
     - apply ii1. apply negpathsii1ii2.
     - apply ii2. now induction u.
   Defined.
@@ -638,7 +636,7 @@ Section Maybe.
     {X : UU} (e : maybe X)
   : coprod (∑ x:X, e = just x) (e = nothing).
   Proof.
-    destruct e as [x | u].
+    induction e as [x | u].
     - apply ii1. exists x; reflexivity.
     - apply ii2. now induction u.
   Defined.
@@ -647,7 +645,7 @@ Section Maybe.
     {X : UU} (m : maybe X) (p : m != nothing) : X.
   Proof.
     unfold nothing in p.
-     destruct m as [x | u].
+     induction m as [x | u].
      - exact x.
      - contradiction p.
        now induction u.

@@ -241,7 +241,7 @@ Section Identity_Matrix.
   Proof.
     unfold identity_matrix, scalar_lmult_vec, pointwise, vector_fmap.
     apply funextfun. intros k.
-    destruct (stn_eq_or_neq i k) as [eq | neq].
+    induction (stn_eq_or_neq i k) as [eq | neq].
     - now rewrite riglunax2, rigrunax2, eq.
     - now rewrite rigmultx0, rigmult0x.
   Defined.
@@ -279,7 +279,7 @@ Section Identity_Matrix.
   Proof.
     apply funextfun. intros j.
     apply funextfun. intros k.
-    now destruct (stn_eq_or_neq j k).
+    now induction (stn_eq_or_neq j k).
   Defined.
 
   Lemma id_mat_ii {n : nat} (i : ⟦ n ⟧%stn)
@@ -399,8 +399,8 @@ Section Inverses.
   (lft : matrix_left_inverse A) (rght : matrix_right_inverse A)
   : pr1 lft = pr1 rght.
   Proof.
-    destruct lft as [? islft].
-    destruct rght as [rght isrght]; simpl.
+    induction lft as [? islft].
+    induction rght as [rght isrght]; simpl.
     pose (H0 := matlunax2 n n rght).
     now rewrite <- islft, matrix_mult_assoc, isrght, matrunax2 in H0.
   Defined.
@@ -617,7 +617,7 @@ Section MatricesCommrig.
     (inv: @matrix_left_inverse CR m n A)
     : (@matrix_right_inverse CR n m (@transpose CR n m A)).
   Proof.
-    destruct inv as [inv isinv].
+    induction inv as [inv isinv].
     exists (transpose inv).
     etrans. { apply pathsinv0, matrix_product_transpose. }
     etrans. { apply maponpaths, isinv. }
@@ -651,7 +651,7 @@ Section MatricesIntDom.
   Proof.
     intros invA.
     apply matrix_inverse_to_right_and_left_inverse in invA.
-    destruct invA as [? rinvA].
+    induction invA as [? rinvA].
     apply (zero_row_to_non_right_invertibility A i); assumption.
   Defined.
 
@@ -666,9 +666,9 @@ Section Transpositions.
     : ⟦ n ⟧%stn -> ⟦ n ⟧%stn.
   Proof.
     intros k.
-    destruct (stn_eq_or_neq i k).
+    induction (stn_eq_or_neq i k).
     - exact j.
-    - destruct (stn_eq_or_neq j k).
+    - induction (stn_eq_or_neq j k).
       + exact i.
       + exact k.
   Defined.
@@ -677,14 +677,14 @@ Section Transpositions.
     : transposition_fun i j ∘ transposition_fun i j = idfun _.
   Proof.
     apply funextsec; intros k; simpl; unfold transposition_fun.
-    destruct (stn_eq_or_neq i k) as [i_eq_k | i_neq_k];
-      destruct (stn_eq_or_neq i j) as [i_eq_j | i_neq_j].
-    - now destruct i_eq_j.
+    induction (stn_eq_or_neq i k) as [i_eq_k | i_neq_k];
+      induction (stn_eq_or_neq i j) as [i_eq_j | i_neq_j].
+    - now induction i_eq_j.
     - now rewrite stn_eq_or_neq_refl.
-    - destruct i_eq_j.
+    - induction i_eq_j.
       do 2 rewrite (stn_eq_or_neq_right i_neq_k).
       reflexivity.
-    - destruct (stn_eq_or_neq j k) as [j_eq_k | j_neq_k].
+    - induction (stn_eq_or_neq j k) as [j_eq_k | j_neq_k].
       + now rewrite stn_eq_or_neq_refl.
       + rewrite (stn_eq_or_neq_right i_neq_k).
         rewrite (stn_eq_or_neq_right j_neq_k).
@@ -706,9 +706,9 @@ Section Transpositions.
     : (Matrix X m n) -> Matrix X m n.
   Proof.
     intros mat k.
-    destruct (stn_eq_or_neq i k).
+    induction (stn_eq_or_neq i k).
     - apply (mat j).
-    - destruct (stn_eq_or_neq j k).
+    - induction (stn_eq_or_neq j k).
       + exact (mat i).
       + exact (mat k).
   Defined.

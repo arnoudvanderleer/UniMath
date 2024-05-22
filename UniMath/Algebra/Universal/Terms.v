@@ -435,7 +435,7 @@ End Oplists.
 
 Section Term.
 
-  (** ** Terms and related constructors and destructors. *)
+  (** ** Terms and related constructors and inductionors. *)
 
   (**  A [term] is an oplist together with the proof it is a term. *)
 
@@ -584,7 +584,7 @@ Section Term.
   (** ** Constructors and destuctors. *)
 
   (** [build_term] builds a term starting from principal operation symbol and subterms, while
-  [princop] and [subterms] are the corresponding destructors. *)
+  [princop] and [subterms] are the corresponding inductionors. *)
 
   Local Definition oplist_build (nm: names σ) (v: vec (oplist σ) (length (arity nm)))
     : oplist σ := cons nm (vecoplist2oplist v).
