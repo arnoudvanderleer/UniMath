@@ -289,7 +289,7 @@ Section CosliceCatEquivalence.
     {A B : algebra (free_theory S)}
     (F : coslice_cat SET S ⟦ coslice_functor A, coslice_functor B ⟧)
     : A → B
-    := coslicecat_mor_morphism _ _ F.
+    := coslice_cat_mor_morphism F.
 
   Lemma coslice_to_is_algebra_morphism
     {A B : algebra (free_theory S)}
@@ -301,9 +301,9 @@ Section CosliceCatEquivalence.
     - refine (maponpaths _ (var_action _ _ _) @ !_).
       exact (var_action _ _ _).
     - refine (maponpaths _ (subst_action A (inr s) (weqvecfun _ [()]) a) @ !_).
-      refine (subst_action B (inr s) (weqvecfun _ [()]) (λ i, coslicecat_mor_morphism _ _ F (a i)) @ !_).
-      refine (_ @ eqtohomot (coslicecat_mor_comm _ _ F) s @ _).
-      + apply (maponpaths (coslicecat_mor_morphism _ _ F)).
+      refine (subst_action B (inr s) (weqvecfun _ [()]) (λ i, coslice_cat_mor_morphism F (a i)) @ !_).
+      refine (_ @ eqtohomot (coslice_cat_mor_comm F) s @ _).
+      + apply (maponpaths (coslice_cat_mor_morphism F)).
         apply (maponpaths (action _)).
         apply funextfun.
         intro i.
@@ -344,11 +344,11 @@ Section CosliceCatEquivalence.
     : algebra_data (free_theory S).
   Proof.
     use make_algebra_data.
-    - exact (coslicecat_ob_object _ _ T).
+    - exact (coslice_cat_ob_object T).
     - intros n f a.
       induction f as [i | s].
       + exact (a i).
-      + exact (coslicecat_ob_morphism _ _ T s).
+      + exact (coslice_cat_ob_morphism T s).
   Defined.
 
   Lemma coslice_to_is_algebra
