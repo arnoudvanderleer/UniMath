@@ -45,6 +45,7 @@ Monads/RelativeModules.v
 Equivalences/Core.v
 Equivalences/CompositesAndInverses.v
 Equivalences/FullyFaithful.v
+Equivalences/EquivalenceFromComp.v
 Subcategory/FullEquivalences.v
 Categories/HSET/MonoEpiIso.v
 Categories/HSET/Univalence.v
@@ -107,8 +108,11 @@ SubobjectClassifier/PreservesSubobjectClassifier.v
 DisplayedCats/Binproducts.v
 
 DisplayedCats/Fiberwise/FiberwiseTerminal.v
+DisplayedCats/Fiberwise/FiberwiseInitial.v
 DisplayedCats/Fiberwise/FiberwiseProducts.v
+DisplayedCats/Fiberwise/FiberwiseCoproducts.v
 DisplayedCats/Fiberwise/FiberwiseEqualizers.v
+DisplayedCats/Fiberwise/FiberwiseCartesianClosed.v
 DisplayedCats/Fiberwise/DependentSums.v
 DisplayedCats/Fiberwise/DependentProducts.v
 DisplayedCats/Fiberwise/FiberwiseSubobjectClassifier.v
@@ -123,6 +127,12 @@ DisplayedCats/Codomain/IteratedSlice.v
 DisplayedCats/Codomain/CodFunctor.v
 DisplayedCats/Codomain/CodSubobjectClassifier.v
 DisplayedCats/Codomain/CodRegular.v
+
+DisplayedCats/Hyperdoctrines/Hyperdoctrine.v
+DisplayedCats/Hyperdoctrines/FirstOrderHyperdoctrine.v
+DisplayedCats/Hyperdoctrines/Tripos.v
+
+DisplayedCats/Examples/HValuedPredicates.v
 
 LocallyCartesianClosed/LocallyCartesianClosed.v
 DisplayedCats/Fiberwise/DualBeckChevalley.v
@@ -162,6 +172,7 @@ coslicecat.v
 catiso.v
 DisplayedCats/CatIsoDisplayed.v
 CategoryEquality.v
+Core/PosetCat.v
 WeakEquivalences.v
 rezk_completion.v
 RezkCompletion.v
@@ -231,6 +242,7 @@ Categories/HSET/SetCoends.v
 Profunctors/Examples.v
 Profunctors/Transformation.v
 Profunctors/Squares.v
+Profunctors/Collage.v
 
 SetValuedFunctors.v
 Categories/FinSet.v
@@ -430,6 +442,8 @@ SkewMonoidal/SkewMonoidalCategories.v
 SkewMonoidal/CategoriesOfMonoids.v
 
 EnrichedCats/BenabouCosmos.v
+EnrichedCats/EnrichedRelation.v
+EnrichedCats/LaxExtension.v
 EnrichedCats/Enrichment.v
 EnrichedCats/EnrichmentFunctor.v
 EnrichedCats/EnrichmentTransformation.v
@@ -463,6 +477,7 @@ EnrichedCats/Colimits/EnrichedColimits.v
 EnrichedCats/Colimits/CopowerFunctor.v
 
 EnrichedCats/Examples/SetEnriched.v
+EnrichedCats/Examples/QuantaleEnriched.v
 EnrichedCats/Examples/PosetEnriched.v
 EnrichedCats/Examples/StructureEnriched.v
 EnrichedCats/Examples/SmashStructureEnriched.v
@@ -489,10 +504,16 @@ EnrichedCats/Profunctors/Invertible.v
 EnrichedCats/Profunctors/Coend.v
 
 EnrichedCats/Profunctors/Composition/CompositionProf.v
+EnrichedCats/Profunctors/Composition/SquareComp.v
 EnrichedCats/Profunctors/Composition/Unitors.v
 EnrichedCats/Profunctors/Composition/Associators.v
 EnrichedCats/Profunctors/Composition/Whiskering.v
+EnrichedCats/Profunctors/Composition/BicatLaws.v
+EnrichedCats/Profunctors/Composition/WhiskerLaws.v
+EnrichedCats/Profunctors/Composition/OtherLaws.v
 EnrichedCats/Profunctors/Composition.v
+
+EnrichedCats/Profunctors/RepresentableLaws.v
 
 EnrichedCats/Examples/EmptyEnriched.v
 EnrichedCats/Examples/UnitEnriched.v
@@ -502,6 +523,8 @@ EnrichedCats/Examples/DialgebraEnriched.v
 EnrichedCats/Examples/SliceEnriched.v
 EnrichedCats/Examples/EilenbergMooreEnriched.v
 EnrichedCats/Examples/ProductEnriched.v
+EnrichedCats/Examples/GraphEnriched.v
+EnrichedCats/Examples/CollageEnriched.v
 
 EnrichedCats/Examples/ChangeOfBase.v
 
@@ -561,6 +584,7 @@ TwoSidedDisplayedCats/Examples/ProdOfTwosidedDispCat.v
 TwoSidedDisplayedCats/Examples/Profunctor.v
 TwoSidedDisplayedCats/Examples/Reindex.v
 TwoSidedDisplayedCats/Examples/Relations.v
+TwoSidedDisplayedCats/Examples/EnrichedRels.v
 TwoSidedDisplayedCats/Examples/Spans.v
 TwoSidedDisplayedCats/Examples/ParaTwoSidedDispCat.v
 TwoSidedDisplayedCats/Examples/StructuredCospans.v

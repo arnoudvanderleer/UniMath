@@ -71,6 +71,70 @@ Proof.
     apply isaprop_preserves_binproduct.
 Qed.
 
+Section FiberwiseBinProductPoset.
+  Context {C : category}
+          {D : disp_cat C}
+          (HD : cleaving D)
+          (HD' : locally_propositional D)
+          (and : ∏ (Γ : C), D[{Γ}] → D[{Γ}] → D[{Γ}])
+          (and_pr1 : ∏ (Γ : C) (φ ψ : D[{Γ}]),
+                     and _ φ ψ -->[ identity _ ] φ)
+          (and_pr2 : ∏ (Γ : C) (φ ψ : D[{Γ}]),
+                     and _ φ ψ -->[ identity _ ] ψ)
+          (and_in : ∏ (Γ : C) (φ ψ χ : D[{Γ}]),
+                    χ -->[ identity _ ] φ
+                    → χ -->[ identity _ ] ψ
+                    → χ -->[ identity _ ] and _ φ ψ)
+          (and_sub : ∏ (Γ₁ Γ₂ : C)
+                       (s : Γ₁ --> Γ₂)
+                       (φ ψ : D[{Γ₂}]),
+                     pr1 (HD Γ₂ Γ₁ s (and Γ₂ φ ψ))
+                     =
+                     and Γ₁ (pr1 (HD Γ₂ Γ₁ s φ)) (pr1 (HD Γ₂ Γ₁ s ψ))).
+
+  Definition make_binproduct_fiber_locally_propositional
+             (Γ : C)
+    : BinProducts D[{Γ}].
+  Proof.
+    intros φ ψ.
+    use make_BinProduct.
+    - exact (and Γ φ ψ).
+    - exact (and_pr1 Γ φ ψ).
+    - exact (and_pr2 Γ φ ψ).
+    - intros χ p₁ p₂.
+      use iscontraprop1.
+      + abstract
+          (use invproofirrelevance ;
+           intros q₁ q₂ ;
+           use subtypePath ; [ intro ; apply isapropdirprod ; apply homset_property | ] ;
+           apply HD').
+      + simple refine (_ ,, _ ,, _) ; [ | apply HD' | apply HD' ].
+        exact (and_in Γ φ ψ χ p₁ p₂).
+  Defined.
+
+  Definition make_fiberwise_binproducts_locally_propositional
+    : fiberwise_binproducts HD.
+  Proof.
+    split.
+    - exact make_binproduct_fiber_locally_propositional.
+    - intros Γ₁ Γ₂ s.
+      use preserves_binproduct_if_preserves_chosen.
+      + apply make_binproduct_fiber_locally_propositional.
+      + abstract
+          (intros φ ψ ;
+           use (isBinProduct_z_iso
+                  (isBinProduct_BinProduct
+                     _
+                     (make_binproduct_fiber_locally_propositional
+                        Γ₁
+                        (fiber_functor_from_cleaving D HD s φ)
+                        (fiber_functor_from_cleaving D HD s ψ)))) ;
+           [ | apply HD' | apply HD' ] ;
+           use idtoiso ;
+           apply and_sub).
+  Defined.
+End FiberwiseBinProductPoset.
+
 (** * 2. Preservation of fiberwise products *)
 Definition preserves_fiberwise_binproducts
            {C₁ C₂ : category}
