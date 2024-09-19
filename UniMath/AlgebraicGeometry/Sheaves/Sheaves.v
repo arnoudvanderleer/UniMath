@@ -171,19 +171,81 @@ Section SheafOfRings.
   Proof.
     refine (weqiff _ (isaprop_is_sheaf _ _) isaprop_is_sheaf').
     split.
-  Abort.
-    (* - intro H.
+    - intro H.
       split.
-      + intros A f g Hfg.
-        pose (equalizer_iso := z_iso_from_Equalizer_to_Equalizer (make_Equalizer _ _ _ _ (H A)) (Equalizers_commring_category _ _ _ _)).
-        pose (equalizer_to := z_iso_mor equalizer_iso : ringfun _ _).
-        pose (equalizer_from := inv_from_z_iso equalizer_iso : ringfun _ _).
-        pose (equalizer_to f).
-        pose (equalizer_to g).
-        epose (isEqualizer'_weq_isEqualizer _ _ _ _ _ (H A)).
-        unfold isEqualizer' in i.
-        cbn in i.
-        unfold postcomp_with_equalizer_mor in i.
-  Qed. *)
+      + intros A x y Hfg.
+        pose (E_iso := z_iso_from_Equalizer_to_Equalizer (make_Equalizer _ _ _ _ (H A)) (Equalizers_commring_category _ _ _ _)).
+        refine (!_ @ maponpaths (λ (f : ringfun _ _), f y) (z_iso_inv_after_z_iso E_iso)).
+        refine (!_ @ maponpaths (λ (f : ringfun _ _), f x) (z_iso_inv_after_z_iso E_iso)).
+        apply (maponpaths (λ x, (inv_from_z_iso E_iso : ringfun _ _) x)).
+        apply subtypePath.
+        {
+          intro.
+          apply setproperty.
+        }
+        apply funextsec.
+        intro U.
+        apply Hfg.
+      + intros A g Hg.
+        epose (E2 := (Equalizers_commring_category _ _ _ _)).
+        pose (E_iso := z_iso_from_Equalizer_to_Equalizer (make_Equalizer _ _ _ _ (H A)) E2).
+        pose (g2 := (g ,, funextsec _ _ _ (λ _, Hg _ _)) : (EqualizerObject E2 : commring)).
+        use tpair.
+        * exact ((inv_from_z_iso E_iso : ringfun _ _) g2).
+        * intro U.
+          exact (maponpaths
+            (λ (f : ringfun _ (EqualizerObject E2 : commring)),
+              pr1 (f g2) U)
+            (z_iso_after_z_iso_inv E_iso)).
+    - refine (λ H A (R : commring) (f : ringfun R _) Hf, _).
+      induction H as [Hl Hg].
+      use unique_exists.
+      + use ringfunconstr.
+        * intro r.
+          use (pr1 (Hg _ (f r) _)).
+          abstract (
+            intros U V;
+            exact (maponpaths (λ (f : ringfun _ (product_commring _ _)), f r (U ,, V)) Hf)
+          ).
+        * abstract (
+            use make_isrigfun;
+              use make_ismonoidfun;
+              repeat intro;
+              apply Hl;
+              intro U;
+            [ refine (_ @ !binopfunisbinopfun (ringaddfun (restriction (contained_in_union_open U))) _ _);
+              refine (pr2 (Hg _ _ _) U @ _);
+              refine (_ @ !maponpaths (λ x, _ x _) (pr2 (Hg _ _ _) U));
+              refine (_ @ !maponpaths (λ x, _ _ x) (pr2 (Hg _ _ _) U));
+              exact (maponpaths (λ x, x U) (binopfunisbinopfun (ringaddfun f) _ _))
+            | refine (_ @ !monoidfununel (ringaddfun (restriction (contained_in_union_open U))));
+              refine (pr2 (Hg _ _ _) U @ _);
+              exact (maponpaths (λ x, x U) (monoidfununel (ringaddfun f)))
+            | refine (_ @ !binopfunisbinopfun (ringmultfun (restriction (contained_in_union_open U))) _ _);
+              refine (pr2 (Hg _ _ _) U @ _);
+              refine (_ @ !maponpaths (λ x, _ x _) (pr2 (Hg _ _ _) U));
+              refine (_ @ !maponpaths (λ x, _ _ x) (pr2 (Hg _ _ _) U));
+              exact (maponpaths (λ x, x U) (binopfunisbinopfun (ringmultfun f) _ _))
+            | refine (_ @ !monoidfununel (ringmultfun (restriction (contained_in_union_open U))));
+              refine (pr2 (Hg _ _ _) U @ _);
+              exact (maponpaths (λ x, x U) (monoidfununel (ringmultfun f))) ]
+          ).
+      + apply rigfun_paths.
+        apply funextfun.
+        intro r.
+        apply funextsec.
+        intro U.
+        exact (pr2 (Hg _ _ _) U).
+      + intro.
+        apply setproperty.
+      + intros h Hh.
+        apply rigfun_paths.
+        apply funextfun.
+        intro r.
+        apply Hl.
+        intro U.
+        refine (_ @ !pr2 (Hg _ _ _) U).
+        exact (maponpaths (λ (f : ringfun _ (product_commring _ _)), f r U) Hh).
+  Qed.
 
 End SheafProperty.
