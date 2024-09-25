@@ -24,8 +24,6 @@ Require Import UniMath.CategoryTheory.yoneda.
 Require Import UniMath.CategoryTheory.opp_precat.
 Require Import UniMath.CategoryTheory.Categories.HSET.Core.
 Require Import UniMath.CategoryTheory.Categories.HSET.Limits.
-Require Import UniMath.CategoryTheory.Limits.Graphs.Pullbacks.
-Require Import UniMath.CategoryTheory.Limits.Graphs.Equalizers.
 Require Import UniMath.CategoryTheory.Subcategory.Core.
 Require Import UniMath.CategoryTheory.Subcategory.Full.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
@@ -78,21 +76,30 @@ Section def_grothendiecktopology.
     ∏ (c c' : C) (h : c' --> c) (s : sieve c),
     COS c s ->
     COS c' (PullbackSubobject
-              (FunctorcategoryPullbacks C^op HSET HSET_Pullbacks)
+              (FunctorcategoryPullbacks C^op HSET PullbacksHSET)
               s (yoneda_morphisms C  _ _ h)).
 
   Definition isGrothendieckTopology_transitivity (COS : collection_of_sieves) : UU :=
     ∏ (c : C) (s : sieve c),
     (∏ (c' : C) (h : c' --> c),
      COS c' (PullbackSubobject
-               (FunctorcategoryPullbacks C^op HSET HSET_Pullbacks)
-               s (yoneda_morphisms C  _ _ h))
-     -> COS c s).
+               (FunctorcategoryPullbacks C^op HSET PullbacksHSET)
+               s (yoneda_morphisms C  _ _ h)))
+     -> COS c s.
 
   Definition isGrothendieckTopology (COS : collection_of_sieves) : UU :=
     (isGrothendieckTopology_maximal_sieve COS)
       × (isGrothendieckTopology_stability COS)
       × (isGrothendieckTopology_transitivity COS).
+
+  Lemma isaprop_isGrothendieckTopology
+    (COS : collection_of_sieves)
+    : isaprop (isGrothendieckTopology COS).
+  Proof.
+    repeat apply isapropdirprod;
+      repeat (apply impred_isaprop; intro);
+      apply propproperty.
+  Qed.
 
   Definition GrothendieckTopology : UU :=
     ∑ COS : collection_of_sieves, isGrothendieckTopology COS.
