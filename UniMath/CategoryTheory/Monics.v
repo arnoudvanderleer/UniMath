@@ -263,7 +263,6 @@ Section monics_subcategory.
     : is_univalent subcategory_of_monics.
   Proof.
     intros a b.
-    Locate weqhomot.
     use weqhomot.
     - refine (iso_in_subcategory_of_monics_weq _ _ ∘ _)%weq.
       refine (make_weq _ (H _ _) ∘ _)%weq.
