@@ -368,23 +368,6 @@ Definition presheafed_space_morphism_to_nat_trans
 
 Section SubtypeSubtypes.
 
-  (** TODO : upstream this lemma *)
-
-  Lemma carrier_eq
-    (X : UU)
-    (A : hsubtype X)
-    (x y : A)
-    (H : pr1 x = pr1 y)
-    : x = y.
-  Proof.
-    apply subtypePath.
-    {
-      intro.
-      apply propproperty.
-    }
-    exact H.
-  Qed.
-
   Context {X : UU}.
   Context (A : hsubtype X).
 

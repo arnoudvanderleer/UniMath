@@ -10,13 +10,15 @@ Require Import UniMath.Foundations.Propositions.
 Require Import UniMath.Foundations.Sets.
 Require Import UniMath.MoreFoundations.PartA.
 
+Require Import UniMath.CategoryTheory.Categories.HSET.Core.
 Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.CategoryTheory.Core.Isos.
 Require Import UniMath.CategoryTheory.Core.NaturalTransformations.
 Require Import UniMath.CategoryTheory.Core.Univalence.
+Require Import UniMath.CategoryTheory.covyoneda.
 Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.Subcategory.Core.
-Require Import UniMath.CategoryTheory.Core.Functors.
 
 Local Open Scope cat.
 
@@ -290,6 +292,31 @@ Section monics_functorcategories.
       set (H'' := nat_trans_eq_pointwise H' x). cbn in H''.
       apply (H x) in H''.
       exact H''.
+  Qed.
+
+  Lemma presheaf_monic_isincl
+    {C : category}
+    {F G : C ⟶ HSET}
+    {α : F ⟹ G}
+    (H : isMonic (C := [_, _]) α)
+    (X : C)
+    : isincl (α X).
+  Proof.
+    apply (invmap (incl_injectivity _)).
+    intros x y.
+    refine (pr2 (weqiff (_ ,, _) (setproperty _ _ _) (setproperty _ _ _))).
+    intro Hxy.
+    do 2 refine (!maponpaths (λ (f : HSET⟦_, _⟧), f _) (functor_id F _) @ !_).
+    refine (eqtohomot (nat_trans_eq_pointwise
+        (H _ (invmap (covyoneda_weq _ X F) x) (invmap (covyoneda_weq _ X F) y) _)
+      X) (identity _)).
+    apply nat_trans_eq_alt.
+    intro Y.
+    apply funextfun.
+    intro f.
+    do 2 refine (maponpaths (λ (f : HSET⟦_, _⟧), f _) (nat_trans_ax _ _ _ _) @ !_).
+    apply (maponpaths (λ x, # G f x)).
+    exact Hxy.
   Qed.
 
 End monics_functorcategories.
