@@ -210,12 +210,13 @@ Section OpenOperations.
   Context {X : TopologicalSpace}.
 
   Definition union_open_hsubtype (A : hsubtype Open) : hsubtype X :=
-    union (λ U, ∃ H : isOpen U, A (U ,, H)).
+    union (λ U, ∑ H : isOpen U, A (U ,, H))%prop.
 
   Lemma is_open_union_open_hsubtype (A : hsubtype Open) : isOpen (union_open_hsubtype A).
   Proof.
-    apply isOpen_union. intros U HU.
-    use (hinhuniv _ HU); intros H. exact (pr1 H).
+    apply isOpen_union.
+    intros U HU.
+    exact (pr1 HU).
   Qed.
 
   Definition union_open (A : hsubtype Open) : Open :=
@@ -227,7 +228,7 @@ Section OpenOperations.
     : pr1 U ⊆ union_open A.
   Proof.
     intros x Hx. apply hinhpr. exists (pr1 U). use make_dirprod.
-    - apply hinhpr. exists (pr21 U). exact (pr2 U).
+    - exists (pr21 U). exact (pr2 U).
     - exact Hx.
   Qed.
 
@@ -239,8 +240,8 @@ Section OpenOperations.
     induction p as [p Hp]. simpl in Hp.
     use (hinhuniv _ Hp); intro Hu.
     induction Hu as [u Hu]. induction Hu as [Hu Hup].
-    use (hinhfun _ Hu); intro H.
-    induction H as [H HUu].
+    use hinhpr.
+    induction Hu as [Hu HUu].
     exists (make_carrier _ _ HUu). exact Hup.
   Qed.
 
