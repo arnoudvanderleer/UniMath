@@ -111,21 +111,6 @@ Defined.
 
 (* TODO : upstream a lot of this material *)
 
-Lemma carrier_eq
-  (X : UU)
-  (A : hsubtype X)
-  (x y : A)
-  (H : pr1 x = pr1 y)
-  : x = y.
-Proof.
-  apply subtypePath.
-  {
-    intro.
-    apply propproperty.
-  }
-  exact H.
-Qed.
-
 Section PoCategorySieve.
 
   Context {X : UU}.
