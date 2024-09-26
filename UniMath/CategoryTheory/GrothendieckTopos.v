@@ -122,10 +122,12 @@ Section def_grothendiecktopology.
 
   (** This is a formalization of the definition on page 122 *)
   Definition isSheaf (P : Presheaf) (GT : GrothendieckTopology) : UU :=
-    ∏ (c : C) (S : sieve c) (isCOS : GrothendieckTopology_COS GT c S)
-      (τ : nat_trans (sieve_functor S) (PresheafToFunctor P)),
-    iscontr (∑ η : nat_trans (FunctorPrecatObToFunctor (yoneda C c)) (PresheafToFunctor P),
-                   nat_trans_comp _ _ _ (sieve_nat_trans S) η = τ).
+    ∏ (c : C)
+      (S : sieve c)
+      (isCOS : GrothendieckTopology_COS GT c S)
+      (τ : (sieve_functor S) ⟹ (P : _ ⟶ _)),
+    ∃! (η : (yoneda C c : _ ⟶ _) ⟹ (P : _ ⟶ _)),
+      nat_trans_comp _ _ _ (sieve_nat_trans S) η = τ.
 
   Lemma isaprop_isSheaf (GT : GrothendieckTopology) (P : Presheaf) : isaprop(isSheaf P GT).
   Proof.
