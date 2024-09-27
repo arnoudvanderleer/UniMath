@@ -1,3 +1,15 @@
+(**************************************************************************************************
+
+  Sieves in a preorder category
+
+  If we turn a preorder into a category C, a sieve on X : C (a subobject of the Yoneda presheaf of
+  X) is equivalent to a collection of objects Y with Y < X (the downset of X), such that if Y is in
+  the collection and Z < Y, then Z is also in the collection (the collection is downward closed).
+
+  Contents
+  1. The equivalence [po_sieve_weq_subtype]
+
+ **************************************************************************************************)
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.GrothendieckTopos.
@@ -24,7 +36,7 @@ Section PoCategorySieve.
   Lemma isaprop_po_sieve_dom
     (y : X)
     (f : sieve (po_category P) x)
-    : isaprop ((Subobject_dom f : _ ⟶ _) y : hSet).
+    : isaprop (sieve_functor _ f y : hSet).
   Proof.
     apply invproofirrelevance.
     intros z w.
@@ -38,11 +50,11 @@ Section PoCategorySieve.
   Proof.
     use make_downward_closed_down_subtype.
     - intro y.
-      apply (make_hProp ((Subobject_dom f : _ ⟶ _) (down_type_element y) : hSet)).
+      apply (make_hProp (sieve_functor _ f (down_type_element y) : hSet)).
       abstract apply isaprop_po_sieve_dom.
     - abstract (
         intros y z Hzy;
-        exact (# (Subobject_dom f : _ ⟶ _) Hzy (pr2 y))
+        exact (# (sieve_functor _ f) Hzy (pr2 y))
       ).
   Defined.
 
@@ -110,50 +122,93 @@ Section PoCategorySieve.
     := (subtype_to_functor f ,, tt) ,,
       make_Monic ([_, _]) (subtype_to_nat_trans f) (subtype_to_isMonic f).
 
-  Definition sieve_to_subtype_to_sieve
-    (f : sieve (po_category P) x)
-    : subtype_to_sieve (sieve_to_subtype f) = f.
-  Proof.
-    use isotoid.
-    - apply is_univalent_slicecat.
-      apply is_univalent_monics_cat.
-      apply is_univalent_functor_category.
-      apply is_univalent_HSET.
-    - apply slicecat.weq_z_iso.
+  Section SieveToSubtypeToSieve.
+
+    Context (f : sieve (po_category P) x).
+
+    Definition sieve_to_sieve_nat_trans_data
+      : nat_trans_data (sieve_functor _ (subtype_to_sieve (sieve_to_subtype f))) (sieve_functor _ f).
+    Proof.
+      intros y Hy.
+      exact (pr2 Hy).
+    Defined.
+
+    Definition sieve_to_sieve_is_nat_trans
+      : is_nat_trans _ _ sieve_to_sieve_nat_trans_data.
+    Proof.
+      do 3 intro.
+      apply funextfun.
+      intro.
+      apply isaprop_po_sieve_dom.
+    Qed.
+
+    Definition sieve_to_sieve_nat_trans
+      : sieve_functor _ (subtype_to_sieve (sieve_to_subtype f)) ⟹ sieve_functor _ f
+      := make_nat_trans _ _ _ sieve_to_sieve_is_nat_trans.
+
+    Section Inverse.
+
+      Context (y : X).
+
+      Definition sieve_to_sieve_inv
+        : SET⟦sieve_functor _ f y, sieve_functor _ (subtype_to_sieve (sieve_to_subtype f)) y⟧
+        := λ Hfy, (sieve_nat_trans _ f y Hfy ,, Hfy).
+
+      Lemma sieve_to_sieve_is_inverse
+        : is_inverse_in_precat (sieve_to_sieve_nat_trans y) sieve_to_sieve_inv.
+      Proof.
+        split.
+        - apply funextfun.
+          intro H.
+          apply (maponpaths (λ x, x ,, _)).
+          apply propproperty.
+        - easy.
+      Qed.
+
+      Definition sieve_to_sieve_is_iso
+        : is_z_isomorphism (sieve_to_sieve_nat_trans y)
+        := make_is_z_isomorphism _ sieve_to_sieve_inv sieve_to_sieve_is_inverse.
+
+    End Inverse.
+
+    Definition sieve_to_sieve_iso
+      : z_iso
+        (slicecat_ob_object _ _ (subtype_to_sieve (sieve_to_subtype f)))
+        (slicecat_ob_object _ _ f).
+    Proof.
+      apply iso_in_subcategory_of_monics_weq.
       use tpair.
-      + apply iso_in_subcategory_of_monics_weq.
+      - exact sieve_to_sieve_nat_trans.
+      - apply nat_trafo_z_iso_if_pointwise_z_iso.
+        exact sieve_to_sieve_is_iso.
+    Defined.
+
+    Lemma sieve_to_sieve_commutes
+      : slicecat_ob_morphism _ _ (subtype_to_sieve (sieve_to_subtype f))
+      = sieve_to_sieve_iso · slicecat_ob_morphism _ _ f.
+    Proof.
+      apply Monic_eq.
+      apply nat_trans_eq_alt.
+      intro y.
+      apply funextfun.
+      intro H.
+      apply propproperty.
+    Qed.
+
+    Definition sieve_to_subtype_to_sieve
+      : subtype_to_sieve (sieve_to_subtype f) = f.
+    Proof.
+      use isotoid.
+      - apply is_univalent_Subobjectscategory.
+        apply is_univalent_functor_category.
+        apply is_univalent_HSET.
+      - apply slicecat.weq_z_iso.
         use tpair.
-        * use make_nat_trans.
-          -- intros y Hy.
-            exact (pr2 Hy).
-          -- abstract (
-              do 3 intro;
-              apply funextfun;
-              intro;
-              apply isaprop_po_sieve_dom
-            ).
-        * apply nat_trafo_z_iso_if_pointwise_z_iso.
-          intro y.
-          use (make_is_z_isomorphism _ _ (make_dirprod _ _)).
-          -- intro Hfy.
-            exists ((Subobject_mor f : _ ⟹ _) y Hfy).
-            exact Hfy.
-          -- abstract (
-              apply funextfun;
-              intro H;
-              apply (maponpaths (λ x, x ,, _));
-              apply propproperty
-            ).
-          -- abstract easy.
-      + abstract (
-          apply Monic_eq;
-          apply nat_trans_eq_alt;
-          intro y;
-          apply funextfun;
-          intro H;
-          apply propproperty
-        ).
-  Qed.
+        + exact sieve_to_sieve_iso.
+        + exact sieve_to_sieve_commutes.
+    Qed.
+
+  End SieveToSubtypeToSieve.
 
   Lemma subtype_to_sieve_to_subtype
     (f : downward_closed_down_subtype P x)
@@ -175,7 +230,7 @@ Section PoCategorySieve.
       exact (pr2 y ,, H).
   Qed.
 
-  Definition sieve_weq_subtype
+  Definition po_sieve_weq_subtype
     : sieve (po_category P) x ≃ downward_closed_down_subtype P x.
   Proof.
     use weq_iso.
