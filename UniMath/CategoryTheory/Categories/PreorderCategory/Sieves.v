@@ -68,16 +68,16 @@ Section PoCategorySieve.
       use make_functor.
       - use make_functor_data.
         + intro y.
-          refine (make_hSet (∑ (H : P y x), pr1 f (y ,, H)) _).
+          apply (make_hSet (carrier_subtype_weq_contained_subtype _ f y)).
           abstract (
             apply isasetaprop;
-            apply isaprop_total2
+            apply propproperty
           ).
         + abstract (
             intros y z Hzy Hyx;
             use tpair;
-            [ exact (istrans_po P z y x Hzy (pr1 Hyx))
-            | exact (pr2 f (make_carrier _ _ (pr2 Hyx)) z Hzy) ]
+            [ exact (istrans_po P z y x Hzy (pr1carrier _ Hyx))
+            | exact (downward_closed_is_downward_closed _ _ f (make_carrier _ _ (pr2 Hyx)) z Hzy) ]
           ).
       - abstract (
           split;
@@ -231,13 +231,11 @@ Section PoCategorySieve.
   Qed.
 
   Definition po_sieve_weq_subtype
-    : sieve (po_category P) x ≃ downward_closed_down_subtype P x.
-  Proof.
-    use weq_iso.
-    - exact sieve_to_subtype.
-    - exact subtype_to_sieve.
-    - exact sieve_to_subtype_to_sieve.
-    - exact subtype_to_sieve_to_subtype.
-  Defined.
+    : sieve (po_category P) x ≃ downward_closed_down_subtype P x
+    := weq_iso
+      sieve_to_subtype
+      subtype_to_sieve
+      sieve_to_subtype_to_sieve
+      subtype_to_sieve_to_subtype.
 
 End PoCategorySieve.

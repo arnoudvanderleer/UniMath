@@ -51,6 +51,11 @@ Section DownwardClosedDownSubtype.
     : hsubtype (down_type P x)
     := pr1 f.
 
+  Definition downward_closed_is_downward_closed
+    (f : downward_closed_down_subtype)
+    : is_downward_closed f
+    := pr2 f.
+
   Definition make_downward_closed_down_subtype
     (f : hsubtype (down_type P x))
     (H : is_downward_closed f)
