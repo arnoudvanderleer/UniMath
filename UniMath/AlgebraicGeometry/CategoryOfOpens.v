@@ -32,7 +32,6 @@ Require Import UniMath.Topology.Topology.
 
 Local Open Scope cat.
 Local Open Scope subtype.
-Local Open Scope open.
 
 (** * 1. The category of opens *)
 
@@ -105,43 +104,84 @@ Defined.
 
 (** * 4. The Grothendieck topology *)
 
-Definition opens_cat_Grothendieck_topology
-  (T : TopologicalSpace)
-  : GrothendieckTopology (opens_cat T).
-Proof.
-  use tpair.
-  - intros U f.
-    refine ((U : Open) ⊆ (⋃ _)).
-    intro V.
-    exact (make_hProp (∑ H, sieve_weq_subtype f (V ,, H)) (isaprop_total2 _ _)).
-  - repeat split.
-    + intros U x HUx.
-      apply hinhpr.
-      exists (pr1 U).
-      refine (make_dirprod _ HUx).
-      exists (pr2 U).
-      use tpair;
-        exact (λ y HUy, HUy).
-    + intros U V HVU f HUf x HVx.
-      specialize (HUf x (HVU x HVx)).
-      revert HUf.
-      apply hinhfun.
-      intro HUf.
-      exists (pr1 HUf ∩ (V : Open))%subtype.
-      refine (make_dirprod _ (make_dirprod (pr22 HUf) HVx)).
-      exists (isOpen_and _ _ (pr112 HUf) (pr2 V)).
-      exists (λ x H, pr2 H).
-      use tpair.
-      * exists (λ x H, pr2 H).
-        refine (# (Subobject_dom f : _ ⟶ _) _ (pr22 (pr12 HUf))).
-        exact (λ y H, pr1 H).
-      * apply isaprop_subtype_containedIn.
-    + intros U f HV x HUx.
-      refine (hinhfun _ (HV U (λ x Hx, Hx) x HUx)).
-      intro HV'.
-      exists (pr1 HV').
-      refine (make_dirprod _ (pr22 HV')).
-      exists (pr112 HV').
-      exists (pr1 (pr212 HV')).
-      exact (pr212 (pr212 HV')).
-Defined.
+Section GrothendieckTopology.
+
+  Context (T : TopologicalSpace).
+
+  Definition opens_cat_Grothendieck_topology_sieve_selection
+    : sieve_selection (opens_cat T)
+    := λ (U : Open) f, U ⊆ ⋃ (λ (V : carrier_subtype_weq_contained_subtype _ (po_sieve_weq_subtype f)), pr1carrier _ V).
+
+  Definition make_opens_cat_selected_sieve
+    {U : Open}
+    {x : T}
+    {f : sieve (opens_cat T) U}
+    (V : Open)
+    (HVU : V ⊆ U)
+    (HfV : (sieve_functor _ f V : hSet))
+    (HVx : V x)
+    : ∑ (i : carrier_subtype_weq_contained_subtype _ (po_sieve_weq_subtype f)), pr1carrier _ i x
+    := (V ,, HVU ,, HfV) ,, HVx.
+
+  Lemma opens_cat_Grothendieck_topology_maximal_sieve
+    : is_Grothendieck_topology_maximal_sieve _ opens_cat_Grothendieck_topology_sieve_selection.
+  Proof.
+    intros U x HUx.
+    apply hinhpr.
+    use make_opens_cat_selected_sieve.
+    - exact U.
+    - apply subtype_containment_isrefl.
+    - apply subtype_containment_isrefl.
+    - exact HUx.
+  Qed.
+
+  Lemma opens_cat_Grothendieck_topology_stability
+    : is_Grothendieck_topology_stability _ opens_cat_Grothendieck_topology_sieve_selection.
+  Proof.
+    intros U V HVU f HUf x HVx.
+    specialize (HUf x (HVU x HVx)).
+    revert HUf.
+    apply hinhfun.
+    intro HUf.
+    use make_opens_cat_selected_sieve.
+    - exact (pr1carrier _ (pr1carrier _ HUf) ∩ V)%open.
+    - apply intersection_contained_r.
+    - use tpair.
+      + exists (intersection_contained_r _ _).
+        refine (# (sieve_functor _ f) _ (pr22 (pr1carrier _ HUf))).
+        exact (intersection_contained_l _ _).
+      + apply propproperty.
+    - split.
+      + exact (pr2 HUf).
+      + exact HVx.
+  Qed.
+
+  Arguments pr1carrier {X} {A}.
+
+  Lemma opens_cat_Grothendieck_topology_transitivity
+    : is_Grothendieck_topology_transitivity _ opens_cat_Grothendieck_topology_sieve_selection.
+  Proof.
+    intros U f HV x HUx.
+    specialize (HV U (λ x Hx, Hx) x HUx).
+    revert HV.
+    apply hinhfun.
+    intro HV.
+    use make_opens_cat_selected_sieve.
+    - exact (pr1carrier (pr1carrier HV)).
+    - exact (pr1carrier (pr2 (pr1carrier HV))).
+    - exact (pr21 (pr22 (pr1carrier HV))).
+    - exact (pr2 HV).
+  Qed.
+
+  Definition opens_cat_is_Grothendieck_topology
+    : is_Grothendieck_topology _ opens_cat_Grothendieck_topology_sieve_selection
+    := opens_cat_Grothendieck_topology_maximal_sieve ,,
+      opens_cat_Grothendieck_topology_stability ,,
+      opens_cat_Grothendieck_topology_transitivity.
+
+  Definition opens_cat_Grothendieck_topology
+    : Grothendieck_topology (opens_cat T)
+    := opens_cat_Grothendieck_topology_sieve_selection ,,
+      opens_cat_is_Grothendieck_topology.
+
+End GrothendieckTopology.
