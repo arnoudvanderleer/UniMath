@@ -336,6 +336,37 @@ Section def_grothendiecktopology.
         apply id_right.
     Qed.
 
+    Lemma is_sheaf'_to_is_sheaf''
+      : is_sheaf' → is_sheaf''.
+    Proof.
+      intro H.
+      split;
+        intros c S;
+        specialize (H c S);
+        pose (i := make_z_iso' _ H).
+      - intros f g Hfg.
+        refine (!_ @ eqtohomot (z_iso_inv_after_z_iso i) g).
+        refine (!_ @ eqtohomot (z_iso_inv_after_z_iso i) f).
+        apply (maponpaths (inv_from_z_iso i)).
+        apply subtypePath.
+        {
+          intro.
+          apply propproperty.
+        }
+        apply funextsec.
+        intro Vf.
+        apply Hfg.
+      - intros f Hf.
+        use tpair.
+        + refine (inv_from_z_iso i _).
+          exists (λ Vf, f (pr1 Vf) (pr2 Vf)).
+          apply funextsec.
+          intro VWfg.
+          apply Hf.
+        + intros d g.
+          refine (maponpaths (λ x, pr1 (x _) (_ ,, _)) (z_iso_after_z_iso_inv i)).
+    Qed.
+
   End SheafProperties.
 
   (** The category of sheaves is the full subcategory of presheaves consisting of the presheaves
