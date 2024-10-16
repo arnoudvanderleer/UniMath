@@ -10,8 +10,8 @@ Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Subcategory.Core.
 
-Require Import UniMath.CategoryTheory.GrothendieckTopos.GrothendieckTopology.
-Require Import UniMath.CategoryTheory.GrothendieckTopos.Sheaves.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.GrothendieckTopologies.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Sheaves.
 
 Local Open Scope cat.
 

@@ -19,36 +19,47 @@ Section Sieves.
   Definition sieve (c : C) : UU :=
     Subobjectscategory (yoneda C c).
 
+  Context {c : C}.
 
-  Definition sieve_functor {c : C} (S : sieve c)
+  Definition sieve_functor (S : sieve c)
     : C^op ⟶ HSET
     := Subobject_dom S.
 
-  Definition sieve_nat_trans {c : C} (S : sieve c) :
+  Definition sieve_nat_trans (S : sieve c) :
     sieve_functor S ⟹ yoneda_objects C c
     := Subobject_mor S.
 
-
-  Definition sieve_selected_morphism {c : C} (S : sieve c)
+  Definition sieve_selected_morphism (S : sieve c)
     := ∑ (d : C), (sieve_functor S d : hSet).
 
+  Context {S : sieve c}.
+
+  Definition make_sieve_selected_morphism
+    (d : C)
+    (f : (sieve_functor S d : hSet))
+    : sieve_selected_morphism S
+    := d ,, f.
+
+  Context (f : sieve_selected_morphism S).
+
   Definition sieve_selected_morphism_domain
-    {c : C} {S : sieve c} (f : sieve_selected_morphism S)
     : C
     := pr1 f.
 
-  Coercion sieve_selected_morphism_morphism
-    {c : C} (S : sieve c) (f : sieve_selected_morphism S)
-    : C⟦sieve_selected_morphism_domain f, c⟧
-    := sieve_nat_trans S _ (pr2 f).
+  Definition sieve_selected_morphism_preimage
+    : (sieve_functor S sieve_selected_morphism_domain : hSet)
+    := pr2 f.
+
+  Definition sieve_selected_morphism_morphism
+    : C⟦sieve_selected_morphism_domain, c⟧
+    := sieve_nat_trans S _ sieve_selected_morphism_preimage.
 
   Definition sieve_selected_morphism_compose
-    {c : C}
-    {S : sieve c}
-    (f : sieve_selected_morphism S)
     {d : C}
-    (g : C⟦d, sieve_selected_morphism_domain f⟧)
+    (g : C⟦d, sieve_selected_morphism_domain⟧)
     : sieve_selected_morphism S
     := d ,, # (sieve_functor S) g (pr2 f).
 
 End Sieves.
+
+Coercion sieve_selected_morphism_morphism : sieve_selected_morphism >-> precategory_morphisms.

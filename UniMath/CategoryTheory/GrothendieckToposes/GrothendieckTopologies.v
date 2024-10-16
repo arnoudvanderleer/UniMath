@@ -19,8 +19,9 @@ Require Import UniMath.CategoryTheory.Presheaf.
 Require Import UniMath.CategoryTheory.Subobjects.
 Require Import UniMath.CategoryTheory.yoneda.
 
-Require Import UniMath.CategoryTheory.GrothendieckTopos.Sieves.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Sieves.
 
+Local Open Scope logic.
 Local Open Scope cat.
 
 Section GrothendieckTopology.
@@ -29,49 +30,75 @@ Section GrothendieckTopology.
 
   Definition sieve_selection : UU := ∏ (c : C), hsubtype (sieve c).
 
+  Definition sieve_selection_to_product (GT : sieve_selection)
+    : ∏ (c : C), hsubtype (sieve c)
+    := GT.
+
+  Coercion sieve_selection_to_product : sieve_selection >-> Funclass.
+
   Section IsGrothendieckTopology.
 
     Context (selection : sieve_selection).
 
-    Definition is_Grothendieck_topology_maximal_sieve : UU :=
-      ∏ (c : C),
+    Definition Grothendieck_topology_maximal_sieve_ax : hProp :=
+      ∀ (c : C),
         selection c (Subobjectscategory_ob (identity (yoneda C c)) (identity_isMonic _)).
 
-    Definition is_Grothendieck_topology_stability : UU :=
-      ∏ (c c' : C) (h : c' --> c) (s : sieve c),
-        selection c s →
+    Definition Grothendieck_topology_stability_ax : hProp :=
+      ∀ (c c' : C) (h : c' --> c) (s : sieve c),
+        selection c s ⇒
         selection c' (PullbackSubobject Pullbacks_PreShv s (# (yoneda C) h)).
 
-    Definition is_Grothendieck_topology_transitivity : UU :=
-      ∏ (c : C) (s : sieve c),
+    Definition Grothendieck_topology_transitivity_ax : hProp :=
+      ∀ (c : C) (s : sieve c),
         (∏ (c' : C) (h : c' --> c),
           selection c' (PullbackSubobject Pullbacks_PreShv s (# (yoneda C) h)))
-        → selection c s.
+        ⇒ selection c s.
 
-    Definition is_Grothendieck_topology : UU :=
-      is_Grothendieck_topology_maximal_sieve
-      × is_Grothendieck_topology_stability
-      × is_Grothendieck_topology_transitivity.
+    Definition is_Grothendieck_topology : hProp :=
+      Grothendieck_topology_maximal_sieve_ax
+      ∧ Grothendieck_topology_stability_ax
+      ∧ Grothendieck_topology_transitivity_ax.
 
-    Lemma isaprop_is_Grothendieck_topology
-      : isaprop is_Grothendieck_topology.
-    Proof.
-      repeat apply isapropdirprod;
-        repeat (apply impred_isaprop; intro);
-        apply propproperty.
-    Qed.
+    Definition make_is_Grothendieck_topology
+      (H1 : Grothendieck_topology_maximal_sieve_ax)
+      (H2 : Grothendieck_topology_stability_ax)
+      (H3 : Grothendieck_topology_transitivity_ax)
+      : is_Grothendieck_topology
+      := H1 ,, H2 ,, H3.
 
   End IsGrothendieckTopology.
 
   Definition Grothendieck_topology : UU :=
     ∑ selection, is_Grothendieck_topology selection.
 
+  Definition make_Grothendieck_topology
+    (selection : sieve_selection)
+    (H : is_Grothendieck_topology selection)
+    : Grothendieck_topology
+    := selection ,, H.
+
   (** Accessor functions *)
-  Definition Grothendieck_topology_sieve_selection (GT : Grothendieck_topology) : sieve_selection := pr1 GT.
+  Coercion Grothendieck_topology_sieve_selection (GT : Grothendieck_topology) :
+    sieve_selection := pr1 GT.
 
   Definition Grothendieck_topology_is_Grothendieck_topology (GT : Grothendieck_topology) :
-    is_Grothendieck_topology (Grothendieck_topology_sieve_selection GT) := pr2 GT.
+    is_Grothendieck_topology GT := pr2 GT.
+
+  Definition Grothendieck_topology_maximal_sieve (GT : Grothendieck_topology)
+    : Grothendieck_topology_maximal_sieve_ax GT
+    := pr1 (Grothendieck_topology_is_Grothendieck_topology GT).
+
+  Definition Grothendieck_topology_stability (GT : Grothendieck_topology)
+    : Grothendieck_topology_stability_ax GT
+    := pr12 (Grothendieck_topology_is_Grothendieck_topology GT).
+
+  Definition Grothendieck_topology_transitivity (GT : Grothendieck_topology)
+    : Grothendieck_topology_transitivity_ax GT
+    := pr22 (Grothendieck_topology_is_Grothendieck_topology GT).
 
 End GrothendieckTopology.
 
+Arguments make_is_Grothendieck_topology {C} {selection}.
+Arguments make_Grothendieck_topology {C}.
 Arguments Grothendieck_topology : clear implicits.
