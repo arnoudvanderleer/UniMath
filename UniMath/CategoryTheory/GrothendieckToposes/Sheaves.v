@@ -12,11 +12,10 @@ Require Import UniMath.CategoryTheory.Limits.Products.
 Require Import UniMath.CategoryTheory.Presheaf.
 Require Import UniMath.CategoryTheory.Subcategory.Core.
 Require Import UniMath.CategoryTheory.Subcategory.Full.
-Require Import UniMath.CategoryTheory.Subobjects.
 Require Import UniMath.CategoryTheory.yoneda.
 
-Require Import UniMath.CategoryTheory.GrothendieckToposes.Sieves.
 Require Import UniMath.CategoryTheory.GrothendieckToposes.GrothendieckTopologies.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Sieves.
 
 Local Open Scope cat.
 
@@ -311,45 +310,48 @@ Section Sheaves.
           refine (maponpaths (λ x, pr1 (x _) _) (z_iso_after_z_iso_inv i)).
     Qed.
 
-    (* Lemma is_sheaf''_to_is_sheaf
+    Lemma is_sheaf''_to_is_sheaf
       : is_sheaf'' → is_sheaf.
     Proof.
-      intros H c S t.
+      intros H X S t.
       induction H as [HL HG].
+      specialize (HG
+        X
+        S
+        (λ f, t _ (sieve_selected_morphism_preimage f))
+        (λ f Z g, eqtohomot (nat_trans_ax t _ _ g) _)).
       use unique_exists.
-      - use make_nat_trans.
-        + intros d f.
-          use (pr1 (HG _ _ _ _)); cbn.
-          * apply (tpair _ (PullbackSubobject Pullbacks_PreShv (pr1carrier _ S) (# (yoneda C) f))).
-            apply (Grothendieck_topology_stability).
-            exact (pr2 S).
-          * intro g.
-            refine (t _ _).
-            exact (pr212 g).
-          * abstract (
-              intros g e h;
-              exact (eqtohomot (nat_trans_ax t _ _ _) _)
-            ).
-        + intros d e g.
-          cbn in d, e, g.
-          apply funextfun.
-          intro h.
-          cbn.
-          use HL.
-          * apply (tpair _ (PullbackSubobject Pullbacks_PreShv (pr1carrier _ S) (# (yoneda C) (g · h)))).
-            apply (Grothendieck_topology_stability).
-            exact (pr2 S).
-          * intro i.
-            refine (pr2 (HG _ _ _ _) _ @ !_).
-            refine (maponpaths (# (P : _ ⟶ _) i) (pr2 (HG _ _ _ _) _) @ !_).
-            refine (eqtohomot (!functor_comp (P : _ ⟶ _) g i) _ @ _).
-            match goal with
-            | [ |- _ (pr1 ?a) = _ ] => pose (pr2 a)
-            end.
-            cbn in p.
-            pose (sieve_selected_morphism_compose i g).
-            refine (pr2 (HG d _ _ _) _ @ _).
-    Qed. *)
+      - apply (invmap (yoneda_weq C X P)).
+        exact (pr1 HG).
+      - apply nat_trans_eq_alt.
+        intro Y.
+        apply funextfun.
+        intro x.
+        exact (pr2 HG (make_sieve_selected_morphism (S := pr1carrier _ S) Y x)).
+      - intro y.
+        apply (homset_property (PreShv C)).
+      - intros f Hf.
+        apply pathsweq1.
+        apply (HL X S).
+        intro g.
+        refine (_ @ !pr2 HG g).
+        refine (!eqtohomot (nat_trans_ax f _ _ _) _ @ _).
+        refine (_ @ eqtohomot (nat_trans_eq_weq (homset_property _) _ t Hf _) _).
+        apply (maponpaths (f _)).
+        apply id_right.
+    Qed.
+
+    Definition is_sheaf''_to_is_sheaf'
+      : is_sheaf'' → is_sheaf'
+      := (is_sheaf_to_is_sheaf' ∘ is_sheaf''_to_is_sheaf)%functions.
+
+    Definition is_sheaf'_to_is_sheaf
+      : is_sheaf' → is_sheaf
+      := (is_sheaf''_to_is_sheaf ∘ is_sheaf'_to_is_sheaf'')%functions.
+
+    Definition is_sheaf_to_is_sheaf''
+      : is_sheaf → is_sheaf''
+      := (is_sheaf'_to_is_sheaf'' ∘ is_sheaf_to_is_sheaf')%functions.
 
   End SheafProperties.
 
