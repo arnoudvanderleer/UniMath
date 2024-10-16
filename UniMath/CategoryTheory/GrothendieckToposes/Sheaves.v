@@ -22,7 +22,7 @@ Local Open Scope cat.
 
 Section Sheaves.
 
-  Context (C : category).
+  Context {C : category}.
   Context (GT : Grothendieck_topology C).
 
   Section SheafProperties.
@@ -103,8 +103,9 @@ Section Sheaves.
       Proof.
         apply (ProductArrow _ SET).
         intro fWg.
-        refine (ProductPr _ _ _ (make_sieve_selected_morphism _ _)).
-        refine (sieve_selected_morphism_preimage (sieve_selected_morphism_compose (sheaf_property_equalizer_codomain_index_selected_morphism fWg) (sheaf_property_equalizer_codomain_index_morphism fWg))).
+        use (ProductPr _ _ _ (sieve_selected_morphism_compose _ _)).
+        - apply (sheaf_property_equalizer_codomain_index_selected_morphism fWg).
+        - exact (sheaf_property_equalizer_codomain_index_morphism fWg).
       Defined.
 
       Definition sheaf_property_equalizer_arrow2
