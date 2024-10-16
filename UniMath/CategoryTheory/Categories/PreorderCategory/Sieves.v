@@ -12,7 +12,7 @@
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
-Require Import UniMath.CategoryTheory.GrothendieckTopos.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Sieves.
 Require Import UniMath.CategoryTheory.Categories.PreorderCategory.Core.
 Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.Subobjects.
@@ -35,8 +35,8 @@ Section PoCategorySieve.
 
   Lemma isaprop_po_sieve_dom
     (y : X)
-    (f : sieve (po_category P) x)
-    : isaprop (sieve_functor _ f y : hSet).
+    (f : sieve (C := po_category P) x)
+    : isaprop (sieve_functor f y : hSet).
   Proof.
     apply invproofirrelevance.
     intros z w.
@@ -45,22 +45,22 @@ Section PoCategorySieve.
   Qed.
 
   Definition sieve_to_subtype
-    (f : sieve (po_category P) x)
-    : downward_closed_down_subtype P x.
+    (f : sieve (C := po_category P) x)
+    : downward_closed_subtype (subpreorder P (down_type P x)).
   Proof.
-    use make_downward_closed_down_subtype.
+    use make_downward_closed_subtype.
     - intro y.
-      apply (make_hProp (sieve_functor _ f (down_type_element y) : hSet)).
+      apply (make_hProp (sieve_functor f (pr1carrier _ y) : hSet)).
       abstract apply isaprop_po_sieve_dom.
     - abstract (
-        intros y z Hzy;
-        exact (# (sieve_functor _ f) Hzy (pr2 y))
+        intros y z;
+        exact (# (sieve_functor f) (pr2 z) (pr2 y))
       ).
   Defined.
 
   Section SubtypeToSieve.
 
-    Context (f : downward_closed_down_subtype P x).
+    Context (f : downward_closed_subtype (subpreorder P (down_type P x))).
 
     Definition subtype_to_functor
       : (po_category P)^op ⟶ SET.
@@ -77,7 +77,7 @@ Section PoCategorySieve.
             intros y z Hzy Hyx;
             use tpair;
             [ exact (istrans_po P z y x Hzy (pr1carrier _ Hyx))
-            | exact (downward_closed_is_downward_closed _ _ f (make_carrier _ _ (pr2 Hyx)) z Hzy) ]
+            | exact (downward_closed_is_downward_closed _ f (make_carrier _ _ (pr2 Hyx)) (make_carrier _ (make_carrier _ z _) Hzy)) ]
           ).
       - abstract (
           split;
@@ -117,17 +117,17 @@ Section PoCategorySieve.
   End SubtypeToSieve.
 
   Definition subtype_to_sieve
-    (f : downward_closed_down_subtype P x)
-    : sieve (po_category P) x
+    (f : downward_closed_subtype (subpreorder P (down_type P x)))
+    : sieve (C := po_category P) x
     := (subtype_to_functor f ,, tt) ,,
       make_Monic ([_, _]) (subtype_to_nat_trans f) (subtype_to_isMonic f).
 
   Section SieveToSubtypeToSieve.
 
-    Context (f : sieve (po_category P) x).
+    Context (f : sieve (C := po_category P) x).
 
     Definition sieve_to_sieve_nat_trans_data
-      : nat_trans_data (sieve_functor _ (subtype_to_sieve (sieve_to_subtype f))) (sieve_functor _ f).
+      : nat_trans_data (sieve_functor (subtype_to_sieve (sieve_to_subtype f))) (sieve_functor f).
     Proof.
       intros y Hy.
       exact (pr2 Hy).
@@ -143,7 +143,7 @@ Section PoCategorySieve.
     Qed.
 
     Definition sieve_to_sieve_nat_trans
-      : sieve_functor _ (subtype_to_sieve (sieve_to_subtype f)) ⟹ sieve_functor _ f
+      : sieve_functor (subtype_to_sieve (sieve_to_subtype f)) ⟹ sieve_functor f
       := make_nat_trans _ _ _ sieve_to_sieve_is_nat_trans.
 
     Section Inverse.
@@ -151,8 +151,8 @@ Section PoCategorySieve.
       Context (y : X).
 
       Definition sieve_to_sieve_inv
-        : SET⟦sieve_functor _ f y, sieve_functor _ (subtype_to_sieve (sieve_to_subtype f)) y⟧
-        := λ Hfy, (sieve_nat_trans _ f y Hfy ,, Hfy).
+        : SET⟦sieve_functor f y, sieve_functor (subtype_to_sieve (sieve_to_subtype f)) y⟧
+        := λ Hfy, (sieve_nat_trans f y Hfy ,, Hfy).
 
       Lemma sieve_to_sieve_is_inverse
         : is_inverse_in_precat (sieve_to_sieve_nat_trans y) sieve_to_sieve_inv.
@@ -211,13 +211,13 @@ Section PoCategorySieve.
   End SieveToSubtypeToSieve.
 
   Lemma subtype_to_sieve_to_subtype
-    (f : downward_closed_down_subtype P x)
+    (f : downward_closed_subtype (subpreorder P (down_type P x)))
     : sieve_to_subtype (subtype_to_sieve f) = f.
   Proof.
     use subtypePath.
     {
       intro.
-      do 3 (apply impred_isaprop; intro).
+      do 2 (apply impred_isaprop; intro).
       apply propproperty.
     }
     apply hsubtype_univalence.
@@ -231,7 +231,7 @@ Section PoCategorySieve.
   Qed.
 
   Definition po_sieve_weq_subtype
-    : sieve (po_category P) x ≃ downward_closed_down_subtype P x
+    : sieve (C := po_category P) x ≃ downward_closed_subtype (subpreorder P (down_type P x))
     := weq_iso
       sieve_to_subtype
       subtype_to_sieve
