@@ -104,7 +104,7 @@ Section Sheaves.
         apply (ProductArrow _ SET).
         intro fWg.
         refine (ProductPr _ _ _ (make_sieve_selected_morphism _ _)).
-        refine (sieve_selected_morphism_morphism_preimage (sieve_selected_morphism_compose (sheaf_property_equalizer_codomain_index_selected_morphism fWg) (sheaf_property_equalizer_codomain_index_morphism fWg))).
+        refine (sieve_selected_morphism_preimage (sieve_selected_morphism_compose (sheaf_property_equalizer_codomain_index_selected_morphism fWg) (sheaf_property_equalizer_codomain_index_morphism fWg))).
       Defined.
 
       Definition sheaf_property_equalizer_arrow2
@@ -274,7 +274,7 @@ Section Sheaves.
         apply funextsec.
         intro f.
         refine (!eqtohomot (nat_trans_ax (pr11 (H _)) _ _ _) _ @ _).
-        refine (_ @ eqtohomot (nat_trans_eq_pointwise (pr21 (H (make_nat_trans _ _ _ (is_sheaf_to_is_sheaf'_subproof c S w)))) _) (sieve_selected_morphism_morphism_preimage f)).
+        refine (_ @ eqtohomot (nat_trans_eq_pointwise (pr21 (H (make_nat_trans _ _ _ (is_sheaf_to_is_sheaf'_subproof c S w)))) _) (sieve_selected_morphism_preimage f)).
         apply (maponpaths (pr11 (H _) _)).
         apply id_right.
     Qed.
@@ -309,6 +309,46 @@ Section Sheaves.
         + intros g.
           refine (maponpaths (λ x, pr1 (x _) _) (z_iso_after_z_iso_inv i)).
     Qed.
+
+    (* Lemma is_sheaf''_to_is_sheaf
+      : is_sheaf'' → is_sheaf.
+    Proof.
+      intros H c S t.
+      induction H as [HL HG].
+      use unique_exists.
+      - use make_nat_trans.
+        + intros d f.
+          use (pr1 (HG _ _ _ _)); cbn.
+          * apply (tpair _ (PullbackSubobject Pullbacks_PreShv (pr1carrier _ S) (# (yoneda C) f))).
+            apply (Grothendieck_topology_stability).
+            exact (pr2 S).
+          * intro g.
+            refine (t _ _).
+            exact (pr212 g).
+          * abstract (
+              intros g e h;
+              exact (eqtohomot (nat_trans_ax t _ _ _) _)
+            ).
+        + intros d e g.
+          cbn in d, e, g.
+          apply funextfun.
+          intro h.
+          cbn.
+          use HL.
+          * apply (tpair _ (PullbackSubobject Pullbacks_PreShv (pr1carrier _ S) (# (yoneda C) (g · h)))).
+            apply (Grothendieck_topology_stability).
+            exact (pr2 S).
+          * intro i.
+            refine (pr2 (HG _ _ _ _) _ @ !_).
+            refine (maponpaths (# (P : _ ⟶ _) i) (pr2 (HG _ _ _ _) _) @ !_).
+            refine (eqtohomot (!functor_comp (P : _ ⟶ _) g i) _ @ _).
+            match goal with
+            | [ |- _ (pr1 ?a) = _ ] => pose (pr2 a)
+            end.
+            cbn in p.
+            pose (sieve_selected_morphism_compose i g).
+            refine (pr2 (HG d _ _ _) _ @ _).
+    Qed. *)
 
   End SheafProperties.
 
