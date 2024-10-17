@@ -91,10 +91,10 @@ End IndiscreteTopology.
 
 Section Sheaves.
 
-  Context (C : category).
+  Context {C : category}.
   Context (P : PreShv C).
 
-  Lemma presheaf_is_sheaf
+  Lemma indiscrete_presheaf_is_sheaf
     : is_sheaf (indiscrete_topology C) P.
   Proof.
     intros X S f.
