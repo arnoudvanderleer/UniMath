@@ -99,6 +99,7 @@ Section GrothendieckTopology.
 
 End GrothendieckTopology.
 
+Arguments sieve_selection : clear implicits.
 Arguments make_is_Grothendieck_topology {C} {selection}.
 Arguments make_Grothendieck_topology {C}.
 Arguments Grothendieck_topology : clear implicits.

@@ -22,7 +22,8 @@ Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Categories.PreorderCategory.Core.
 Require Import UniMath.CategoryTheory.Categories.PreorderCategory.Sieves.
 Require Import UniMath.CategoryTheory.Core.Prelude.
-Require Import UniMath.CategoryTheory.GrothendieckTopos.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.GrothendieckTopologies.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Sieves.
 Require Import UniMath.CategoryTheory.IndexedCategories.IndexedCategory.
 Require Import UniMath.CategoryTheory.opp_precat.
 Require Import UniMath.CategoryTheory.Subobjects.
@@ -115,16 +116,16 @@ Section GrothendieckTopology.
   Definition make_opens_cat_selected_sieve
     {U : Open}
     {x : T}
-    {f : sieve (opens_cat T) U}
+    {f : sieve (U : opens_cat T)}
     (V : Open)
     (HVU : V ⊆ U)
-    (HfV : (sieve_functor _ f V : hSet))
+    (HfV : (sieve_functor f V : hSet))
     (HVx : V x)
     : ∑ (i : carrier_subtype_weq_contained_subtype _ (po_sieve_weq_subtype f)), pr1carrier _ i x
     := (V ,, HVU ,, HfV) ,, HVx.
 
   Lemma opens_cat_Grothendieck_topology_maximal_sieve
-    : is_Grothendieck_topology_maximal_sieve _ opens_cat_Grothendieck_topology_sieve_selection.
+    : Grothendieck_topology_maximal_sieve_ax opens_cat_Grothendieck_topology_sieve_selection.
   Proof.
     intros U x HUx.
     apply hinhpr.
@@ -136,7 +137,7 @@ Section GrothendieckTopology.
   Qed.
 
   Lemma opens_cat_Grothendieck_topology_stability
-    : is_Grothendieck_topology_stability _ opens_cat_Grothendieck_topology_sieve_selection.
+    : Grothendieck_topology_stability_ax opens_cat_Grothendieck_topology_sieve_selection.
   Proof.
     intros U V HVU f HUf x HVx.
     specialize (HUf x (HVU x HVx)).
@@ -148,7 +149,7 @@ Section GrothendieckTopology.
     - apply intersection_contained_r.
     - use tpair.
       + exists (intersection_contained_r _ _).
-        refine (# (sieve_functor _ f) _ (pr22 (pr1carrier _ HUf))).
+        refine (# (sieve_functor f) _ (pr22 (pr1carrier _ HUf))).
         exact (intersection_contained_l _ _).
       + apply propproperty.
     - split.
@@ -159,7 +160,7 @@ Section GrothendieckTopology.
   Arguments pr1carrier {X} {A}.
 
   Lemma opens_cat_Grothendieck_topology_transitivity
-    : is_Grothendieck_topology_transitivity _ opens_cat_Grothendieck_topology_sieve_selection.
+    : Grothendieck_topology_transitivity_ax opens_cat_Grothendieck_topology_sieve_selection.
   Proof.
     intros U f HV x HUx.
     specialize (HV U (λ x Hx, Hx) x HUx).
@@ -174,14 +175,16 @@ Section GrothendieckTopology.
   Qed.
 
   Definition opens_cat_is_Grothendieck_topology
-    : is_Grothendieck_topology _ opens_cat_Grothendieck_topology_sieve_selection
-    := opens_cat_Grothendieck_topology_maximal_sieve ,,
-      opens_cat_Grothendieck_topology_stability ,,
+    : is_Grothendieck_topology opens_cat_Grothendieck_topology_sieve_selection
+    := make_is_Grothendieck_topology
+      opens_cat_Grothendieck_topology_maximal_sieve
+      opens_cat_Grothendieck_topology_stability
       opens_cat_Grothendieck_topology_transitivity.
 
   Definition opens_cat_Grothendieck_topology
     : Grothendieck_topology (opens_cat T)
-    := opens_cat_Grothendieck_topology_sieve_selection ,,
+    := make_Grothendieck_topology
+      opens_cat_Grothendieck_topology_sieve_selection
       opens_cat_is_Grothendieck_topology.
 
 End GrothendieckTopology.
