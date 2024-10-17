@@ -1,15 +1,18 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
-Require Import UniMath.CategoryTheory.Categories.HSET.Core.
+Require Import UniMath.CategoryTheory.Categories.StandardCategories.
 Require Import UniMath.CategoryTheory.Core.Categories.
 Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.CategoryTheory.Core.NaturalTransformations.
+Require Import UniMath.CategoryTheory.Core.Univalence.
+Require Import UniMath.CategoryTheory.Equivalences.Core.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Examples.EmptySieve.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Examples.TerminalSheaf.
 Require Import UniMath.CategoryTheory.GrothendieckToposes.GrothendieckTopologies.
 Require Import UniMath.CategoryTheory.GrothendieckToposes.Sheaves.
-Require Import UniMath.CategoryTheory.GrothendieckToposes.Examples.EmptySieve.
-Require Import UniMath.CategoryTheory.Limits.Terminal.
 Require Import UniMath.CategoryTheory.Limits.Initial.
+Require Import UniMath.CategoryTheory.Limits.Terminal.
 Require Import UniMath.CategoryTheory.Presheaf.
 Require Import UniMath.CategoryTheory.yoneda.
 
@@ -41,29 +44,28 @@ End DiscreteTopology.
 Section Sheaves.
 
   Context {C : category}.
-  Context (F : PreShv C).
-  Context (H : is_sheaf (discrete_topology C) F).
 
   Section Pointwise.
 
+    Context (F : sheaf_cat (discrete_topology C)).
     Context (X : C).
 
-    Let H' := H X
+    Let H := pr2 F X
       (make_carrier (discrete_topology C X) (EmptySieve.empty_sieve X) tt)
       (InitialArrow Initial_PreShv _).
 
-    Let FX := (F : _ ⟶ _) X : hSet.
+    Let FX := (pr1 F : _ ⟶ _) X : hSet.
 
     Definition discrete_sheaf_value
       : FX
-      := yoneda_weq C X F (pr11 H').
+      := yoneda_weq C X (pr1 F) (pr11 H).
 
     Lemma discrete_sheaf_value_unique
       (x : FX)
       : x = discrete_sheaf_value.
     Proof.
-      pose (E := pr2 H' (invmap (yoneda_weq C X F) x ,, InitialArrowUnique Initial_PreShv _ _)).
-      refine (!eqtohomot (functor_id F X) x @ _).
+      pose (E := pr2 H (invmap (yoneda_weq C X (pr1 F)) x ,, InitialArrowUnique Initial_PreShv _ _)).
+      refine (!eqtohomot (functor_id (pr1 F) X) x @ _).
       exact (eqtohomot (nat_trans_eq_weq (homset_property _) _ _ (base_paths _ _ E) X) (identity X)).
     Qed.
 
@@ -72,8 +74,8 @@ Section Sheaves.
       := make_iscontr discrete_sheaf_value discrete_sheaf_value_unique.
 
     Lemma discrete_sheaf_morphism_irrelevance
-      {Y : HSET}
-      (f g : HSET⟦Y, FX⟧)
+      {Y : hSet}
+      (f g : Y → FX)
       : f = g.
     Proof.
       apply funextfun.
@@ -84,20 +86,54 @@ Section Sheaves.
 
   End Pointwise.
 
-  Definition discrete_sheaf_terminal
-    : isTerminal (PreShv C) F.
+  Definition discrete_topos_to_unit_functor
+    : sheaf_cat (discrete_topology C) ⟶ unit_category
+    := functor_to_unit _.
+
+  Lemma discrete_topos_to_unit_ff
+    : fully_faithful discrete_topos_to_unit_functor.
   Proof.
-    intros G.
-    use make_iscontr.
-    - use make_nat_trans.
-      + intros X g.
-        exact (iscontrpr1 (discrete_sheaf_contractible X)).
-      + intros X Y f.
-        apply discrete_sheaf_morphism_irrelevance.
+    intros P Q.
+    use isweq_iso.
     - intro f.
-      apply nat_trans_eq_alt.
-      intros X.
-      apply discrete_sheaf_morphism_irrelevance.
+      use (_ ,, tt).
+      use make_nat_trans.
+      + intros X x.
+        apply discrete_sheaf_value.
+      + abstract (
+          intros X Y g;
+          apply discrete_sheaf_morphism_irrelevance
+        ).
+    - abstract (
+        intro f;
+        apply subtypePath;
+        [ intro;
+          apply isapropunit
+        | apply nat_trans_eq_alt;
+          intro X;
+          apply discrete_sheaf_morphism_irrelevance ]
+      ).
+    - abstract (
+        intro f;
+        apply isasetunit
+      ).
   Defined.
+
+  Lemma discrete_topos_to_unit_ses
+    : split_essentially_surjective discrete_topos_to_unit_functor.
+  Proof.
+    intro b.
+    exists (terminal_sheaf _).
+    apply idtoiso.
+    abstract now induction b, (discrete_topos_to_unit_functor (terminal_sheaf _)).
+  Defined.
+
+  Definition discrete_topos_is_unit
+    : adj_equiv (sheaf_cat (discrete_topology C)) unit_category
+    :=
+    functor_to_unit _ ,,
+      (rad_equivalence_of_cats' _ _ _
+        discrete_topos_to_unit_ff
+        discrete_topos_to_unit_ses).
 
 End Sheaves.

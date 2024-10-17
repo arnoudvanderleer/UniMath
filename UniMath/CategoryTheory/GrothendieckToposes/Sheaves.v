@@ -3,15 +3,13 @@ Require Import UniMath.MoreFoundations.Notations.
 
 Require Import UniMath.CategoryTheory.Categories.HSET.Core.
 Require Import UniMath.CategoryTheory.Categories.HSET.Limits.
-Require Import UniMath.CategoryTheory.Core.Categories.
-Require Import UniMath.CategoryTheory.Core.Functors.
-Require Import UniMath.CategoryTheory.Core.Isos.
-Require Import UniMath.CategoryTheory.Core.NaturalTransformations.
+Require Import UniMath.CategoryTheory.Categories.HSET.Univalence.
+Require Import UniMath.CategoryTheory.Core.Prelude.
+Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.
+Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.Limits.Equalizers.
 Require Import UniMath.CategoryTheory.Limits.Products.
 Require Import UniMath.CategoryTheory.Presheaf.
-Require Import UniMath.CategoryTheory.Subcategory.Core.
-Require Import UniMath.CategoryTheory.Subcategory.Full.
 Require Import UniMath.CategoryTheory.yoneda.
 
 Require Import UniMath.CategoryTheory.GrothendieckToposes.GrothendieckTopologies.
@@ -363,7 +361,17 @@ Section Sheaves.
     := make_hProp _ (isaprop_is_sheaf P).
 
   Definition sheaf_cat :
-    sub_precategories (PreShv C) :=
-    full_sub_precategory hsubtype_obs_is_sheaf.
+    category :=
+    full_subcat (PreShv C) hsubtype_obs_is_sheaf.
+
+  Lemma sheaf_cat_univalent
+    : is_univalent sheaf_cat.
+  Proof.
+    apply is_univalent_full_subcat.
+    - apply is_univalent_functor_category.
+      apply is_univalent_HSET.
+    - intro.
+      apply propproperty.
+  Defined.
 
 End Sheaves.
