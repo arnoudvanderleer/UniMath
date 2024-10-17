@@ -1,13 +1,12 @@
 Require Import UniMath.Foundations.All.
-Require Import UniMath.MoreFoundations.All.
 
 Require Import UniMath.CategoryTheory.Core.Categories.
 Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.CategoryTheory.Core.Isos.
 Require Import UniMath.CategoryTheory.Core.NaturalTransformations.
-Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.GrothendieckToposes.GrothendieckTopologies.
 Require Import UniMath.CategoryTheory.GrothendieckToposes.Sieves.
+Require Import UniMath.CategoryTheory.GrothendieckToposes.Sheaves.
 Require Import UniMath.CategoryTheory.Limits.Pullbacks.
 Require Import UniMath.CategoryTheory.Presheaf.
 Require Import UniMath.CategoryTheory.Subobjects.
@@ -89,3 +88,20 @@ Section IndiscreteTopology.
       indiscrete_is_topology.
 
 End IndiscreteTopology.
+
+Section Sheaves.
+
+  Context (C : category).
+  Context (P : PreShv C).
+
+  Lemma presheaf_is_sheaf
+    : is_sheaf (indiscrete_topology C) P.
+  Proof.
+    intros X S f.
+    refine ((_ : is_iso (C := PreShv C) _) _ f).
+    apply is_iso_from_is_z_iso.
+    apply nat_trafo_z_iso_if_pointwise_z_iso.
+    exact (pr2 S).
+  Defined.
+
+End Sheaves.
