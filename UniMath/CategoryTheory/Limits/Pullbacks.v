@@ -2,6 +2,7 @@
 
 Direct implementation of pullbacks together with:
 
+- The type of pullbacks on a given diagram is a proposition
 - Proof that pullbacks form a property in a (saturated/univalent) category ([isaprop_Pullbacks])
 - The pullback of a monic is monic ([MonicPullbackisMonic])
 - A square isomorphic to a pullback is a pullback (case 1) ([isPullback_iso_of_morphisms])
@@ -13,7 +14,6 @@ Direct implementation of pullbacks together with:
 - A fully faithfull and essentially surjects functor preserves pullbacks ([isPullback_image_square])
 - Pullbacks in functor categories ([FunctorcategoryPullbacks])
 - Construction of binary products from pullbacks ([BinProductsFromPullbacks])
-- The type of pullbacks on a given diagram is a proposition
 
 *)
 
@@ -369,33 +369,71 @@ Proof.
   apply idpath.
 Qed.
 
+(**
+ The type of pullbacks on a given diagram is a proposition
+ *)
+Definition eq_Pullback
+           {x y z : C}
+           {f : x --> z}
+           {g : y --> z}
+           (p₁ p₂ : Pullback f g)
+           (e₁ : PullbackObject p₁ = PullbackObject p₂)
+           (e₂ : idtoiso e₁ · PullbackPr1 p₂
+                 =
+                 PullbackPr1 p₁)
+           (e₃ : idtoiso e₁ · PullbackPr2 p₂
+                 =
+                 PullbackPr2 p₁)
+  : p₁ = p₂.
+Proof.
+  use subtypePath.
+  {
+    intro.
+    use isaproptotal2.
+    {
+      intro.
+      apply isaprop_isPullback.
+    }
+    intros.
+    apply homset_property.
+  }
+  induction p₁ as [ [ p₁ [ h₁ k₁ ]] ? ].
+  induction p₂ as [ [ p₂ [ h₂ k₂ ]] ? ].
+  cbn in *.
+  induction e₁.
+  cbn in *.
+  rewrite !id_left in *.
+  apply maponpaths.
+  apply pathsdirprod.
+  - exact (!e₂).
+  - exact (!e₃).
+Qed.
+
+Definition isaprop_Pullback
+           {x y z : C}
+           (f : x --> z)
+           (g : y --> z)
+  : isaprop (Pullback f g).
+Proof.
+  use invproofirrelevance.
+  intros p₁ p₂.
+  use eq_Pullback.
+  - refine (isotoid _ H _).
+    apply z_iso_from_Pullback_to_Pullback.
+  - rewrite idtoiso_isotoid ; cbn.
+    apply PullbackArrow_PullbackPr1.
+  - rewrite idtoiso_isotoid ; cbn.
+    apply PullbackArrow_PullbackPr2.
+Qed.
+
 Lemma isaprop_Pullbacks: isaprop (Pullbacks C).
 Proof.
   apply impred; intro a;
   apply impred; intro b;
   apply impred; intro c;
   apply impred; intro f;
-  apply impred; intro g;
-  apply invproofirrelevance.
-  intros Pb Pb'.
-  apply subtypePath.
-  - intro; apply isofhleveltotal2.
-    + apply C.
-    + intros; apply isaprop_isPullback.
-  - apply (total2_paths_f  (isotoid _ H (z_iso_from_Pullback_to_Pullback Pb Pb' ))).
-    rewrite transportf_dirprod, transportf_isotoid.
-    rewrite inv_from_z_iso_z_iso_from_Pullback.
-    rewrite transportf_isotoid.
-    rewrite inv_from_z_iso_z_iso_from_Pullback.
-    destruct Pb as [Cone bla];
-    destruct Pb' as [Cone' bla'];
-    simpl in *.
-    destruct Cone as [p [h k]];
-    destruct Cone' as [p' [h' k']];
-    simpl in *.
-    unfold from_Pullback_to_Pullback;
-    rewrite PullbackArrow_PullbackPr2, PullbackArrow_PullbackPr1.
-    apply idpath.
+  apply impred; intro g.
+  apply isaprop_Pullback.
 Qed.
 
 End Universal_Unique.
@@ -1415,66 +1453,6 @@ Lemma induced_precategory_reflects_pullbacks {M : category} {X:Type} (j : X -> o
 Proof.
   exact (λ pb T, pb (j T)).
 Qed. (* why opaque? *)
-
-(**
- The type of pullbacks on a given diagram is a proposition
- *)
-Definition eq_Pullback
-           {C : category}
-           {x y z : C}
-           {f : x --> z}
-           {g : y --> z}
-           (p₁ p₂ : Pullback f g)
-           (e₁ : PullbackObject p₁ = PullbackObject p₂)
-           (e₂ : idtoiso e₁ · PullbackPr1 p₂
-                 =
-                 PullbackPr1 p₁)
-           (e₃ : idtoiso e₁ · PullbackPr2 p₂
-                 =
-                 PullbackPr2 p₁)
-  : p₁ = p₂.
-Proof.
-  use subtypePath.
-  {
-    intro.
-    use isaproptotal2.
-    {
-      intro.
-      apply isaprop_isPullback.
-    }
-    intros.
-    apply homset_property.
-  }
-  induction p₁ as [ [ p₁ [ h₁ k₁ ]] ? ].
-  induction p₂ as [ [ p₂ [ h₂ k₂ ]] ? ].
-  cbn in *.
-  induction e₁.
-  cbn in *.
-  rewrite !id_left in *.
-  apply maponpaths.
-  apply pathsdirprod.
-  - exact (!e₂).
-  - exact (!e₃).
-Qed.
-
-Definition isaprop_Pullback
-           {C : category}
-           (HC : is_univalent C)
-           {x y z : C}
-           (f : x --> z)
-           (g : y --> z)
-  : isaprop (Pullback f g).
-Proof.
-  use invproofirrelevance.
-  intros p₁ p₂.
-  use eq_Pullback.
-  - refine (isotoid _ HC _).
-    apply z_iso_from_Pullback_to_Pullback.
-  - rewrite idtoiso_isotoid ; cbn.
-    apply PullbackArrow_PullbackPr1.
-  - rewrite idtoiso_isotoid ; cbn.
-    apply PullbackArrow_PullbackPr2.
-Qed.
 
 (**
  Isos between pullbacks
