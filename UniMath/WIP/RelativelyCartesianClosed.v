@@ -212,7 +212,7 @@ Section Functors.
   Context {X Y : C}.
   Context (f : selected_morphism D X Y).
 
-  Section PrecomFunctor.
+  Section PrecompFunctor.
 
     Context (H : selected_morphism_composed_map_ax D).
 
@@ -232,7 +232,7 @@ Section Functors.
         ).
     Defined.
 
-  End PrecomFunctor.
+  End PrecompFunctor.
 
   Section PullbackFunctor.
 
@@ -416,30 +416,27 @@ Section BinProducts.
   Context {X : C}.
   Context (f1 f2 : restricted_slice_ob D X).
 
+  Let F := pullback_functor f1 P HP.
+  Let HF := pullback_is_adjoint f1 HC P HP.
+
   Definition restricted_slice_binproduct_ob
-    : restricted_slice_ob D X.
+    : restricted_slice D X.
   Proof.
-    use make_restricted_slice_ob.
-    - exact (P _ _ _ f1 f2).
-    - refine (make_selected_morphism _ _).
-      refine (HC _ _ _ _ f1).
-      exact (make_selected_morphism _ (HP _ _ _ f1 f2)).
+    exact (dependent_sum_functor f1 HC (F f2)).
   Defined.
 
   Definition restricted_slice_binproduct_pr1
-    : restricted_slice_mor restricted_slice_binproduct_ob f1.
+    : restricted_slice D X⟦restricted_slice_binproduct_ob, f1⟧.
   Proof.
     use make_restricted_slice_mor.
-    - exact (PullbackPr1 _).
-    - abstract reflexivity.
+    - exact (F f2 : restricted_slice_ob D _).
+    - reflexivity.
   Defined.
 
   Definition restricted_slice_binproduct_pr2
-    : restricted_slice_mor restricted_slice_binproduct_ob f2.
+    : restricted_slice D X⟦restricted_slice_binproduct_ob, f2⟧.
   Proof.
-    use make_restricted_slice_mor.
-    - exact (PullbackPr2 _).
-    - abstract apply (PullbackSqrCommutes (P _ _ _ f1 f2)).
+    exact (counit_from_are_adjoints HF f2).
   Defined.
 
   Section IsBinProduct.
@@ -449,8 +446,9 @@ Section BinProducts.
     Context (h2 : restricted_slice_mor g f2).
 
     Definition restricted_slice_binproduct_arrow
-      : restricted_slice_mor g restricted_slice_binproduct_ob.
+      : restricted_slice D X⟦g, restricted_slice_binproduct_ob⟧.
     Proof.
+      (* At this point, F no longer suffices, because it h1 is not a selected morphism *)
       use make_restricted_slice_mor.
       - use (PullbackArrow (P _ _ _ f1 f2) _ h1 h2).
         abstract (
@@ -475,6 +473,7 @@ Section BinProducts.
       : restricted_slice_binproduct_arrow · restricted_slice_binproduct_pr2 = h2.
     Proof.
       use restricted_slice_mor_eq.
+      refine (maponpaths _ (id_left _) @ _).
       apply PullbackArrow_PullbackPr2.
     Qed.
 
@@ -499,6 +498,7 @@ Section BinProducts.
       * refine (_ @ !PullbackArrow_PullbackPr1 _ _ _ _ _).
         exact (base_paths _ _ (base_paths _ _ (pr1 Hi))).
       * refine (_ @ !PullbackArrow_PullbackPr2 _ _ _ _ _).
+        refine (!maponpaths _ (id_left _) @ _).
         exact (base_paths _ _ (base_paths _ _ (pr2 Hi))).
     Qed.
 
