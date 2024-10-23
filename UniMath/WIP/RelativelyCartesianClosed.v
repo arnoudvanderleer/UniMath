@@ -11,6 +11,8 @@ Require Import UniMath.CategoryTheory.Limits.Terminal.
 Require Import UniMath.CategoryTheory.Limits.BinProducts.
 Require Import UniMath.CategoryTheory.slicecat.
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
+Require Import UniMath.CategoryTheory.exponentials.
+Require Import UniMath.CategoryTheory.FunctorCategory.
 
 Local Open Scope cat.
 
@@ -199,31 +201,79 @@ Section Axioms.
 
   Definition is_display_map_class
     : UU
-    := (∑ T, selected_morphism_terminal_map_ax T) ×
+    := (∑ (T : selected_morphism_terminal_ax),
+        selected_morphism_terminal_map_ax T) ×
       selected_morphism_composed_map_ax ×
-      (∑ P, selected_morphism_pullback_map_ax P).
+      (∑ (P : selected_morphism_pullback_ax),
+        selected_morphism_pullback_map_ax P).
 
 End Axioms.
 
-Section Functors.
+Section DisplayMaps.
+
+  Context {C : category}.
+
+  Definition display_maps
+    : UU
+    := ∑ (D : morphism_selection C), is_display_map_class D.
+
+  Coercion display_maps_to_morphism_selection
+    (D : display_maps)
+    : morphism_selection C
+    := pr1 D.
+
+  Section Accessors.
+
+    Context (D : display_maps).
+
+    Definition display_maps_terminal
+      : selected_morphism_terminal_ax
+      := pr112 D.
+
+    Definition display_maps_terminal_map
+      : selected_morphism_terminal_map_ax D display_maps_terminal
+      := pr212 D.
+
+    Definition display_maps_composed_map
+      : selected_morphism_composed_map_ax D
+      := pr122 D.
+
+    Definition display_maps_pullback
+      : selected_morphism_pullback_ax D
+      := pr1 (pr222 D).
+
+    Definition display_maps_pullback_map
+      : selected_morphism_pullback_map_ax D display_maps_pullback
+      := pr2 (pr222 D).
+
+  End Accessors.
+
+End DisplayMaps.
+
+Arguments display_maps : clear implicits.
+
+Section Constructions.
 
   Context {C : category}.
   Context {D : morphism_selection C}.
-  Context {X Y : C}.
-  Context (f : selected_morphism D X Y).
 
-  Section PrecompFunctor.
+  Context (HC : selected_morphism_composed_map_ax D).
+  Context {P : selected_morphism_pullback_ax D}.
+  Context (HP : selected_morphism_pullback_map_ax D P).
 
-    Context (H : selected_morphism_composed_map_ax D).
+  Section Functors.
 
-    Definition dependent_sum_functor
+    Context {X Y : C}.
+    Context (f : selected_morphism D X Y).
+
+    Definition postcomposition_functor
       : restricted_slice D X ⟶ restricted_slice D Y.
     Proof.
       use (total_functor (F := slicecat_functor f)).
       use tpair.
       - use tpair.
         + intros g Hg.
-          refine (H _ _ _ (make_selected_morphism _ Hg) f).
+          refine (HC _ _ _ (make_selected_morphism _ Hg) f).
         + abstract easy.
       - abstract (
           split;
@@ -232,19 +282,14 @@ Section Functors.
         ).
     Defined.
 
-  End PrecompFunctor.
-
-  Section PullbackFunctor.
-
-    Context (P : selected_morphism_pullback_ax D).
-    Context (H : selected_morphism_pullback_map_ax D P).
+    (* Pullback *)
 
     Definition pullback_functor_ob
       (g : restricted_slice_ob D Y)
       : restricted_slice_ob D X
       := make_restricted_slice_ob
         _
-        (make_selected_morphism _ (H _ _ _ f g)).
+        (make_selected_morphism _ (HP _ _ _ f g)).
 
     Definition pullback_functor_mor
       (g h : restricted_slice_ob D Y)
@@ -303,20 +348,13 @@ Section Functors.
         pullback_functor_data
         pullback_is_functor.
 
-  End PullbackFunctor.
-
-  Section LeftAdjunction.
-
-    Context (HC : selected_morphism_composed_map_ax D).
-
-    Context (P : selected_morphism_pullback_ax D).
-    Context (HP : selected_morphism_pullback_map_ax D P).
+    (* Adjunction *)
 
     Definition pullback_hom_weq
       (g : restricted_slice_ob D X)
       (h : restricted_slice_ob D Y)
-      : restricted_slice_mor (dependent_sum_functor HC g) h
-      ≃ restricted_slice_mor g (pullback_functor P HP h).
+      : restricted_slice_mor (postcomposition_functor g) h
+      ≃ restricted_slice_mor g (pullback_functor h).
     Proof.
       use weq_iso;
         intro i.
@@ -350,10 +388,10 @@ Section Functors.
     Lemma pullback_adjoint_natural_left
       (g : restricted_slice_ob D X)
       (h : restricted_slice_ob D Y)
-      (i : restricted_slice_mor (dependent_sum_functor HC g) h)
+      (i : restricted_slice_mor (postcomposition_functor g) h)
       (j : restricted_slice_ob D X)
       (k : restricted_slice_mor j g)
-      : pullback_hom_weq j h (# (dependent_sum_functor HC) k · i)
+      : pullback_hom_weq j h (# postcomposition_functor k · i)
         = k · pullback_hom_weq g h i.
     Proof.
       apply restricted_slice_mor_eq.
@@ -370,11 +408,11 @@ Section Functors.
     Lemma pullback_adjoint_natural_right
       (g : restricted_slice_ob D X)
       (h : restricted_slice_ob D Y)
-      (i : restricted_slice_mor (dependent_sum_functor HC g) h)
+      (i : restricted_slice_mor (postcomposition_functor g) h)
       (j : restricted_slice_ob D Y)
       (k : restricted_slice_mor h j)
       : pullback_hom_weq g j (i · k)
-        = pullback_hom_weq g h i · # (pullback_functor P HP) k.
+        = pullback_hom_weq g h i · # pullback_functor k.
     Proof.
       apply restricted_slice_mor_eq.
       apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ _ _))).
@@ -390,7 +428,7 @@ Section Functors.
     Qed.
 
     Definition pullback_is_adjoint
-      : are_adjoints (dependent_sum_functor HC) (pullback_functor P HP).
+      : are_adjoints postcomposition_functor pullback_functor.
     Proof.
       use (invmap adjunction_homsetiso_weq).
       use tpair.
@@ -400,143 +438,212 @@ Section Functors.
         + apply pullback_adjoint_natural_right.
     Defined.
 
-  End LeftAdjunction.
+  End Functors.
 
-End Functors.
+  Section BinProducts.
 
-Section BinProducts.
+    Context {X : C}.
+    Context (f1 f2 : restricted_slice_ob D X).
 
-  Context {C : category}.
-  Context {D : morphism_selection C}.
+    Let F := pullback_functor f1.
+    Let HF := pullback_is_adjoint f1.
 
-  Context (HC : selected_morphism_composed_map_ax D).
-  Context (P : selected_morphism_pullback_ax D).
-  Context (HP : selected_morphism_pullback_map_ax D P).
-
-  Context {X : C}.
-  Context (f1 f2 : restricted_slice_ob D X).
-
-  Let F := pullback_functor f1 P HP.
-  Let HF := pullback_is_adjoint f1 HC P HP.
-
-  Definition restricted_slice_binproduct_ob
-    : restricted_slice D X.
-  Proof.
-    exact (dependent_sum_functor f1 HC (F f2)).
-  Defined.
-
-  Definition restricted_slice_binproduct_pr1
-    : restricted_slice D X⟦restricted_slice_binproduct_ob, f1⟧.
-  Proof.
-    use make_restricted_slice_mor.
-    - exact (F f2 : restricted_slice_ob D _).
-    - reflexivity.
-  Defined.
-
-  Definition restricted_slice_binproduct_pr2
-    : restricted_slice D X⟦restricted_slice_binproduct_ob, f2⟧.
-  Proof.
-    exact (counit_from_are_adjoints HF f2).
-  Defined.
-
-  Section IsBinProduct.
-
-    Context (g : restricted_slice_ob D X).
-    Context (h1 : restricted_slice_mor g f1).
-    Context (h2 : restricted_slice_mor g f2).
-
-    Definition restricted_slice_binproduct_arrow
-      : restricted_slice D X⟦g, restricted_slice_binproduct_ob⟧.
+    Definition restricted_slice_binproduct_ob
+      : restricted_slice D X.
     Proof.
-      (* At this point, F no longer suffices, because it h1 is not a selected morphism *)
-      use make_restricted_slice_mor.
-      - use (PullbackArrow (P _ _ _ f1 f2) _ h1 h2).
-        abstract (
-          refine (!_ @ restricted_slice_mor_commutes h2);
-          apply restricted_slice_mor_commutes
-        ).
-      - abstract (
-          refine (_ @ assoc' _ _ _);
-          refine (_ @ !maponpaths (λ x, x · _) (PullbackArrow_PullbackPr1 _ _ _ _ _));
-          apply restricted_slice_mor_commutes
-        ).
+      exact (postcomposition_functor f1 (F f2)).
     Defined.
 
-    Lemma restricted_slice_binproduct_pr1_commutes
-      : restricted_slice_binproduct_arrow · restricted_slice_binproduct_pr1 = h1.
+    Definition restricted_slice_binproduct_pr1
+      : restricted_slice D X⟦restricted_slice_binproduct_ob, f1⟧.
     Proof.
-      use restricted_slice_mor_eq.
-      apply PullbackArrow_PullbackPr1.
-    Qed.
+      use make_restricted_slice_mor.
+      - exact (F f2 : restricted_slice_ob D _).
+      - reflexivity.
+    Defined.
 
-    Lemma restricted_slice_binproduct_pr2_commutes
-      : restricted_slice_binproduct_arrow · restricted_slice_binproduct_pr2 = h2.
+    Definition restricted_slice_binproduct_pr2
+      : restricted_slice D X⟦restricted_slice_binproduct_ob, f2⟧.
     Proof.
-      use restricted_slice_mor_eq.
-      refine (maponpaths _ (id_left _) @ _).
-      apply PullbackArrow_PullbackPr2.
-    Qed.
+      exact (counit_from_are_adjoints HF f2).
+    Defined.
 
-    Lemma isaprop_pr_commutes
-      (i : restricted_slice_mor g restricted_slice_binproduct_ob)
-      : isaprop
-        (i · restricted_slice_binproduct_pr1 = h1
-          × i · restricted_slice_binproduct_pr2 = h2).
-    Proof.
-      apply isapropdirprod;
-      apply homset_property.
-    Qed.
+    Section IsBinProduct.
 
-    Lemma restricted_slice_binproduct_arrow_unique
-      (i : restricted_slice_mor g restricted_slice_binproduct_ob)
-      (Hi : i · restricted_slice_binproduct_pr1 = h1
-        × i · restricted_slice_binproduct_pr2 = h2)
-      : i = restricted_slice_binproduct_arrow.
+      Context (g : restricted_slice_ob D X).
+      Context (h1 : restricted_slice_mor g f1).
+      Context (h2 : restricted_slice_mor g f2).
+
+      Definition restricted_slice_binproduct_arrow
+        : restricted_slice D X⟦g, restricted_slice_binproduct_ob⟧.
+      Proof.
+        (* At this point, F no longer suffices, because it h1 is not a selected morphism *)
+        use make_restricted_slice_mor.
+        - use (PullbackArrow (P _ _ _ f1 f2) _ h1 h2).
+          abstract (
+            refine (!_ @ restricted_slice_mor_commutes h2);
+            apply restricted_slice_mor_commutes
+          ).
+        - abstract (
+            refine (_ @ assoc' _ _ _);
+            refine (_ @ !maponpaths (λ x, x · _) (PullbackArrow_PullbackPr1 _ _ _ _ _));
+            apply restricted_slice_mor_commutes
+          ).
+      Defined.
+
+      Lemma restricted_slice_binproduct_pr1_commutes
+        : restricted_slice_binproduct_arrow · restricted_slice_binproduct_pr1 = h1.
+      Proof.
+        use restricted_slice_mor_eq.
+        apply PullbackArrow_PullbackPr1.
+      Qed.
+
+      Lemma restricted_slice_binproduct_pr2_commutes
+        : restricted_slice_binproduct_arrow · restricted_slice_binproduct_pr2 = h2.
+      Proof.
+        use restricted_slice_mor_eq.
+        refine (maponpaths _ (id_left _) @ _).
+        apply PullbackArrow_PullbackPr2.
+      Qed.
+
+      Lemma isaprop_pr_commutes
+        (i : restricted_slice_mor g restricted_slice_binproduct_ob)
+        : isaprop
+          (i · restricted_slice_binproduct_pr1 = h1
+            × i · restricted_slice_binproduct_pr2 = h2).
+      Proof.
+        apply isapropdirprod;
+        apply homset_property.
+      Qed.
+
+      Lemma restricted_slice_binproduct_arrow_unique
+        (i : restricted_slice_mor g restricted_slice_binproduct_ob)
+        (Hi : i · restricted_slice_binproduct_pr1 = h1
+          × i · restricted_slice_binproduct_pr2 = h2)
+        : i = restricted_slice_binproduct_arrow.
+      Proof.
+        apply restricted_slice_mor_eq.
+        apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ f1 f2))).
+        * refine (_ @ !PullbackArrow_PullbackPr1 _ _ _ _ _).
+          exact (base_paths _ _ (base_paths _ _ (pr1 Hi))).
+        * refine (_ @ !PullbackArrow_PullbackPr2 _ _ _ _ _).
+          refine (!maponpaths _ (id_left _) @ _).
+          exact (base_paths _ _ (base_paths _ _ (pr2 Hi))).
+      Qed.
+
+    End IsBinProduct.
+
+    Definition restricted_slice_binproducts
+      : BinProduct (restricted_slice D X) f1 f2.
     Proof.
+      use make_BinProduct.
+      - exact restricted_slice_binproduct_ob.
+      - exact restricted_slice_binproduct_pr1.
+      - exact restricted_slice_binproduct_pr2.
+      - use make_isBinProduct.
+        refine (λ (g : restricted_slice_ob D X) (h1 h2 : restricted_slice_mor _ _), _).
+        use unique_exists.
+        + exact (restricted_slice_binproduct_arrow g h1 h2).
+        + split.
+          * apply restricted_slice_binproduct_pr1_commutes.
+          * apply restricted_slice_binproduct_pr2_commutes.
+        + apply isaprop_pr_commutes.
+        + apply restricted_slice_binproduct_arrow_unique.
+    Defined.
+
+  End BinProducts.
+
+  Section ConstprodPullbackIso.
+
+    Context {X : C}.
+    Context (f : restricted_slice_ob D X).
+
+    Lemma constprod_pullback_iso_mor_is_nat_trans
+      : is_nat_trans
+        (pullback_functor f ∙ postcomposition_functor f)
+        (constprod_functor1 restricted_slice_binproducts f)
+        (λ f, identity_z_iso _).
+    Proof.
+      intros g h i.
       apply restricted_slice_mor_eq.
-      apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ f1 f2))).
-      * refine (_ @ !PullbackArrow_PullbackPr1 _ _ _ _ _).
-        exact (base_paths _ _ (base_paths _ _ (pr1 Hi))).
-      * refine (_ @ !PullbackArrow_PullbackPr2 _ _ _ _ _).
-        refine (!maponpaths _ (id_left _) @ _).
-        exact (base_paths _ _ (base_paths _ _ (pr2 Hi))).
+      refine (id_right _ @ _).
+      refine (_ @ !id_left _).
+      apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ _ _))).
+      - do 2 refine (PullbackArrow_PullbackPr1 _ _ _ _ _ @ !_).
+        exact (!id_right _).
+      - do 2 refine (PullbackArrow_PullbackPr2 _ _ _ _ _ @ !_).
+        refine (_ @ assoc _ _ _).
+        exact (!id_left _).
     Qed.
 
-  End IsBinProduct.
+    Definition constprod_pullback_iso
+      : z_iso (C := [_, _]) (pullback_functor f ∙ postcomposition_functor f) (constprod_functor1 restricted_slice_binproducts f).
+    Proof.
+      apply (invmap (z_iso_is_nat_z_iso _ _)).
+      use make_nat_z_iso.
+      - exact (make_nat_trans _ _ _ constprod_pullback_iso_mor_is_nat_trans).
+      - intro.
+        apply z_iso_is_z_isomorphism.
+    Defined.
 
-  Definition restricted_slice_binproducts
-    : BinProduct (restricted_slice D X) f1 f2.
-  Proof.
-    use make_BinProduct.
-    - exact restricted_slice_binproduct_ob.
-    - exact restricted_slice_binproduct_pr1.
-    - exact restricted_slice_binproduct_pr2.
-    - use make_isBinProduct.
-      refine (λ (g : restricted_slice_ob D X) (h1 h2 : restricted_slice_mor _ _), _).
-      use unique_exists.
-      + exact (restricted_slice_binproduct_arrow g h1 h2).
-      + split.
-        * apply restricted_slice_binproduct_pr1_commutes.
-        * apply restricted_slice_binproduct_pr2_commutes.
-      + apply isaprop_pr_commutes.
-      + apply restricted_slice_binproduct_arrow_unique.
-  Defined.
+  End ConstprodPullbackIso.
 
-End BinProducts.
+End Constructions.
 
 Section DisplayMaps.
 
   Context {C : category}.
+  Context {D : display_maps C}.
 
-  Definition display_maps
+  Section Functors.
+
+    Context {X Y : C}.
+    Context (f : selected_morphism D X Y).
+
+    Definition display_map_postcomposition_functor
+      : restricted_slice D X ⟶ restricted_slice D Y
+      := postcomposition_functor (display_maps_composed_map D) f.
+
+    Definition display_map_pullback_functor
+      : restricted_slice D Y ⟶ restricted_slice D X
+      := pullback_functor (display_maps_pullback_map D) f.
+
+    Definition display_map_postcomposition_pullback_are_adjoints
+      : are_adjoints display_map_postcomposition_functor display_map_pullback_functor
+      := pullback_is_adjoint _ _ _.
+
+  End Functors.
+
+  Definition is_relatively_cartesian_closed
     : UU
-    := ∑ (D : morphism_selection C), is_display_map_class D.
-
-  Coercion display_maps_to_morphism_selection
-    (D : display_maps)
-    : morphism_selection C
-    := pr1 D.
+    := ∏ X Y (f : selected_morphism D X Y),
+      is_left_adjoint (display_map_pullback_functor f).
 
 End DisplayMaps.
 
-Arguments display_maps : clear implicits.
+Arguments is_relatively_cartesian_closed {C}.
+
+Section Exponentials.
+
+  Context {C : category}.
+  Context {D : display_maps C}.
+  Context (H : is_relatively_cartesian_closed D).
+
+  Context {X : C}.
+  Context (f : restricted_slice_ob D X).
+
+  Definition relatively_cartesian_closed_exponentials
+    : is_exponentiable
+      (restricted_slice_binproducts
+        (display_maps_composed_map D)
+        (display_maps_pullback_map D))
+      f.
+  Proof.
+    refine (is_left_adjoint_closed_under_iso _ _ _ _).
+    - exact (constprod_pullback_iso _ _ f).
+    - refine (_ ,, are_adjoints_functor_composite _ _).
+      + apply H.
+      + apply display_map_postcomposition_pullback_are_adjoints.
+  Defined.
+
+End Exponentials.
