@@ -6,6 +6,7 @@ Direct implementation of pullbacks together with:
 - Proof that pullbacks form a property in a (saturated/univalent) category ([isaprop_Pullbacks])
 - The pullback of a monic is monic ([MonicPullbackisMonic])
 - A square isomorphic to a pullback is a pullback (case 1) ([isPullback_iso_of_morphisms])
+- Glueing two pullback squares gives a pullback square again ([glue_pullbacks])
 - The pullback of a z_iso is a z_iso ([Pullback_of_z_iso])
 - Symmetry ([is_symmetric_isPullback])
 - Construction of pullbacks from equalizers and binary products
@@ -151,6 +152,35 @@ Definition make_isPullback {a b c d : C} (f : C ⟦b, a⟧) (g : C ⟦c, a⟧)
 Proof.
   intros H' x cx k sqr.
   apply H'. assumption.
+Defined.
+
+Definition make_pullback_arrow
+  {X Y1 Y2 Z : C}
+  {p1 : X --> Y1}
+  {p2 : X --> Y2}
+  {q1 : Z --> Y1}
+  {q2 : Z --> Y2}
+  (f : Z --> X)
+  (H1 : f · p1 = q1)
+  (H2 : f · p2 = q2)
+  (Hu : ∏ (f' : Z --> X) (H1' : f' · p1 = q1) (H2' : f' · p2 = q2), f' = f)
+  : ∃! (f : Z --> X),
+      (f · p1 = q1) ×
+      (f · p2 = q2).
+Proof.
+  use unique_exists.
+  - exact f.
+  - abstract exact (make_dirprod H1 H2).
+  - abstract (
+      intro hk';
+      apply isapropdirprod;
+      apply homset_property
+    ).
+  - abstract now (
+      intros f' H;
+      induction H;
+      apply Hu
+    ).
 Defined.
 
 Local Lemma postCompWithPullbackArrow_subproof
@@ -345,6 +375,7 @@ Arguments isPullback [_ _ _ _ _ _ _ _ _] _.
 Arguments Pullback [_ _ _ _] _ _.
 Arguments PullbackArrow [_ _ _ _ _ _ ] _ _ _ _ _ .
 Arguments make_Pullback [_ _ _ _ _ _ _ _ _] _ _.
+Arguments make_pullback_arrow {C X Y1 Y2 Z p1 p2 q1 q2} _ _.
 Arguments PullbackObject [_ _ _ _ _ _ ] _.
 Arguments z_iso_from_Pullback_to_Pullback [_ _ _ _ _ _] _ _.
 Arguments from_Pullback_to_Pullback [_ _ _ _ _ _] _ _.
@@ -796,6 +827,100 @@ End pullback_iso.
 
 End lemmas_on_pullbacks.
 
+Section GluePullbacks.
+
+  (*
+    The diagram for this section:
+
+         f2           g3
+    W --------> X2 -------> Y2
+    |           |           |
+    | f1        | g2        | h2
+    v           v           v
+    X1 -------> Y1 -------> Z
+         g1            h1
+  *)
+
+  Context {C : category}.
+  Context {W X1 X2 Y1 Y2 Z : C}.
+  Context {f1 : W  --> X1}.
+  Context {f2 : W  --> X2}.
+  Context {g1 : X1 --> Y1}.
+  Context {g2 : X2 --> Y1}.
+  Context {g3 : X2 --> Y2}.
+  Context {h1 : Y1 --> Z}.
+  Context {h2 : Y2 --> Z}.
+  Context {p : f1 · g1 = f2 · g2}.
+  Context {q : g2 · h1 = g3 · h2}.
+  Context (P : isPullback p).
+  Context (Q : isPullback q).
+
+  Section PullbackArrow.
+
+    Context (V : C).
+    Context (i1 : V --> X1).
+    Context (i2 : V --> Y2).
+    Context (Hi : i1 · (g1 · h1) = i2 · h2).
+
+    Let HQ := Q V (i1 · g1) i2 (!assoc _ _ _ @ Hi).
+    Let HP := P V i1 (pr11 HQ) (!pr121 HQ).
+
+    Definition glue_pullbacks_arrow_arrow
+      : V --> W
+      := pr11 HP.
+
+    Lemma glue_pullbacks_arrow_pr1
+      : glue_pullbacks_arrow_arrow · f1 = i1.
+    Proof.
+      exact (pr121 HP).
+    Qed.
+
+    Lemma glue_pullbacks_arrow_pr2
+      : glue_pullbacks_arrow_arrow · (f2 · g3) = i2.
+    Proof.
+      refine (_ @ pr221 HQ).
+      refine (assoc _ _ _ @ _).
+      apply (maponpaths (λ x, x · _)).
+      exact (pr221 HP).
+    Qed.
+
+    Lemma glue_pullbacks_arrow_unique
+      (j : V --> W)
+      (Hj1 : j · f1 = i1)
+      (Hj2 : j · (f2 · g3) = i2)
+      : j = glue_pullbacks_arrow_arrow.
+    Proof.
+      refine (base_paths _ _ (pr2 HP (_ ,, _))).
+      split.
+      + exact Hj1.
+      + refine (base_paths _ _ (pr2 HQ (_ ,, _))).
+        split.
+        * refine (assoc' _ _ _ @ _).
+          refine (!maponpaths _ p @ _).
+          refine (assoc _ _ _ @ _).
+          apply (maponpaths (λ x, x · _)).
+          exact Hj1.
+        * refine (assoc' _ _ _ @ _).
+          exact Hj2.
+    Qed.
+
+    Definition glue_pullbacks_arrow
+      : ∃! (j : V --> W),
+          j · f1 = i1 ×
+          j · (f2 · g3) = i2
+      := make_pullback_arrow
+          glue_pullbacks_arrow_arrow
+          glue_pullbacks_arrow_pr1
+          glue_pullbacks_arrow_pr2
+          glue_pullbacks_arrow_unique.
+
+  End PullbackArrow.
+
+  Definition glue_pullbacks
+    : isPullback (glueSquares q p)
+    := glue_pullbacks_arrow.
+
+End GluePullbacks.
 
 (** * Pullback of identities *)
 Definition identity_isPullback
