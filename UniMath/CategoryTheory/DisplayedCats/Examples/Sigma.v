@@ -7,6 +7,7 @@
   - Displayed univalence for sigma [is_univalent_sigma_disp]
   - Sigma creates limits [creates_limits_sigma_disp_cat]
   - Projection for the sigma construction
+  - A displayed functor between the sigma categories
  *)
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
@@ -420,3 +421,60 @@ Proof.
 Qed.
 
 End Sigma.
+
+(* A displayed functor between the sigma categories *)
+Section Functor.
+
+  Context {C C' : category}.
+  Context {D : disp_cat C}.
+  Context {D' : disp_cat C'}.
+  Context {E : disp_cat (total_category D)}.
+  Context {E' : disp_cat (total_category D')}.
+
+  Context (F : C ⟶ C').
+  Context (G : disp_functor F D D').
+  Context (H : disp_functor (total_functor G) E E').
+
+  Definition sigma_disp_functor_data
+    : disp_functor_data F (sigma_disp_cat E) (sigma_disp_cat E').
+  Proof.
+    use tpair.
+    - intros X Y.
+      exists (G _ (pr1 Y)).
+      exact (H _ (pr2 Y)).
+    - intros X1 X2 Y1 Y2 f g.
+      exists (♯G (pr1 g)).
+      exact (♯H (pr2 g)).
+  Defined.
+
+  Lemma sigma_disp_is_functor
+    : disp_functor_axioms sigma_disp_functor_data.
+  Proof.
+    split.
+    - intros X Y.
+      use total2_paths_b.
+      + refine (_ @ !pr1_transportf_sigma_disp _ _ _).
+        apply disp_functor_id.
+      + refine (disp_functor_id H (pr2 Y) @ !_).
+        refine (maponpaths _ (pr2_transportf_sigma_disp _ _ _) @ _).
+        refine (functtransportb (λ x, (_ ,, x)) _ _ _ @ _).
+        refine (transport_b_f _ _ _ _ @ !_).
+        apply transportf_paths.
+        apply homset_property.
+    - intros.
+      use total2_paths_b.
+      + refine (_ @ !pr1_transportf _ _).
+        apply disp_functor_comp.
+      + refine (disp_functor_comp H (pr2 ff) (pr2 gg) @ !_).
+        refine (maponpaths _ (pr2_transportf_sigma_disp _ _ _) @ _).
+        refine (functtransportb (λ x, (_ ,, x)) _ _ _ @ _).
+        refine (transport_b_f _ _ _ _ @ !_).
+        apply transportf_paths.
+        apply homset_property.
+  Qed.
+
+  Definition sigma_disp_functor
+    : disp_functor F (sigma_disp_cat E) (sigma_disp_cat E')
+    := sigma_disp_functor_data ,, sigma_disp_is_functor.
+
+End Functor.
