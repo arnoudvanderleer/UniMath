@@ -1,12 +1,13 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
-Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.DisplayedCats.Codomain.
 Require Import UniMath.CategoryTheory.DisplayedCats.ComprehensionC.
 Require Import UniMath.CategoryTheory.DisplayedCats.Core.
 Require Import UniMath.CategoryTheory.DisplayedCats.Examples.Sigma.
 Require Import UniMath.CategoryTheory.DisplayedCats.Fibrations.
+Require Import UniMath.CategoryTheory.FunctorCategory.
 Require Import UniMath.CategoryTheory.Limits.Pullbacks.
 
 Require Import UniMath.WIP.MorphismSelections.
@@ -105,6 +106,133 @@ Section ComprehensionCat.
     Defined.
 
   End Fibration.
+
+  Section PullbackFunctor.
+
+    Context {X Y : C}.
+    Context (f : Y --> X).
+
+    Definition pullback_functor_ob
+      (g : restricted_slice_ob D X)
+      : restricted_slice_ob D Y
+      := make_restricted_slice_ob
+        _
+        (make_selected_morphism _ (HP _ _ _ f g)).
+
+    Definition pullback_functor_mor
+      (g h : restricted_slice_ob D X)
+      (i : restricted_slice_mor g h)
+      : restricted_slice_mor (pullback_functor_ob g) (pullback_functor_ob h).
+    Proof.
+      use make_restricted_slice_mor.
+      - use PullbackArrow.
+        + apply (PullbackPr1 (P _ _ _ f g)).
+        + refine (PullbackPr2 (P _ _ _ f g) · i).
+        + abstract (
+            refine (PullbackSqrCommutes _ @ _);
+            refine (!_ @ assoc _ _ _);
+            apply maponpaths;
+            refine (restricted_slice_mor_commutes i @ _);
+            apply id_right
+          ).
+      - abstract (
+          refine (PullbackArrow_PullbackPr1 _ _ _ _ _ @ !_);
+          apply id_right
+        ).
+    Defined.
+
+    Definition pullback_functor_data
+      : functor_data (restricted_slice D X) (restricted_slice D Y)
+      := make_functor_data
+        pullback_functor_ob
+        pullback_functor_mor.
+
+    Lemma pullback_is_functor
+      : is_functor pullback_functor_data.
+    Proof.
+      split.
+      - refine (λ (g : restricted_slice_ob D X), _).
+        apply restricted_slice_mor_eq.
+        apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ f g))).
+        + refine (PullbackArrow_PullbackPr1 _ _ _ _ _ @ _).
+          exact (!id_left _).
+        + refine (PullbackArrow_PullbackPr2 _ _ _ _ _ @ _).
+          refine (id_right _ @ _).
+          exact (!id_left _).
+      - refine (λ (g g' g'' : restricted_slice_ob D X) (h h' : restricted_slice_mor _ _), _).
+        apply restricted_slice_mor_eq.
+        apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ f g''))).
+        + refine (PullbackArrow_PullbackPr1 _ _ _ _ _ @ !_).
+          refine (maponpaths (λ x, x · _)
+            (restricted_slice_mor_comp (# pullback_functor_data h) (# pullback_functor_data h')) @ _).
+          refine (assoc' _ _ _ @ _).
+          refine (maponpaths _ (PullbackArrow_PullbackPr1 _ _ _ _ _) @ _).
+          exact (PullbackArrow_PullbackPr1 _ _ _ _ _).
+        + refine (PullbackArrow_PullbackPr2 _ _ _ _ _ @ !_).
+          refine (maponpaths (λ x, x · _)
+            (restricted_slice_mor_comp (# pullback_functor_data h) (# pullback_functor_data h')) @ _).
+          refine (assoc' _ _ _ @ _).
+          refine (maponpaths _ (PullbackArrow_PullbackPr2 _ _ _ _ _) @ _).
+          refine (assoc _ _ _ @ _).
+          refine (maponpaths (λ x, x · _) (PullbackArrow_PullbackPr2 _ _ _ _ _) @ !_).
+          refine (maponpaths _ (restricted_slice_mor_comp _ _) @ _).
+          apply assoc.
+    Qed.
+
+    Definition pullback_functor
+      : restricted_slice D X ⟶ restricted_slice D Y
+      := make_functor
+        pullback_functor_data
+        pullback_is_functor.
+
+  End PullbackFunctor.
+
+  Section PullbackFunctorIso.
+
+    Context {X Y : C}.
+    Context (f : X --> Y).
+
+    Definition fiber_pullback_iso_nat_trans_data
+      : nat_trans_data
+        (fiber_functor_from_cleaving _ restricted_slice_cleaving f)
+        (pullback_functor f)
+      := λ g, identity_z_iso _.
+
+    Lemma fiber_pullback_iso_is_nat_trans
+      : is_nat_trans _ _ fiber_pullback_iso_nat_trans_data.
+    Proof.
+      refine (λ (g1 g2 : restricted_slice_ob D Y) (h : restricted_slice_mor g1 g2), _).
+      apply restricted_slice_mor_eq.
+      refine (restricted_slice_mor_comp (cartesian_factorisation
+        (restricted_slice_cleaving Y X f g2) _
+        (transportf _ _ (restricted_slice_cleaving Y X f g1 ;; h))) (identity _) @ !_).
+      refine (restricted_slice_mor_comp _ _ @ !_).
+      refine (id_right _ @ !_).
+      refine (id_left _ @ !_).
+      apply (MorphismsIntoPullbackEqual (pr22 (P _ _ _ f g2))).
+      - do 2 refine (PullbackArrow_PullbackPr1 _ _ _ _ _ @ !_).
+        apply id_right.
+      - do 2 refine (PullbackArrow_PullbackPr2 _ _ _ _ _ @ !_).
+        refine (maponpaths pr1 (pr1_transportf _ _) @ _).
+        refine (pr1_transportf (B := λ _, _ --> _) _ _ @ _).
+        apply (eqtohomot (transportf_const _ _)).
+    Qed.
+
+    Definition fiber_pullback_iso_nat_trans
+      : fiber_functor_from_cleaving _ restricted_slice_cleaving f ⟹ pullback_functor f
+      := make_nat_trans _ _ fiber_pullback_iso_nat_trans_data fiber_pullback_iso_is_nat_trans.
+
+    Definition fiber_pullback_iso
+      : z_iso (C := [_, _])
+          (fiber_functor_from_cleaving _ restricted_slice_cleaving f)
+          (pullback_functor f)
+      := invmap
+        (z_iso_is_nat_z_iso _ _)
+        (make_nat_z_iso _ _
+          fiber_pullback_iso_nat_trans
+          (λ g, is_z_isomorphism_identity _)).
+
+  End PullbackFunctorIso.
 
   Section CartesianProjection.
 

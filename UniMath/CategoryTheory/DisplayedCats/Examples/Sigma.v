@@ -11,22 +11,19 @@
  *)
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
-Require Import UniMath.CategoryTheory.Core.Categories.
-Require Import UniMath.CategoryTheory.Core.Isos.
-Require Import UniMath.CategoryTheory.Core.NaturalTransformations.
-Require Import UniMath.CategoryTheory.Core.Functors.
-Require Import UniMath.CategoryTheory.Core.Univalence.
-Require Import UniMath.CategoryTheory.Equivalences.Core.
-Require Import UniMath.CategoryTheory.Adjunctions.Core.
+Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Colimits.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 
 Require Import UniMath.CategoryTheory.DisplayedCats.Core.
+Require Import UniMath.CategoryTheory.DisplayedCats.Equivalences.
 Require Import UniMath.CategoryTheory.DisplayedCats.Functors.
-Require Import UniMath.CategoryTheory.DisplayedCats.Total.
 Require Import UniMath.CategoryTheory.DisplayedCats.Isos.
-Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
 Require Import UniMath.CategoryTheory.DisplayedCats.Limits.
+Require Import UniMath.CategoryTheory.DisplayedCats.Total.
+Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
+
+Require Import UniMath.CategoryTheory.DisplayedCats.NaturalTransformations.
 
 Local Open Scope cat.
 Local Open Scope mor_disp_scope.
@@ -478,3 +475,201 @@ Section Functor.
     := sigma_disp_functor_data ,, sigma_disp_is_functor.
 
 End Functor.
+
+Section SigmaContractible.
+
+  Context {C : category}.
+  Context {D : disp_cat C}.
+  Context (E : disp_cat (total_category D)).
+  Context (Hob : ∏ X, iscontr (E X)).
+  Context (Hmor : ∏ X Y f (Xdata : E X) (Ydata : E Y), iscontr (Xdata -->[f] Ydata)).
+
+  Definition sigma_contractible_functor_data
+    : disp_functor_data (functor_identity C) D (sigma_disp_cat E).
+  Proof.
+    use tpair.
+    - intros X Xdata.
+      exists Xdata.
+      abstract apply Hob.
+    - intros X Y Xdata Ydata f fdata.
+      exists fdata.
+      abstract apply Hmor.
+  Defined.
+
+  Lemma sigma_contractible_is_functor
+    : disp_functor_axioms sigma_contractible_functor_data.
+  Proof.
+    split;
+      repeat intro;
+      apply (maponpaths (tpair _ _));
+      apply proofirrelevancecontr;
+      apply Hmor.
+  Qed.
+
+  Definition sigma_contractible_functor
+    : disp_functor (functor_identity C) D (sigma_disp_cat E)
+    := _ ,, sigma_contractible_is_functor.
+
+  Definition sigma_contractible_unit_data
+    : disp_nat_trans_data
+        (nat_trans_id (functor_identity C))
+        (disp_functor_identity (sigma_disp_cat E))
+        (disp_functor_composite (sigmapr1_disp_functor E) sigma_contractible_functor)
+    := λ _ _, id_disp _ ,, iscontrpr1 (Hmor _ _ _ _ _).
+
+  Lemma sigma_contractible_unit_is_nat_trans
+    : disp_nat_trans_axioms sigma_contractible_unit_data.
+  Proof.
+    repeat intro.
+    apply subtypePath.
+    {
+      intro.
+      apply isapropifcontr.
+      apply Hmor.
+    }
+    refine (_ @ !pr1_transportf_sigma_disp _ _ _).
+    refine (id_right_disp _ @ _).
+    refine (_ @ !maponpaths _ (id_left_disp _)).
+    refine (_ @ !transport_f_b _ _ _ _).
+    apply transportf_paths.
+    apply homset_property.
+  Qed.
+
+  Definition sigma_contractible_unit
+    : disp_nat_trans
+        (nat_trans_id (functor_identity C))
+        (disp_functor_identity (sigma_disp_cat E))
+        (disp_functor_composite (sigmapr1_disp_functor E) sigma_contractible_functor)
+    := _ ,, sigma_contractible_unit_is_nat_trans.
+
+  Definition sigma_contractible_counit_data
+    : disp_nat_trans_data
+        (nat_trans_id (functor_identity C ∙ functor_identity C))
+        (disp_functor_composite sigma_contractible_functor (sigmapr1_disp_functor E))
+        (disp_functor_identity D)
+    := λ _ _, id_disp _.
+
+  Lemma sigma_contractible_counit_is_nat_trans
+    : disp_nat_trans_axioms sigma_contractible_counit_data.
+  Proof.
+    repeat intro.
+    refine (id_right_disp _ @ _).
+    refine (_ @ !maponpaths _ (id_left_disp _)).
+    refine (_ @ !transport_f_b _ _ _ _).
+    apply transportf_paths.
+    apply homset_property.
+  Qed.
+
+  Definition sigma_contractible_counit
+    : disp_nat_trans
+        (nat_trans_id (functor_identity C ∙ functor_identity C))
+        (disp_functor_composite sigma_contractible_functor (sigmapr1_disp_functor E))
+        (disp_functor_identity D)
+    := _ ,, sigma_contractible_counit_is_nat_trans.
+
+  Definition sigma_contractible_right_adjoint_data
+    : right_adjoint_over_id_data (sigmapr1_disp_functor E)
+    := sigma_contractible_functor ,,
+      sigma_contractible_unit ,,
+      sigma_contractible_counit.
+
+  Lemma sigma_contractible_form_adjunction
+    : form_disp_adjunction_id sigma_contractible_right_adjoint_data.
+  Proof.
+    split.
+    - intros X Xdata.
+      refine (id_right_disp _ @ _).
+      apply transportf_paths.
+      apply homset_property.
+    - intros X Xdata.
+      apply subtypePath.
+      {
+        intro.
+        apply isapropifcontr.
+        apply Hmor.
+      }
+      refine (_ @ !pr1_transportf_sigma_disp _ _ _).
+      apply id_left_disp.
+  Qed.
+
+  Definition sigma_contractible_right_adjoint
+    : right_adjoint_over_id (sigmapr1_disp_functor E)
+    := sigma_contractible_right_adjoint_data ,, sigma_contractible_form_adjunction.
+
+  Section UnitInverse.
+
+    Context (X : C).
+    Context (Xdata : sigma_disp_cat E X).
+
+    Definition sigma_contractible_unit_inverse
+      : sigma_contractible_functor_data X (pr1 Xdata) -->[identity X] Xdata
+      := id_disp _ ,, iscontrpr1 (Hmor _ _ _ _ _).
+
+    Lemma sigma_contractible_unit_is_inverse
+      : is_disp_inverse
+        (identity_z_iso X)
+        (sigma_contractible_unit_data X Xdata)
+        sigma_contractible_unit_inverse.
+    Proof.
+      split.
+      - apply subtypePath.
+        {
+          intro.
+          apply isapropifcontr.
+          apply Hmor.
+        }
+        refine (_ @ !pr1_transportf_sigma_disp _ _ _).
+        apply id_left_disp.
+      - apply subtypePath.
+        {
+          intro.
+          apply isapropifcontr.
+          apply Hmor.
+        }
+        refine (_ @ !pr1_transportf_sigma_disp _ _ _).
+        apply id_left_disp.
+    Qed.
+
+    Definition sigma_contractible_unit_is_z_iso
+      : is_z_iso_disp (identity_z_iso X) (sigma_contractible_unit_data X Xdata)
+      := _ ,, sigma_contractible_unit_is_inverse.
+
+  End UnitInverse.
+
+  Section CounitInverse.
+
+    Context (X : C).
+    Context (Xdata : D X).
+
+    Definition sigma_contractible_counit_inverse
+      : Xdata -->[ inv_from_z_iso (identity_z_iso X)] Xdata
+      := id_disp _.
+
+    Lemma sigma_contractible_counit_is_inverse
+      : is_disp_inverse
+        (identity_z_iso X)
+        (sigma_contractible_counit_data X Xdata)
+        sigma_contractible_counit_inverse.
+    Proof.
+      split;
+        apply id_left_disp.
+    Qed.
+
+    Definition sigma_contractible_counit_is_z_iso
+      : is_z_iso_disp (identity_z_iso X) (sigma_contractible_counit_data X Xdata)
+      := _ ,, sigma_contractible_counit_is_inverse.
+
+  End CounitInverse.
+
+  Definition sigma_contractible_form_equiv
+    : form_equiv_over_id sigma_contractible_right_adjoint_data
+    := make_dirprod
+      sigma_contractible_unit_is_z_iso
+      sigma_contractible_counit_is_z_iso.
+
+  Definition sigma_contractible_equivalence
+    : is_equiv_over_id (sigmapr1_disp_functor E)
+    := sigma_contractible_right_adjoint ,,
+        sigma_contractible_form_equiv.
+
+End SigmaContractible.
