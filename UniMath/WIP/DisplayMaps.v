@@ -43,29 +43,31 @@ Section DisplayMaps.
         (g : selected_morphism D Z X),
         Pullback f g.
 
+    (* Technically, it suffices to have this only for the selected pullback. *)
+    (* However, in this way it satisfies the equivalence principle. *)
     Definition selected_morphism_pullback_map_ax
-      (P : selected_morphism_pullback_ax)
       : UU
       := ∏
         (X Y Z : C)
         (f : C⟦Y, X⟧)
-        (g : selected_morphism D Z X),
-        is_selected D (PullbackPr1 (P X Y Z f g)).
+        (g : selected_morphism D Z X)
+        (P : Pullback f g),
+        is_selected D (PullbackPr1 P).
 
     Definition is_display_map_class
       : UU
       := (∑ (T : selected_morphism_terminal_ax),
           selected_morphism_terminal_map_ax T) ×
         selected_morphism_composed_map_ax ×
-        (∑ (P : selected_morphism_pullback_ax),
-          selected_morphism_pullback_map_ax P).
+        selected_morphism_pullback_ax ×
+        selected_morphism_pullback_map_ax.
 
     Definition make_is_display_map_class
       (T : selected_morphism_terminal_ax)
       (HT : selected_morphism_terminal_map_ax T)
       (HC : selected_morphism_composed_map_ax)
       (P : selected_morphism_pullback_ax)
-      (HP : selected_morphism_pullback_map_ax P)
+      (HP : selected_morphism_pullback_map_ax)
       : is_display_map_class
       := (T ,, HT) ,, HC ,, (P ,, HP).
 
@@ -101,7 +103,7 @@ Section DisplayMaps.
       := pr1 (pr222 D).
 
     Definition display_maps_pullback_map
-      : selected_morphism_pullback_map_ax D display_maps_pullback
+      : selected_morphism_pullback_map_ax D
       := pr2 (pr222 D).
 
   End Accessors.

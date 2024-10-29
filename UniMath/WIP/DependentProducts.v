@@ -17,7 +17,7 @@ Section DependentProducts.
   Definition restricted_morphisms_dependent_product
     {X Y : C}
     (f : selected_morphism D X Y)
-    : dependent_product (restricted_slice_cleaving (display_maps_pullback_map D)) f
+    : dependent_product (restricted_slice_cleaving  (display_maps_pullback D) (display_maps_pullback_map D)) f
     := HD X Y f.
 
 End DependentProducts.

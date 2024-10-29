@@ -16,7 +16,7 @@ Section DisplayMaps.
   Definition is_relatively_cartesian_closed
     : UU
     := ∏ X Y (f : selected_morphism D X Y),
-      is_left_adjoint (fiber_functor_from_cleaving _ (restricted_slice_cleaving (display_maps_pullback_map D)) f).
+      is_left_adjoint (fiber_functor_from_cleaving _ (restricted_slice_cleaving (display_maps_pullback D) (display_maps_pullback_map D)) f).
 
 End DisplayMaps.
 

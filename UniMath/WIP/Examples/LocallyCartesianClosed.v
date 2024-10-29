@@ -27,13 +27,13 @@ Require Import UniMath.WIP.Examples.Preliminaries.
 
 Local Open Scope cat.
 
-Section MaximalExample.
+Section LocallyCartesianClosed.
 
   Context {C : category}.
   Context (T : Terminal C).
   Context (P : Pullbacks C).
 
-  Definition maximal_display_maps
+  Definition locally_cartesian_closed_display_maps
     : display_maps C.
   Proof.
     exists (λ X Y f, htrue).
@@ -45,13 +45,13 @@ Section MaximalExample.
       exact tt.
     - intros X Y Z f g.
       apply P.
-    - intros X Y Z f g.
+    - intros X Y Z f g P0.
       exact tt.
   Defined.
 
   Definition restricted_slice_equivalence
     (X : C)
-    : adj_equiv (restricted_slice maximal_display_maps X) (C / X).
+    : adj_equiv (restricted_slice locally_cartesian_closed_display_maps X) (C / X).
   Proof.
     refine (_ ,, fiber_equiv _ _).
     apply sigma_contractible_equivalence;
@@ -65,13 +65,13 @@ Section MaximalExample.
     Context (f : X --> Y).
 
     Let HP
-      : selected_morphism_pullback_map_ax maximal_display_maps _
-      := display_maps_pullback_map maximal_display_maps.
+      : selected_morphism_pullback_map_ax locally_cartesian_closed_display_maps
+      := display_maps_pullback_map locally_cartesian_closed_display_maps.
 
     Definition restricted_slice_slice_pullback_iso_nat_trans_data
       : nat_trans_data
         (restricted_slice_equivalence Y ∙ cod_pb P f)
-        (pullback_functor HP f ∙ restricted_slice_equivalence X).
+        (pullback_functor P HP f ∙ restricted_slice_equivalence X).
     Proof.
       refine (λ (g : restricted_slice_ob _ Y), _).
       refine (invmap (z_iso_disp_z_iso_fiber _ X _ _) _).
@@ -101,19 +101,19 @@ Section MaximalExample.
 
     Definition restricted_slice_slice_pullback_iso_nat_trans
       : restricted_slice_equivalence Y ∙ cod_pb P f
-        ⟹ pullback_functor HP f ∙ restricted_slice_equivalence X
+        ⟹ pullback_functor P HP f ∙ restricted_slice_equivalence X
       := make_nat_trans _ _ _ restricted_slice_slice_pullback_iso_is_nat_trans.
 
     Definition restricted_slice_slice_pullback_iso
       : z_iso (C := [_, _])
         (restricted_slice_equivalence Y
           ∙ cod_pb P f)
-        (fiber_functor_from_cleaving _ (restricted_slice_cleaving HP) f
+        (fiber_functor_from_cleaving _ (restricted_slice_cleaving P HP) f
           ∙ restricted_slice_equivalence X).
     Proof.
       apply (invmap (z_iso_is_nat_z_iso _ _)).
       refine (nat_z_iso_comp _ (post_whisker_nat_z_iso
-        (z_iso_is_nat_z_iso _ _ (z_iso_inv (fiber_pullback_iso _ f))) _)).
+        (z_iso_is_nat_z_iso _ _ (z_iso_inv (fiber_pullback_iso _ _ f))) _)).
       use make_nat_z_iso.
       - exact restricted_slice_slice_pullback_iso_nat_trans.
       - intro g.
@@ -124,7 +124,7 @@ Section MaximalExample.
 
   Definition locally_to_relatively_cartesian_closed
     (H : is_locally_cartesian_closed P)
-    : is_relatively_cartesian_closed maximal_display_maps.
+    : is_relatively_cartesian_closed locally_cartesian_closed_display_maps.
   Proof.
     intros X Y f.
     refine (is_left_adjoint_closed_under_iso _ _ _ _).
@@ -139,7 +139,7 @@ Section MaximalExample.
   Defined.
 
   Definition relatively_to_locally_cartesian_closed
-    (H : is_relatively_cartesian_closed maximal_display_maps)
+    (H : is_relatively_cartesian_closed locally_cartesian_closed_display_maps)
     : is_locally_cartesian_closed P.
   Proof.
     intros X Y f.
@@ -156,4 +156,4 @@ Section MaximalExample.
       + exact (adj_from_equiv _ _ _ (restricted_slice_equivalence X)).
   Defined.
 
-End MaximalExample.
+End LocallyCartesianClosed.

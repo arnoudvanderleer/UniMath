@@ -21,8 +21,8 @@ Section ComprehensionCat.
 
   Context {C : category}.
   Context {D : morphism_selection C}.
-  Context {P : selected_morphism_pullback_ax D}.
-  Context (HP : selected_morphism_pullback_map_ax D P).
+  Context (P : selected_morphism_pullback_ax D).
+  Context (HP : selected_morphism_pullback_map_ax D).
 
   Section Fibration.
 
@@ -35,7 +35,7 @@ Section ComprehensionCat.
       Definition restricted_slice_cleaving_object
         : restricted_slice_disp D Y
         := make_restricted_slice_ob _
-          (make_selected_morphism _ (HP _ _ _ f (g : restricted_slice_ob D X))).
+          (make_selected_morphism _ (HP _ _ _ f (g : restricted_slice_ob D X) (P _ _ _ _ _))).
 
       Definition restricted_slice_cleaving_morphism
         : restricted_slice_cleaving_object -->[f] g.
@@ -117,7 +117,7 @@ Section ComprehensionCat.
       : restricted_slice_ob D Y
       := make_restricted_slice_ob
         _
-        (make_selected_morphism _ (HP _ _ _ f g)).
+        (make_selected_morphism _ (HP _ _ _ f g (P _ _ _ _ _))).
 
     Definition pullback_functor_mor
       (g h : restricted_slice_ob D X)

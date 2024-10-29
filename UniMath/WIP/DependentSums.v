@@ -21,8 +21,8 @@ Section LeftAdjoint.
   Context {D : morphism_selection C}.
 
   Context (HC : selected_morphism_composed_map_ax D).
-  Context {P : selected_morphism_pullback_ax D}.
-  Context (HP : selected_morphism_pullback_map_ax D P).
+  Context (P : selected_morphism_pullback_ax D).
+  Context (HP : selected_morphism_pullback_map_ax D).
 
   Context {X Y : C}.
   Context (f : selected_morphism D X Y).
@@ -68,7 +68,7 @@ Section LeftAdjoint.
     (g : restricted_slice_ob D X)
     (h : restricted_slice_ob D Y)
     : restricted_slice_mor (postcomposition_functor g) h
-    ≃ restricted_slice_mor g (fiber_functor_from_cleaving _ (restricted_slice_cleaving HP) f h).
+    ≃ restricted_slice_mor g (fiber_functor_from_cleaving _ (restricted_slice_cleaving P HP) f h).
   Proof.
     use weq_iso;
       intro i.
@@ -138,7 +138,7 @@ Section LeftAdjoint.
     (j : restricted_slice_ob D Y)
     (k : restricted_slice_mor h j)
     : pullback_hom_weq g j (i · k)
-      = pullback_hom_weq g h i · # (fiber_functor_from_cleaving _ (restricted_slice_cleaving HP) f) k.
+      = pullback_hom_weq g h i · # (fiber_functor_from_cleaving _ (restricted_slice_cleaving P HP) f) k.
   Proof.
     apply restricted_slice_mor_eq.
     refine (_ @ !restricted_slice_mor_comp (pullback_hom_weq g h i) (# _ k)).
@@ -161,7 +161,7 @@ Section LeftAdjoint.
   Qed.
 
   Definition pullback_is_adjoint
-    : are_adjoints postcomposition_functor (fiber_functor_from_cleaving _ (restricted_slice_cleaving HP) f).
+    : are_adjoints postcomposition_functor (fiber_functor_from_cleaving _ (restricted_slice_cleaving P HP) f).
   Proof.
     use (invmap adjunction_homsetiso_weq).
     use tpair.
@@ -179,13 +179,13 @@ Section DependentSums.
   Context {D : morphism_selection C}.
 
   Context (HC : selected_morphism_composed_map_ax D).
-  Context {P : selected_morphism_pullback_ax D}.
-  Context (HP : selected_morphism_pullback_map_ax D P).
+  Context (P : selected_morphism_pullback_ax D).
+  Context (HP : selected_morphism_pullback_map_ax D).
 
   Definition restricted_morphisms_dependent_sum
     {X Y : C}
     (f : selected_morphism D X Y)
-    : dependent_sum (restricted_slice_cleaving HP) f.
+    : dependent_sum (restricted_slice_cleaving P HP) f.
   Proof.
     exists (postcomposition_functor HC f).
     apply pullback_is_adjoint.
