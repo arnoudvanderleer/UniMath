@@ -318,7 +318,7 @@ Definition idxT_nattrans := binproduct_nat_trans_pr1 C C Prod (functor_identity 
 Theorem idxT_is_nat_z_iso : is_nat_z_iso idxT_nattrans.
 Proof.
   intro c.
-  use (terminal_binprod_unit_r_z T Prod).
+  exact (terminal_binprod_unit_r_z T _ (Prod _ _)).
 Defined.
 
 Definition idxT_nat_z_iso := (make_nat_z_iso _ _ (idxT_nattrans) (idxT_is_nat_z_iso)).
