@@ -1191,48 +1191,79 @@ Defined.
 End pullbacks_pointwise.
 
 (** * Construction of binary products from pullbacks *)
-Section binproduct_from_pullback.
+Section BinProductPullback.
 
-Context {C : category} (Pb : Pullbacks C) (T : Terminal C).
+  Context {C : category}.
+  Context (T : Terminal C).
+  Context (X1 X2 : C).
 
-Definition UnivProductFromPullback (c d a : C) (f : a --> c) (g : a --> d):
-  ∑ fg : a --> Pb T c d (TerminalArrow T c) (TerminalArrow T d),
-      (fg · PullbackPr1 (Pb T c d (TerminalArrow T c) (TerminalArrow T d)) = f)
-    × (fg · PullbackPr2 (Pb T c d (TerminalArrow T c) (TerminalArrow T d)) = g).
-Proof.
-  unfold Pullbacks in Pb.
-  exists (PullbackArrow (Pb _ _ _ (TerminalArrow _ c)(TerminalArrow _ d)) _ f g
-       (TerminalArrowEq _ _)).
-  split.
-  apply PullbackArrow_PullbackPr1.
-  apply PullbackArrow_PullbackPr2.
-Defined.
+  Section IsBinProductPullback.
 
-Lemma isBinProduct_Pullback (c d : C):
-   isBinProduct C c d
-            (PullbackObject (Pb _ _ _ (TerminalArrow T c) (TerminalArrow T d)))
-   (PullbackPr1 _  ) (PullbackPr2 _ ).
-Proof.
-  intros a f g.
-  exists (UnivProductFromPullback c d a f g).
-  intro t.
-  abstract (apply proofirrelevancecontr,
-             isPullback_Pullback,
-             TerminalArrowEq).
-Defined.
+    Context {Y : C}.
+    Context (f1 : Y --> X1).
+    Context (f2 : Y --> X2).
 
-Definition BinProduct_Pullback (c d : C) : BinProduct _ c d.
-Proof.
-  exists
-  (tpair _ (PullbackObject (Pb _ _ _ (TerminalArrow T c) (TerminalArrow T d)))
-               (make_dirprod  (PullbackPr1 _) (PullbackPr2 _))).
- exact (isBinProduct_Pullback c d).
-Defined.
+    Lemma is_terminal_pullback_binproduct_square
+      : f1 · TerminalArrow T _ = f2 · TerminalArrow T _.
+    Proof.
+      apply TerminalArrowEq.
+    Qed.
 
-Definition BinProductsFromPullbacks : BinProducts C := BinProduct_Pullback.
+    Definition is_terminal_pullback_binproduct_weq
+      : isPullback is_terminal_pullback_binproduct_square
+        ≃ isBinProduct C X1 X2 Y f1 f2.
+    Proof.
+      refine (weqiff _
+        (isaprop_isPullback _ _ _ _ _ _)
+        (isaprop_isBinProduct _ _ _ _ _ _)).
+      split.
+      - intros H Z g1 g2.
+        exact (H Z g1 g2 (TerminalArrowEq _ _)).
+      - intros H Z g1 g2 Hg.
+        exact (H Z g1 g2).
+    Defined.
 
-End binproduct_from_pullback.
+  End IsBinProductPullback.
 
+  Definition terminal_pullback_binproduct_weq
+    : Pullback (TerminalArrow T X1) (TerminalArrow T X2) ≃ BinProduct C X1 X2.
+  Proof.
+    use weq_iso.
+    - intro P.
+      refine (make_BinProduct _ _ _ _ _ _ _).
+      apply is_terminal_pullback_binproduct_weq.
+      apply P.
+    - intro BP.
+      refine (make_Pullback _ _).
+      apply (invmap (is_terminal_pullback_binproduct_weq _ _)).
+      apply BP.
+    - abstract (
+        intro P;
+        apply subtypePath;
+        [ intro P';
+          simple refine (isaprop_total2 (make_hProp _ _) (λ H, make_hProp _ _));
+          [ apply homset_property
+          | use isaprop_isPullback;
+            exact H ]
+        | reflexivity ]
+      ).
+    - abstract (
+        intro BP;
+        apply subtypePath;
+        [ intro BP';
+          apply isaprop_isBinProduct
+        | reflexivity ]
+      ).
+  Defined.
+
+End BinProductPullback.
+
+Definition BinProductsFromPullbacks
+  {C : category}
+  (Pb : Pullbacks C)
+  (T : Terminal C)
+  : BinProducts C
+  := λ X Y, terminal_pullback_binproduct_weq T _ _ (Pb T X Y _ _).
 
 (** * Pullbacks in functor_precategory
     We construct pullbacks in the functor category [D, C] from pullbacks of C. *)
