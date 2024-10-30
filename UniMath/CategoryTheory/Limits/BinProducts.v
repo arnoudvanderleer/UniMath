@@ -1141,6 +1141,129 @@ End BinProductOfIsos.
 (*
 Definition of the "associative" z-isomorphism
 *)
+Section BinProductAssoc.
+
+  Context {C : category}.
+  Context {X1 X2 X3 : C}.
+  Context (P1 : BinProduct _ X1 X2).
+  Context (P2 : BinProduct _ X2 X3).
+  Context (Q : BinProduct _ P1 X3).
+
+  Definition binproduct_assoc_pr1
+    : Q --> X1
+    := BinProductPr1 _ _ · BinProductPr1 _ _.
+
+  Definition binproduct_assoc_pr2
+    : Q --> P2.
+  Proof.
+    use BinProductArrow.
+    - exact (BinProductPr1 _ _ · BinProductPr2 _ _).
+    - exact (BinProductPr2 _ _).
+  Defined.
+
+  Section Arrow.
+
+    Context {Z : C}.
+    Context (f1 : Z --> X1).
+    Context (f2 : Z --> P2).
+
+    Definition is_binproduct_assoc_arrow
+      : Z --> Q.
+    Proof.
+      use BinProductArrow.
+      + use BinProductArrow.
+        * exact f1.
+        * exact (f2 · BinProductPr1 _ _).
+      + exact (f2 · BinProductPr2 _ _).
+    Defined.
+
+    Lemma is_binproduct_assoc_pr1_commutes
+      : is_binproduct_assoc_arrow · binproduct_assoc_pr1 = f1.
+    Proof.
+      refine (assoc _ _ _ @ _).
+      refine (maponpaths (λ x, x · _) (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
+      apply BinProductPr1Commutes.
+    Qed.
+
+    Lemma is_binproduct_assoc_pr2_commutes
+      : is_binproduct_assoc_arrow · binproduct_assoc_pr2 = f2.
+    Proof.
+      apply BinProductArrowsEq.
+      - refine (assoc' _ _ _ @ _).
+        refine (maponpaths _ (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
+        refine (assoc _ _ _ @ _).
+        refine (maponpaths (λ x, x · _) (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
+        apply BinProductPr2Commutes.
+      - refine (assoc' _ _ _ @ _).
+        refine (maponpaths _ (BinProductPr2Commutes _ _ _ _ _ _ _) @ _).
+        apply BinProductPr2Commutes.
+    Qed.
+
+    Lemma is_binproduct_assoc_arrow_unique
+      (g : Z --> Q)
+      (H1 : g · binproduct_assoc_pr1 = f1)
+      (H2 : g · binproduct_assoc_pr2 = f2)
+      : g = is_binproduct_assoc_arrow.
+    Proof.
+      repeat apply BinProductArrowsEq.
+      + refine (assoc' _ _ _ @ _).
+        refine (H1 @ !_).
+        refine (maponpaths (λ x, x · _) (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
+        apply BinProductPr1Commutes.
+      + symmetry.
+        refine (maponpaths (λ x, x · _) (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
+        refine (BinProductPr2Commutes _ _ _ _ _ _ _ @ _).
+        refine (!maponpaths (λ x, x · _) H2 @ _).
+        do 2 refine (assoc' _ _ _ @ !_).
+        apply maponpaths.
+        apply BinProductPr1Commutes.
+      + symmetry.
+        refine (BinProductPr2Commutes _ _ _ _ _ _ _ @ _).
+        refine (!maponpaths (λ x, x · _) H2 @ _).
+        refine (assoc' _ _ _ @ _).
+        apply maponpaths.
+        apply BinProductPr2Commutes.
+    Qed.
+
+  End Arrow.
+
+  Definition is_binproduct_assoc
+    : isBinProduct _ X1 P2 Q binproduct_assoc_pr1 binproduct_assoc_pr2
+    := λ Z f1 f2,
+      make_binproduct_arrow _ _ _ _
+        (is_binproduct_assoc_arrow f1 f2)
+        (is_binproduct_assoc_pr1_commutes _ _)
+        (is_binproduct_assoc_pr2_commutes _ _)
+        (is_binproduct_assoc_arrow_unique _ _).
+
+  Definition binproduct_assoc
+    : BinProduct _ X1 P2
+    := make_BinProduct _ _ _ _ _ _ is_binproduct_assoc.
+
+End BinProductAssoc.
+
+Definition binproduct_assoc'
+  {C : category}
+  {X1 X2 X3 : C}
+  (P1 : BinProduct _ X1 X2)
+  (P2 : BinProduct _ X2 X3)
+  (Q : BinProduct _ X1 P2)
+  : BinProduct _ P1 X3
+  := switch_BinProduct _ _
+    (binproduct_assoc
+      (switch_BinProduct _ _ P2)
+      (switch_BinProduct _ _ P1)
+      (switch_BinProduct _ _ Q)).
+
+Definition is_binproduct_assoc'
+  {C : category}
+  {X1 X2 X3 : C}
+  (P1 : BinProduct _ X1 X2)
+  (P2 : BinProduct _ X2 X3)
+  (Q : BinProduct _ X1 P2)
+  : isBinProduct _ P1 X3 _ _ _
+  := isBinProduct_BinProduct _ (binproduct_assoc' P1 P2 Q).
+
 Section BinProduct_assoc_z_iso.
 
   Context {C : category}
@@ -1148,93 +1271,13 @@ Section BinProduct_assoc_z_iso.
           (a b c : C).
 
   Let Pbc := P b c.
-  Let Pa_bc := P a (BinProductObject _ Pbc).
+  Let Pa_bc := P a Pbc.
   Let Pab := P a b.
-  Let Pab_c := P (BinProductObject _ Pab) c.
+  Let Pab_c := P Pab c.
 
-  Definition BinProduct_assoc_mor : C ⟦ BinProductObject C Pa_bc , BinProductObject C Pab_c ⟧.
-  Proof.
-    use BinProductArrow.
-    + use BinProductOfArrows.
-      - exact (identity a).
-      - use BinProductPr1.
-    + use (compose (b := BinProductObject C Pbc)).
-      - use BinProductPr2.
-      - use BinProductPr2.
-  Defined.
-
-  Definition BinProduct_assoc_invmor : C ⟦ BinProductObject C Pab_c , BinProductObject C Pa_bc ⟧.
-  Proof.
-    use BinProductArrow.
-    + use (compose (b := BinProductObject C Pab)).
-      - use BinProductPr1.
-      - use BinProductPr1.
-    + use BinProductOfArrows.
-      - use BinProductPr2.
-      - exact (identity c).
-  Defined.
-
-  Lemma BinProduct_assoc_is_inverse : is_inverse_in_precat BinProduct_assoc_mor BinProduct_assoc_invmor.
-  Proof.
-    use make_is_inverse_in_precat.
-    - unfold BinProduct_assoc_mor, BinProduct_assoc_invmor.
-      use BinProductArrowsEq.
-      * now rewrite
-          id_left,
-          assoc',
-          BinProductPr1Commutes,
-          assoc,
-          BinProductPr1Commutes,
-          BinProductOfArrowsPr1,
-          id_right.
-      * now rewrite
-          id_left,
-          assoc',
-          BinProductPr2Commutes,
-          postcompWithBinProductArrow,
-          id_right,
-          BinProductOfArrowsPr2,
-          <-precompWithBinProductArrow,
-          <-(id_left (BinProductPr1 C Pbc)),
-          <-(id_left (BinProductPr2 C Pbc)),
-          <-BinProductArrowEta,
-          id_right.
-    - unfold BinProduct_assoc_mor, BinProduct_assoc_invmor.
-      use BinProductArrowsEq.
-      * now rewrite
-          id_left,
-          assoc',
-          BinProductPr1Commutes,
-          postcompWithBinProductArrow,
-          id_right,
-          BinProductOfArrowsPr1,
-          <-precompWithBinProductArrow,
-          <-(id_left (BinProductPr1 C Pab)),
-          <-(id_left (BinProductPr2 C Pab)),
-          <-BinProductArrowEta, id_right.
-      * now rewrite
-          id_left,
-          assoc',
-          BinProductPr2Commutes,
-          assoc,
-          BinProductPr2Commutes,
-          BinProductOfArrowsPr2,
-          id_right.
-  Qed.
-
-  Definition BinProduct_assoc_is_z_iso : is_z_isomorphism (BinProduct_assoc_mor).
-  Proof.
-    use make_is_z_isomorphism.
-    + exact BinProduct_assoc_invmor.
-    + exact BinProduct_assoc_is_inverse.
-  Defined.
-
-  Definition BinProduct_assoc : z_iso (BinProductObject C Pa_bc) (BinProductObject C Pab_c).
-  Proof.
-    use make_z_iso'.
-    + exact BinProduct_assoc_mor.
-    + exact BinProduct_assoc_is_z_iso.
-  Defined.
+  Definition BinProduct_assoc
+    : z_iso (BinProductObject C Pa_bc) (BinProductObject C Pab_c)
+    := iso_between_BinProduct Pa_bc (binproduct_assoc _ _ Pab_c).
 
 End BinProduct_assoc_z_iso.
 
@@ -1258,28 +1301,38 @@ Section BinProduct_OfArrows_assoc.
   : BinProductOfArrows _ Pa_bc Pa_bc' f (BinProductOfArrows _ Pbc Pbc' g h) · (BinProduct_assoc P a b c) =
     (BinProduct_assoc P a' b' c') · BinProductOfArrows _ Pab_c Pab_c' (BinProductOfArrows _ Pab Pab' f g) h.
   Proof.
-    unfold BinProduct_assoc, BinProduct_assoc_mor.
+    unfold BinProduct_assoc, iso_between_BinProduct, binproduct_assoc, BinProductArrow.
     simpl.
-    use BinProductArrowsEq.
-    + rewrite !assoc', (BinProductPr1Commutes), BinProductOfArrowsPr1, assoc, BinProductPr1Commutes.
-      use BinProductArrowsEq.
-      - now rewrite !assoc',
+    unfold is_binproduct_assoc_arrow.
+    apply BinProductArrowsEq.
+    - rewrite !assoc',
+        BinProductPr1Commutes,
+        BinProductOfArrowsPr1,
+        assoc,
+        BinProductPr1Commutes.
+      apply BinProductArrowsEq.
+      + now rewrite !assoc',
+          BinProductPr1Commutes,
           !BinProductOfArrowsPr1,
-          !assoc,
-          !BinProductOfArrowsPr1,
-          id_right, !assoc', id_left.
-      - now rewrite !assoc',
+          assoc,
+          BinProductPr1Commutes.
+      + now rewrite !assoc',
+          BinProductPr2Commutes,
+          assoc,
           !BinProductOfArrowsPr2,
-          !assoc,
-          !BinProductOfArrowsPr2,
-          !assoc',
-          !BinProductOfArrowsPr1.
-    + now rewrite !assoc',
-        !BinProductOfArrowsPr2, !BinProductPr2Commutes,
+          assoc,
+          BinProductPr2Commutes,
+          assoc',
+          BinProductOfArrowsPr1,
+          assoc.
+    - now rewrite !assoc',
+        BinProductOfArrowsPr2,
+        BinProductPr2Commutes,
         !assoc,
-        !BinProductOfArrowsPr2, !BinProductPr2Commutes,
+        BinProductOfArrowsPr2,
+        BinProductPr2Commutes,
         !assoc',
-        !BinProductOfArrowsPr2.
+        BinProductOfArrowsPr2.
   Qed.
 
 End BinProduct_OfArrows_assoc.
