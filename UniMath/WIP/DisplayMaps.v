@@ -77,6 +77,12 @@ Section DisplayMaps.
     : UU
     := ∑ (D : morphism_selection C), is_display_map_class D.
 
+  Definition make_display_maps
+    (D : morphism_selection C)
+    (H : is_display_map_class D)
+    : display_maps
+    := D ,, H.
+
   Coercion display_maps_to_morphism_selection
     (D : display_maps)
     : morphism_selection C
