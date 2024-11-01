@@ -49,6 +49,17 @@ Section CartesianClosed.
       (make_BinProduct _ _ _ _ _ _ (pr22 Hf))).
   Qed.
 
+(** For the next two lemmas, we have a diagram
+<<
+       f×id          π2
+  Y×A ------> X×A -------> A
+   |           |           |
+ π1|           |g          |!
+   v           v           v
+   Y --------> X --------> T
+        f            !
+>>
+*)
   Definition cartesian_closed_pullback
     : selected_morphism_pullback_ax cartesian_closed_morphism_selection.
   Proof.
