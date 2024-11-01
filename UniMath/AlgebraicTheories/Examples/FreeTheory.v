@@ -30,8 +30,7 @@ Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.Combinatorics.Vectors.
 
-Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.
-
+Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.FunctorLift.
 
 Require Import UniMath.AlgebraicTheories.AlgebraCategory.
 Require Import UniMath.AlgebraicTheories.AlgebraCategoryCore.
