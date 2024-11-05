@@ -8,6 +8,8 @@
   Coreflections are very useful for formalizing, because one can use them to construct a right
   adjoint to a functor (Theorem 2 (iv) of Chapter IV.1 of MacLane).
 
+  This file is the dual of Reflections.v
+
   Contents
   1. Coreflections with their constructors and accessors [coreflection]
   2. Some simple constructions
@@ -21,6 +23,8 @@
   4.1. The construction of coreflections from a right adjoint [right_adjoint_to_coreflection]
   4.2. The construction of a right adjoint from coreflections [coreflections_to_is_left_adjoint]
   4.3. The equivalence [right_adjoint_weq_coreflections]
+  4.4. The interaction between [right_adjoint_weq_coreflections] and [φ_adj]
+    [coreflections_to_are_adjoints_φ_adj]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
@@ -498,3 +502,26 @@ Proof.
   - apply right_adjoint_to_coreflections_to_right_adjoint.
   - apply coreflections_to_right_adjoint_to_coreflections.
 Defined.
+
+(** ** 4.4. The interaction between [right_adjoint_weq_coreflections] and [φ_adj] *)
+
+(* Note that for f : X⟦x, G a⟧, we have φ_adj_inv Adj f = #F f · G0 a definitionally *)
+Lemma coreflections_to_are_adjoints_φ_adj
+  {X A : category}
+  {F : functor X A}
+  (G0 : ∏ a, coreflection a F)
+  {a : A}
+  {x : X}
+  (f : A⟦F x, a⟧)
+  : φ_adj (coreflections_to_are_adjoints G0) f
+    = coreflection_arrow (G0 a) (make_coreflection_data x f).
+Proof.
+  refine (coreflection_arrow_unique _ (make_coreflection_data x f) _ (!_)).
+  refine (maponpaths (λ x, x · _) (functor_comp _ _ _) @ _).
+  refine (assoc' _ _ _ @ _).
+  refine (!maponpaths _ (coreflection_arrow_commutes _ (coreflection_data_postcompose _ _)) @ _).
+  refine (assoc _ _ _ @ _).
+  refine (!maponpaths (λ x, x · _)
+    (coreflection_arrow_commutes _ (identity_coreflection_data _ _)) @ _).
+  apply id_left.
+Qed.

@@ -8,6 +8,8 @@
   Reflections are very useful for formalizing, because one can use them to construct a left adjoint
   to a functor (Theorem 2 (ii) of Chapter IV.1 of MacLane).
 
+  This file is the dual of Coreflections.v
+
   Contents
   1. Reflections with their constructors and accessors [reflection]
   2. Some simple constructions
@@ -20,6 +22,8 @@
   4.1. The construction of reflections from a left adjoint [left_adjoint_to_reflection]
   4.2. The construction of a left adjoint from reflections [reflections_to_is_right_adjoint]
   4.3. The equivalence [left_adjoint_weq_reflections]
+  4.4. The interaction between [left_adjoint_weq_reflections] and [φ_adj_inv]
+    [reflections_to_are_adjoints_φ_adj_inv]
 
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
@@ -494,3 +498,26 @@ Proof.
   - apply left_adjoint_to_reflections_to_left_adjoint.
   - apply reflections_to_left_adjoint_to_reflections.
 Defined.
+
+(** ** 4.4. The interaction between [left_adjoint_weq_reflections] and [φ_adj_inv] *)
+
+(* Note that for f : A⟦F x, a⟧, we have φ_adj Adj f = F0 x · #G f definitionally *)
+Lemma reflections_to_are_adjoints_φ_adj_inv
+  {X A : category}
+  {G : functor A X}
+  (F0 : ∏ x, reflection x G)
+  {x : X}
+  {a : A}
+  (f : X⟦x, G a⟧)
+  : φ_adj_inv (reflections_to_are_adjoints F0) f
+    = reflection_arrow (F0 x) (make_reflection_data a f).
+Proof.
+  refine (reflection_arrow_unique _ (make_reflection_data a f) _ (!_)).
+  refine (maponpaths _ (functor_comp _ _ _) @ _).
+  refine (assoc _ _ _ @ _).
+  refine (!maponpaths (λ x, x · _)
+    (reflection_arrow_commutes _ (reflection_data_precompose _ _)) @ _).
+  refine (assoc' _ _ _ @ _).
+  refine (!maponpaths _ (reflection_arrow_commutes _ (identity_reflection_data _ _)) @ _).
+  apply id_right.
+Qed.
