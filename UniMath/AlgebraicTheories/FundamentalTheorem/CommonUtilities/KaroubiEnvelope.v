@@ -35,7 +35,9 @@ Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
 Require Import UniMath.CategoryTheory.Categories.HSET.Core.
 Require Import UniMath.CategoryTheory.Categories.HSET.Univalence.
+Require Import UniMath.CategoryTheory.Categories.CategoryOfSetCategories.
 Require Import UniMath.CategoryTheory.Core.Prelude.
+Require Import UniMath.CategoryTheory.Core.Setcategories.
 Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.
 Require Import UniMath.CategoryTheory.DisplayedCats.Core.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
@@ -714,6 +716,126 @@ Section KaroubiEnvelope.
   End AlternativeDefinition.
 
 End KaroubiEnvelope.
+
+Lemma isaset_karoubi_envelope
+  (C : setcategory)
+  : isaset (karoubi_envelope C).
+Proof.
+  apply isaset_total2.
+  - apply isaset_ob.
+  - intro x.
+    refine (isaset_carrier_subset (homset _ _) (λ _, make_hProp _ _)).
+    apply homset_property.
+Qed.
+
+Definition set_karoubi_envelope
+  (C : setcategory)
+  : setcategory.
+Proof.
+  use make_setcategory.
+  - exact (karoubi_envelope (C : setcategory)).
+  - apply isaset_karoubi_envelope.
+Defined.
+
+(* Definition karoubi_on_setcategories
+  : cat_of_setcategory ⟶ cat_of_setcategory.
+Proof.
+  use make_functor.
+  - use make_functor_data.
+    + intros C D F.
+      change (ob cat_of_setcategory) with setcategory in C, D.
+      change (cat_of_setcategory⟦C, D⟧) with (C ⟶ D) in F.
+      use make_functor.
+      * use make_functor_data.
+        -- intro c.
+          refine (make_karoubi_ob _ (F (c : karoubi_ob _)) _ _).
+          apply (functor_preserves_is_idempotent _ (karoubi_ob_idempotent _ c)).
+        -- intros c d f.
+          use make_karoubi_mor.
+          ++ exact (#F (f : karoubi_mor _ _ _)).
+          ++ abstract (
+              refine (!functor_comp F _ _ @ _);
+              apply maponpaths;
+              apply karoubi_mor_commutes_left
+            ).
+          ++ abstract (
+              refine (!functor_comp F _ _ @ _);
+              apply maponpaths;
+              apply karoubi_mor_commutes_right
+            ).
+      * abstract (
+          split;
+          [ intro c;
+            now apply karoubi_mor_eq
+          | intros c d e f g;
+            apply karoubi_mor_eq;
+            apply functor_comp ]
+        ).
+  - split.
+    + intro C.
+      change (ob cat_of_setcategory) with setcategory in C.
+      apply (functor_eq _ _ (homset_property _)).
+      use functor_data_eq.
+      * intro c.
+        apply (maponpaths (λ x, pr1 c ,, (_ ,, x))).
+        apply homset_property.
+      * cbn.
+        intros c d f.
+        apply karoubi_mor_eq.
+        unfold double_transport.
+        cbn.
+        unfold karoubi_mor.
+        rewrite !pr1_transportf.
+        cbn.
+        refine (functtransportf (λ (x : karoubi_ob C), (x : C)) _ _ _ @ _).
+        refine (maponpaths (λ x, transportf _ x _) (maponpathscomp  _ _ _) @ _).
+        unfold funcomp.
+        cbn.
+        rewrite maponpaths_for_constant_function.
+        cbn.
+        refine (functtransportf (λ (x : karoubi_ob C), (x : C)) (λ x, C⟦x, d⟧) _ _ @ _).
+        cbn.
+        match goal with
+        | [ |- transportf _ (maponpaths ?f (maponpaths ?g ?x)) _ = _ ] => refine (maponpaths (λ y, transportf _ y _) (maponpathscomp g f x) @ _)
+        end.
+        cbn.
+        unfold funcomp.
+        cbn.
+        now rewrite maponpaths_for_constant_function.
+    + intros C D E f g.
+      change (ob cat_of_setcategory) with setcategory in C, D, E.
+      change (cat_of_setcategory⟦C, D⟧) with (C ⟶ D) in f.
+      change (cat_of_setcategory⟦D, E⟧) with (D ⟶ E) in g.
+      apply (functor_eq _ _ (homset_property _)).
+      cbn.
+      use functor_data_eq.
+      * intro c.
+        apply (maponpaths (λ x, g (f (c : karoubi_ob C)) ,, _ ,, x)).
+        apply homset_property.
+      * cbn.
+        intros c d h.
+        apply karoubi_mor_eq.
+        unfold double_transport.
+        cbn.
+        unfold karoubi_mor.
+        rewrite !pr1_transportf.
+        cbn.
+        refine (functtransportf (λ (x : karoubi_ob E), (x : E)) _ _ _ @ _).
+        refine (maponpaths (λ x, transportf _ x _) (maponpathscomp  _ _ _) @ _).
+        unfold funcomp.
+        cbn.
+        rewrite maponpaths_for_constant_function.
+        cbn.
+        rewrite (functtransportf (λ (x : karoubi_ob E), (x : E)) (λ x, E⟦x, g (f d)⟧)).
+        cbn.
+        match goal with
+        | [ |- transportf _ (maponpaths ?f (maponpaths ?g ?x)) _ = _ ] => refine (maponpaths (λ y, transportf _ y _) (maponpathscomp g f x) @ _)
+        end.
+        cbn.
+        unfold funcomp.
+        cbn.
+        now rewrite maponpaths_for_constant_function.
+Defined. *)
 
 (** * 4. The formations of the opposite category and the Karoubi envelope commute *)
 
