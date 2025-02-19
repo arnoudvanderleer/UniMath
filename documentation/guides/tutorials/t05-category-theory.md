@@ -17,6 +17,9 @@ One of the big selling points of univalent foundations over other branches of ty
   - [Univalence](#univalence-1)
   - [Limits](#limits)
 - [Bicategories](#bicategories)
+  - [Invertible 2-cells and adjoint equivalences](#invertible-2-cells-and-adjoint-equivalences)
+  - [Displayed bicategories](#displayed-bicategories)
+  - [References](#references)
 
 ## Categories
 Categories are defined in [CategoryTheory.Core.Categories](../../../UniMath/CategoryTheory/Core/Categories.v). A couple of other core concepts are defined in other files in the [Core](../../../UniMath/CategoryTheory/Core) directory. Note that [Core.Prelude](../../../UniMath/CategoryTheory/Core/Prelude.v) bundles the 5 most-used category theory files: `Categories`, `Functors`, `Isos`, `NaturalTransformations` and `Univalence`.
@@ -585,7 +588,7 @@ The accessors for bicategories are as follows:
 - `identity x`: identity 1-cell on `x`
 - `f · g`: composition of 1-cells
 - `id2 f`: identity 2-cell on `f`
-- `τ • τ': composition of 2-cells (note that \bu is used to type •)
+- `τ • τ`: composition of 2-cells (note that \bu is used to type •)
 - `lunitor f`: left unitor (`identity _ · f ==> f`)
 - `linvunitor f`: inverse of the left unitor (`f ==> identity _ · f`)
 - `runitor f`: right unitor (`f · identity _ ==> f`)
@@ -601,7 +604,7 @@ There are various laws, which can be found in `Core/Bicat.v` and `Core/Bicategor
 
 An invertible 2-cell `τ` from 1-cells `f` to `g` is given by 2-cells `τ : f ==> g` and `τ^-1 : g ==> f` that compose to the identity. The type expressing that some 2-cell `τ : f ==> g` is invertible, is a proposition. The type of invertible 2-cells is denoted by `invertible_2cell f g`.
 
-An eqivalence `f` from `x` to `y` consists of 1-cells `f : x --> y` and `g : y --> x` together with invertible 2-cells witnessing that both `f · g` and `g · f` are isomorphic to the identity. Note that we do not require any coherences. The type of equivalences from `x` to `y` is denoted by `left_equivalence x y`.
+An equivalence `f` from `x` to `y` consists of 1-cells `f : x --> y` and `g : y --> x` together with invertible 2-cells witnessing that both `f · g` and `g · f` are isomorphic to the identity. Note that we do not require any coherences. The type of equivalences from `x` to `y` is denoted by `left_equivalence x y`.
 
 Finally, an adjoint equivalence `f` from `x` to `y` is given by an equivalence that satisfies the triangle equality for the unit and counit. The type of adjoint equivalences from `x` to `y` is denoted by `adjoint_equivalence x y`, and the type expressing that `f` is an adjoint equivalence is denoted by `left_adjoint_equivalence f`. The important statements about adjoint equivalences are:
 - `equiv_to_adjequiv`: refines a (not necessarily coherent) equivalence into an adjoint equivalence
