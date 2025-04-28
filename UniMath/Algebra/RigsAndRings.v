@@ -438,11 +438,11 @@ Proof.
     set (opp2 := @op2 (setwith2binopquot R)).
     set (zr := setquotpr R (@rigunel1 X)).
     split.
-    + apply (setquotunivprop
-               R (λ x , make_hProp _ (setproperty (setwith2binopquot R) (opp2 zr x) zr))).
+    + refine (setquotunivprop
+               R (λ x , make_hProp _ (setproperty (setwith2binopquot R) (opp2 zr x) zr)) _).
       intro x. apply (maponpaths (setquotpr R) (rigmult0x X x)).
-    + apply (setquotunivprop
-               R (λ x , make_hProp _ (setproperty (setwith2binopquot R) (opp2 x zr) zr))).
+    + refine (setquotunivprop
+               R (λ x , make_hProp _ (setproperty (setwith2binopquot R) (opp2 x zr) zr)) _).
       intro x. apply (maponpaths (setquotpr R) (rigmultx0 X x)).
   - set (opp1 := @op1 (setwith2binopquot R)).
     set (opp2 := @op2 (setwith2binopquot R)).
