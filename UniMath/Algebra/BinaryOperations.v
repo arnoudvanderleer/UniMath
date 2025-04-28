@@ -789,10 +789,36 @@ Defined.
 
 (** *)
 
+Definition unit_annihilates_left_ax
+  {X : UU}
+  (op1 op2 : binop X)
+  (is : isunital op1)
+  : UU
+  := ∏ x, op2 (pr1 is) x = pr1 is.
+
+Arguments unit_annihilates_left_ax /.
+
+Definition unit_annihilates_right_ax
+  {X : UU}
+  (op1 op2 : binop X)
+  (is : isunital op1)
+  : UU
+  := ∏ x, op2 x (pr1 is) = pr1 is.
+
+Arguments unit_annihilates_right_ax /.
+
+Definition unit_annihilates_ax
+  {X : UU}
+  (op1 op2 : binop X)
+  (is : isunital op1)
+  : UU
+  := unit_annihilates_left_ax op1 op2 is × unit_annihilates_right_ax op1 op2 is.
+
+Arguments unit_annihilates_ax /.
+
 Definition isrigops {X : UU} (opp1 opp2 : binop X) : UU :=
   (∑ axs : (isabmonoidop opp1) × (ismonoidop opp2),
-           (∏ x : X, opp2 (unel_is (pr1 axs)) x = unel_is (pr1 axs))
-             × (∏ x : X, opp2 x (unel_is (pr1 axs)) = unel_is (pr1 axs)))
+    unit_annihilates_ax opp1 opp2 (pr211 axs))
     × (isdistr opp1 opp2).
 
 Definition make_isrigops {X : UU} {opp1 opp2 : binop X} (H1 : isabmonoidop opp1)

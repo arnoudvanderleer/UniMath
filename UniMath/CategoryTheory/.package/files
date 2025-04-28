@@ -282,8 +282,8 @@ Categories/CategoryOfSetCategories.v
 Categories/CategoryOfSetGroupoids.v
 Limits/Examples/CategoryOfSetcategoriesLimits.v
 Limits/Examples/CategoryOfSetGroupoidsLimits.v
-Categories/SetWith2BinOp.v
 Categories/Magma.v
+Categories/DoubleMagma.v
 Categories/Monoid.v
 Categories/AbelianMonoid.v
 Categories/Group.v
