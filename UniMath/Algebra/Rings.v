@@ -1,5 +1,6 @@
 (** * Algebra I. Part D.  Rigs and rings. Vladimir Voevodsky. Aug. 2011 - . *)
 Require Import UniMath.Algebra.Groups.
+Require Import UniMath.Algebra.Rigs.
 (** Contents
 - Standard Algebraic Structures
  - Rings

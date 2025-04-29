@@ -7,6 +7,10 @@ Groups2.v
 AbelianGroups.v
 Groups.v
 GroupAction.v
+Rigs.v
+CommutativeRigs.v
+Rings.v
+CommutativeRings.v
 RigsAndRings.v
 RigsAndRings/Ideals.v
 Domains_and_Fields.v
