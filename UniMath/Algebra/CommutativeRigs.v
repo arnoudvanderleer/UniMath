@@ -45,6 +45,8 @@ Coercion commrigtorig (R : commrig) : rig
 Coercion commrig'torig (R : commrig') : rig
   := pr1 R ,, (make_dirprod (pr112 R) (pr1 (pr212 R) ,, pr12 (pr212 R))) ,, pr22 R.
 
+Time Check (idpath _ : commrig = commrig').
+
 Time Definition test1 (R : commrig) : rig := commrigtorig R.
 Time Definition test2 (R : commrig') : rig := R.
 Time Definition test3 (R : commrig) : rig := R.
