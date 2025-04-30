@@ -39,30 +39,18 @@ Definition commrig' : UU := ∑ (X : hSet)
 (annihilates_ax (pr11 d) (pr12 d) (unel_is (pr21 d))) ×
 isdistr (pr11 d) (pr12 d).
 
-Coercion commrigtorig (R : commrig) : rig
-  := pr1 R ,, (make_dirprod (pr112 R) (pr1 (pr212 R) ,, pr12 (pr212 R))) ,, pr22 R.
-
-Coercion commrig'torig (R : commrig') : rig
-  := pr1 R ,, (make_dirprod (pr112 R) (pr1 (pr212 R) ,, pr12 (pr212 R))) ,, pr22 R.
-
-Time Check (idpath _ : commrig = commrig').
-
-Time Definition test1 (R : commrig) : rig := commrigtorig R.
-Time Definition test2 (R : commrig') : rig := R.
-Time Definition test3 (R : commrig) : rig := R.
-
-(*
 Definition make_commrig (X : setwith2binop) (is : iscommrigops (@op1 X) (@op2 X)) : commrig.
 Proof.
   exists (X : hSet).
   use tpair.
-  + split.
-    * exists (pr12 X).
-      exact (pr1 (pr111 is)).
-    * exists (pr22 X).
-      refine (pr2 (pr111 is) ,, _).
-      exact (pr2 is).
-  + exact (pr211 is ,, pr21 is).
+  + use tpair.
+    * split.
+      - exists (pr12 X).
+        exact (pr1 (pr111 is)).
+      - exists (pr22 X).
+        exact (pr2 (pr111 is)).
+    * exact (pr211 is ,, pr21 is).
+  + exact (pr2 is).
 Defined.
 
 Definition make_commrig'
@@ -85,9 +73,11 @@ Proof.
     + exact m0x.
     + exact mx0.
     + exact dax.
-Defined. *)
+Defined.
 
-Definition rigcomm2 (X : commrig) : iscomm (@op2 (X : rig)) := pr22 (pr212 X).
+Coercion commrigtorig (R : commrig) : rig := pr1 R ,, pr12 R.
+
+Definition rigcomm2 (X : commrig) : iscomm (@op2 (X : rig)) := pr22 X.
 
 Definition commrigop2axs (X : commrig) : isabmonoidop (@op2 X) := make_isabmonoidop (rigop2axs X) (rigcomm2 X).
 
@@ -158,8 +148,9 @@ Definition commrigdirprod (X Y : commrig) : commrig :=
 Local Open Scope rig.
 
 (** We reuse much of the proof for general rigs *)
-Definition opposite_commrig (X : commrig) : commrig :=
-  (pr1 (X⁰),, (pr2 (X⁰) ,, λ x y, rigcomm2 X y x)).
+Definition opposite_commrig (X : commrig)
+  : commrig
+  := make_commrig (X⁰) (rigaxs _ ,, λ x y, rigcomm2 X y x).
 
 (** Commutativity makes taking the opposite trivial *)
 Definition iso_commrig_opposite (X : commrig) : rigiso X (opposite_commrig X).

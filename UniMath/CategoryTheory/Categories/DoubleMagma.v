@@ -73,20 +73,9 @@ Definition rig_category
 
 (** * 3. The category of commutative rigs *)
 
-Definition pre_commutative_rig_disp_cat
-  : disp_cat HSET.
-Proof.
-  use dirprod_disp_cat.
-  - exact (sigma_disp_cat abelian_monoid_disp_cat).
-  - exact (sigma_disp_cat abelian_monoid_disp_cat).
-Defined.
-
 Definition commutative_rig_disp_cat
-  : disp_cat _
-  := disp_full_sub
-    (total_category pre_commutative_rig_disp_cat)
-    (λ R, annihilates_ax (pr112 R) (pr122 R) (pr121 (pr212 R))
-      × isdistr (pr112 R) (pr122 R)).
+  : disp_cat rig_category
+  := disp_full_sub rig_category (λ (R : rig_category), iscomm (pr1 (pr212 R))).
 
 Definition commutative_rig_category
   : category
