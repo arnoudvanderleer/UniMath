@@ -474,7 +474,7 @@ Section restriction.
   Qed.
 
   Definition restriction_ringfun : ringfun (section_commring U) (section_commring V) :=
-    rigfunconstr isringfun_restriction_section.
+    make_rigfun isringfun_restriction_section.
 End restriction.
 
 

@@ -157,7 +157,7 @@ Section quotmod_def.
   Definition quotmod_ringfun : ringfun R (ringofendabgr quotmod_abgr).
   Proof.
     unfold ringfun, rigfun.
-    use rigfunconstr.
+    use make_rigfun.
     - exact quotmod_ringmap.
     - use make_isrigfun.
       (* To show that quotmod_ringmap is a ring action, we show it is a monoid homomorphism with

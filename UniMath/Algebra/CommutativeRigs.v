@@ -1,5 +1,4 @@
 (** * Algebra I. Part D.  Rigs and rings. Vladimir Voevodsky. Aug. 2011 - . *)
-Require Import UniMath.Algebra.Groups.
 (** Contents
 - Standard Algebraic Structures
  - Commutative rigs
@@ -22,8 +21,11 @@ Unset Kernel Term Sharing.
 
 Require Import UniMath.MoreFoundations.Sets.
 Require Import UniMath.MoreFoundations.Orders.
+Require Import UniMath.Algebra.Groups.
 Require Export UniMath.Algebra.Monoids.
 Require Export UniMath.Algebra.Rigs.
+Require Export UniMath.CategoryTheory.Core.Categories.
+Require Export UniMath.CategoryTheory.Categories.DoubleMagma.
 
 Local Open Scope logic.
 
@@ -31,97 +33,64 @@ Local Open Scope logic.
 
 (** **** General definitions *)
 
-Definition commrig : UU := ∑ (X : setwith2binop), iscommrigops (@op1 X) (@op2 X).
+Definition commrig : UU := (ob commutative_rig_category).
+Definition commrig' : UU := ∑ (X : hSet)
+(d : (∑ d : binop X, isabmonoidop d) × (∑ d : binop X, isabmonoidop d)),
+(annihilates_ax (pr11 d) (pr12 d) (unel_is (pr21 d))) ×
+isdistr (pr11 d) (pr12 d).
 
-Definition make_commrig (X : setwith2binop) (is : iscommrigops (@op1 X) (@op2 X)) : commrig :=
-  X ,, is.
+Coercion commrigtorig (R : commrig) : rig
+  := pr1 R ,, (make_dirprod (pr112 R) (pr1 (pr212 R) ,, pr12 (pr212 R))) ,, pr22 R.
 
-Definition commrigconstr {X : hSet} (opp1 opp2 : binop X)
-           (ax11 : ismonoidop opp1) (ax12 : iscomm opp1)
-           (ax2 : ismonoidop opp2) (ax22 : iscomm opp2)
-           (m0x : ∏ x : X, opp2 (unel_is ax11) x = unel_is ax11)
-           (mx0 : ∏ x : X, opp2 x (unel_is ax11) = unel_is ax11)
-           (dax : isdistr opp1 opp2) : commrig.
+Coercion commrig'torig (R : commrig') : rig
+  := pr1 R ,, (make_dirprod (pr112 R) (pr1 (pr212 R) ,, pr12 (pr212 R))) ,, pr22 R.
+
+Time Definition test1 (R : commrig) : rig := commrigtorig R.
+Time Definition test2 (R : commrig') : rig := R.
+Time Definition test3 (R : commrig) : rig := R.
+
+(*
+Definition make_commrig (X : setwith2binop) (is : iscommrigops (@op1 X) (@op2 X)) : commrig.
 Proof.
-  intros. exists  (make_setwith2binop X (opp1 ,, opp2)).
-  split.
-  - split.
-    + exists ((ax11 ,, ax12) ,, ax2).
-      apply (m0x ,, mx0).
-    + apply dax.
-  - apply ax22.
+  exists (X : hSet).
+  use tpair.
+  + split.
+    * exists (pr12 X).
+      exact (pr1 (pr111 is)).
+    * exists (pr22 X).
+      refine (pr2 (pr111 is) ,, _).
+      exact (pr2 is).
+  + exact (pr211 is ,, pr21 is).
 Defined.
 
-Definition commrigtorig : commrig → rig := λ X, @make_rig (pr1 X) (pr1 (pr2 X)).
-Coercion commrigtorig : commrig >-> rig.
+Definition make_commrig'
+  {X : hSet}
+  (opp1 opp2 : binop X)
+  (ax11 : ismonoidop opp1)
+  (ax12 : iscomm opp1)
+  (ax2 : ismonoidop opp2)
+  (ax22 : iscomm opp2)
+  (m0x : ∏ x : X, opp2 (unel_is ax11) x = unel_is ax11)
+  (mx0 : ∏ x : X, opp2 x (unel_is ax11) = unel_is ax11)
+  (dax : isdistr opp1 opp2) : commrig.
+Proof.
+  use make_commrig.
+  - exact (make_setwith2binop X (make_dirprod opp1 opp2)).
+  - refine (make_dirprod _ ax22).
+    use make_isrigops.
+    + exact (make_isabmonoidop ax11 ax12).
+    + exact ax2.
+    + exact m0x.
+    + exact mx0.
+    + exact dax.
+Defined. *)
 
-Definition rigcomm2 (X : commrig) : iscomm (@op2 X) := pr2 (pr2 X).
+Definition rigcomm2 (X : commrig) : iscomm (@op2 (X : rig)) := pr22 (pr212 X).
 
-Definition commrigop2axs (X : commrig) : isabmonoidop (@op2 X) :=
-  rigop2axs X ,, rigcomm2 X.
+Definition commrigop2axs (X : commrig) : isabmonoidop (@op2 X) := make_isabmonoidop (rigop2axs X) (rigcomm2 X).
 
 Definition commrigmultabmonoid (X : commrig) : abmonoid :=
-  make_abmonoid (make_setwithbinop X op2) (rigop2axs X ,, rigcomm2 X).
-
-
-(** **** (X = Y) ≃ (rigiso X Y)
-    We use the following composition
-
-                          (X = Y) ≃ (make_commrig' X = make_commrig' Y)
-                                  ≃ ((pr1 (make_commrig' X)) = (pr1 (make_commrig' Y)))
-                                  ≃ (rigiso X Y)
-
-    where the third weak equivalence uses univalence for rigs, [rig_univalence]. We define
-    [commrig'] to be able to apply it.
- *)
-
-Local Definition commrig' : UU :=
-  ∑ D : (∑ X : setwith2binop, isrigops (@op1 X) (@op2 X)), iscomm (@op2 (pr1 D)).
-
-Local Definition make_commrig' (CR : commrig) : commrig' :=
-  (pr1 CR ,, dirprod_pr1 (pr2 CR)) ,, (dirprod_pr2 (pr2 CR)).
-
-Definition commrig_univalence_weq1 : commrig ≃ commrig' :=
-  weqtotal2asstol
-    (λ X : setwith2binop, isrigops (@op1 X) (@op2 X))
-    (λ y : (∑ (X : setwith2binop), isrigops (@op1 X) (@op2 X)), iscomm (@op2 (pr1 y))).
-
-Definition commrig_univalence_weq1' (X Y : commrig) : (X = Y) ≃ (make_commrig' X = make_commrig' Y) :=
-  make_weq _ (@isweqmaponpaths commrig commrig' commrig_univalence_weq1 X Y).
-
-Definition commrig_univalence_weq2 (X Y : commrig) :
-  ((make_commrig' X) = (make_commrig' Y)) ≃ ((pr1 (make_commrig' X)) = (pr1 (make_commrig' Y))).
-Proof.
-  use subtypeInjectivity.
-  intros w. use isapropiscomm.
-Defined.
-Opaque commrig_univalence_weq2.
-
-Definition commrig_univalence_weq3 (X Y : commrig) :
-  ((pr1 (make_commrig' X)) = (pr1 (make_commrig' Y))) ≃ (rigiso X Y) :=
-  rig_univalence (pr1 (make_commrig' X)) (pr1 (make_commrig' Y)).
-
-Definition commrig_univalence_map (X Y : commrig) : (X = Y) → (rigiso X Y).
-Proof.
-  intros e. induction e. exact (idrigiso X).
-Defined.
-
-Lemma commrig_univalence_isweq (X Y : commrig) : isweq (commrig_univalence_map X Y).
-Proof.
-  use isweqhomot.
-  - exact (weqcomp (commrig_univalence_weq1' X Y)
-                   (weqcomp (commrig_univalence_weq2 X Y) (commrig_univalence_weq3 X Y))).
-  - intros e. induction e.
-    refine (weqcomp_to_funcomp_app @ _).
-    exact weqcomp_to_funcomp_app.
-  - use weqproperty.
-Defined.
-Opaque commrig_univalence_isweq.
-
-Definition commrig_univalence (X Y : commrig) : (X = Y) ≃ (rigiso X Y)
-  := make_weq
-  (commrig_univalence_map X Y)
-  (commrig_univalence_isweq X Y).
+  make_abmonoid (make_setwithbinop X op2) (commrigop2axs X).
 
 
 (** **** Relations similar to "greater" on commutative rigs *)

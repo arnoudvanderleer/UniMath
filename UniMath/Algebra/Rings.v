@@ -142,7 +142,7 @@ Proof.
      apply isapropisrigfun.
 Defined.
 
-Definition ringfunconstr {X Y : ring} {f : X → Y} (is : isringfun f) : ringfun X Y := rigfunconstr is.
+Definition ringfunconstr {X Y : ring} {f : X → Y} (is : isringfun f) : ringfun X Y := make_rigfun is.
 Identity Coercion id_ringfun : ringfun >-> rigfun.
 
 Definition ringaddfun {X Y : ring} (f : ringfun X Y) : monoidfun X Y := make_monoidfun (pr1 (pr2 f)).

@@ -60,12 +60,16 @@ Proof.
   - exact (sigma_disp_cat monoid_disp_cat).
 Defined.
 
+Definition rig_disp_cat
+  : disp_cat _
+  := disp_full_sub
+    (total_category pre_rig_disp_cat)
+    (λ R, annihilates_ax (pr112 R) (pr122 R) (pr121 (pr212 R))
+      × isdistr (pr112 R) (pr122 R)).
+
 Definition rig_category
   : category
-  := full_subcat
-    (total_category pre_rig_disp_cat)
-    (λ R, unit_annihilates_ax (pr112 R) (pr112 R) (pr21 (pr212 R))
-      × isdistr (pr112 R) (pr122 R)).
+  := total_category (sigma_disp_cat rig_disp_cat).
 
 (** * 3. The category of commutative rigs *)
 
@@ -77,12 +81,16 @@ Proof.
   - exact (sigma_disp_cat abelian_monoid_disp_cat).
 Defined.
 
+Definition commutative_rig_disp_cat
+  : disp_cat _
+  := disp_full_sub
+    (total_category pre_commutative_rig_disp_cat)
+    (λ R, annihilates_ax (pr112 R) (pr122 R) (pr121 (pr212 R))
+      × isdistr (pr112 R) (pr122 R)).
+
 Definition commutative_rig_category
   : category
-  := full_subcat
-    (total_category pre_commutative_rig_disp_cat)
-    (λ R, unit_annihilates_ax (pr112 R) (pr112 R) (pr21 (pr212 R))
-      × isdistr (pr112 R) (pr122 R)).
+  := total_category (sigma_disp_cat commutative_rig_disp_cat).
 
 (** * 4. The category of rings *)
 
@@ -90,13 +98,17 @@ Definition pre_ring_disp_cat
   : disp_cat HSET.
 Proof.
   use dirprod_disp_cat.
-  - exact (sigma_disp_cat group_disp_cat).
+  - exact (sigma_disp_cat abelian_group_disp_cat).
   - exact (sigma_disp_cat monoid_disp_cat).
 Defined.
 
+Definition ring_disp_cat
+  : disp_cat _
+  := disp_full_sub (total_category pre_ring_disp_cat) (λ R, isdistr (pr112 R) (pr122 R)).
+
 Definition ring_category
   : category
-  := full_subcat (total_category pre_ring_disp_cat) (λ R, isdistr (pr112 R) (pr122 R)).
+  := total_category (sigma_disp_cat ring_disp_cat).
 
 (** * 5. The category of commutative rigs *)
 
@@ -104,10 +116,14 @@ Definition pre_commutative_ring_disp_cat
   : disp_cat HSET.
 Proof.
   use dirprod_disp_cat.
-  - exact (sigma_disp_cat group_disp_cat).
+  - exact (sigma_disp_cat abelian_group_disp_cat).
   - exact (sigma_disp_cat abelian_monoid_disp_cat).
 Defined.
 
+Definition commutative_ring_disp_cat
+  : disp_cat _
+  := disp_full_sub (total_category pre_ring_disp_cat) (λ R, isdistr (pr112 R) (pr122 R)).
+
 Definition commutative_ring_category
   : category
-  := full_subcat (total_category pre_ring_disp_cat) (λ R, isdistr (pr112 R) (pr122 R)).
+  := total_category (sigma_disp_cat commutative_ring_disp_cat).

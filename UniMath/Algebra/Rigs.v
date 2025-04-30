@@ -1,5 +1,4 @@
 (** * Algebra I. Part D.  Rigs and rings. Vladimir Voevodsky. Aug. 2011 - . *)
-Require Import UniMath.Algebra.Groups.
 (** Contents
 - Standard Algebraic Structures
  - Rigs - semirings with 1, 0, and x * 0 = 0 * x = 0
@@ -25,7 +24,10 @@ Unset Kernel Term Sharing.
 
 Require Import UniMath.MoreFoundations.Sets.
 Require Import UniMath.MoreFoundations.Orders.
+Require Import UniMath.Algebra.Groups.
 Require Export UniMath.Algebra.Monoids.
+Require Import UniMath.CategoryTheory.Categories.DoubleMagma.
+Require Import UniMath.CategoryTheory.Core.Categories.
 
 Local Open Scope logic.
 
@@ -33,18 +35,31 @@ Local Open Scope logic.
 
 (** **** General definitions *)
 
-Definition rig : UU := ∑ (X : setwith2binop), isrigops (@op1 X) (@op2 X).
+Definition rig : UU := rig_category.
 
-Definition make_rig {X : setwith2binop} (is : isrigops (@op1 X) (@op2 X)) : rig :=
-  X ,, is.
+Definition make_rig {X : setwith2binop} (is : isrigops (@op1 X) (@op2 X)) : rig.
+Proof.
+  exists (X : hSet).
+  use tpair.
+  + split.
+    * exists (pr12 X).
+      exact (pr111 is).
+    * exists (pr22 X).
+      exact (pr211 is).
+  + exact (pr21 is ,, pr2 is).
+Defined.
 
-Definition pr1rig : rig → setwith2binop :=
-  @pr1 _ (λ X : setwith2binop, isrigops (@op1 X) (@op2 X)).
+Definition pr1rig (R : rig) : setwith2binop.
+Proof.
+  use make_setwith2binop.
+  - exact (pr1 R).
+  - split.
+    + exact (pr1 (pr112 R)).
+    + exact (pr1 (pr212 R)).
+Defined.
 Coercion pr1rig : rig >-> setwith2binop.
 
-Definition rigaxs (X : rig) : isrigops (@op1 X) (@op2 X) := pr2 X.
-
-Definition rigop1axs (X : rig) : isabmonoidop (@op1 X) := rigop1axs_is (pr2 X).
+Definition rigop1axs (X : rig) : isabmonoidop (@op1 X) := pr2 (pr112 X).
 
 Definition rigassoc1 (X : rig) : isassoc (@op1 X) := assocax_is (rigop1axs X).
 
@@ -54,15 +69,15 @@ Definition riglunax1 (X : rig) : islunit op1 (@rigunel1 X) := lunax_is (rigop1ax
 
 Definition rigrunax1 (X : rig) : isrunit op1 (@rigunel1 X) := runax_is (rigop1axs X).
 
-Definition rigmult0x (X : rig) : ∏ x : X, op2 (@rigunel1 X) x = @rigunel1 X :=
-  rigmult0x_is (pr2 X).
-
-Definition rigmultx0 (X : rig) : ∏ x : X, op2 x (@rigunel1 X) = @rigunel1 X :=
-  rigmultx0_is (pr2 X).
-
 Definition rigcomm1 (X : rig) : iscomm (@op1 X) := commax_is (rigop1axs X).
 
-Definition rigop2axs (X : rig) : ismonoidop (@op2 X) := rigop2axs_is (pr2 X).
+Definition rigmult0 (X : rig) : annihilates_ax (X := X) op1 op2 rigunel1 := pr122 X.
+
+Definition rigmult0x (X : rig) : ∏ x, op2 rigunel1 x = rigunel1 := pr1 (rigmult0 X).
+
+Definition rigmultx0 (X : rig) : ∏ x, op2 x rigunel1 = rigunel1 := pr2 (rigmult0 X).
+
+Definition rigop2axs (X : rig) : ismonoidop (@op2 X) := pr2 (pr212 X).
 
 Definition rigassoc2 (X : rig) : isassoc (@op2 X) := assocax_is (rigop2axs X).
 
@@ -72,22 +87,42 @@ Definition riglunax2 (X : rig) : islunit op2 (@rigunel2 X) := lunax_is (rigop2ax
 
 Definition rigrunax2 (X : rig) : isrunit op2 (@rigunel2 X) := runax_is (rigop2axs X).
 
-Definition rigdistraxs (X : rig) : isdistr (@op1 X) (@op2 X) := pr2 (pr2 X).
+Definition rigdistraxs (X : rig) : isdistr (@op1 X) (@op2 X) := pr222 X.
 
-Definition rigldistr (X : rig) : isldistr (@op1 X) (@op2 X) := pr1 (pr2 (pr2 X)).
+Definition rigldistr (X : rig) : isldistr (@op1 X) (@op2 X) := pr1 (rigdistraxs X).
 
-Definition rigrdistr (X : rig) : isrdistr (@op1 X) (@op2 X) := pr2 (pr2 (pr2 X)).
+Definition rigrdistr (X : rig) : isrdistr (@op1 X) (@op2 X) := pr2 (rigdistraxs X).
 
-Definition rigconstr {X : hSet} (opp1 opp2 : binop X) (ax11 : ismonoidop opp1)
-           (ax12 : iscomm opp1) (ax2 : ismonoidop opp2)
-           (m0x : ∏ x : X, opp2 (unel_is ax11) x = unel_is ax11)
-           (mx0 : ∏ x : X, opp2 x (unel_is ax11) = unel_is ax11)
-           (dax : isdistr opp1 opp2) : rig.
+Definition rigaxs (X : rig)
+  : isrigops (@op1 X) (@op2 X).
 Proof.
-  intros. exists (make_setwith2binop X (opp1 ,, opp2)). split.
-  - exists ((ax11 ,, ax12) ,, ax2).
-    apply (m0x ,, mx0).
-  - apply dax.
+  use make_isrigops.
+  - apply rigop1axs.
+  - apply rigop2axs.
+  - apply rigmult0x.
+  - apply rigmultx0.
+  - apply rigdistraxs.
+Defined.
+
+Definition make_rig'
+  {X : hSet}
+  (opp1 opp2 : binop X)
+  (ax11 : ismonoidop opp1)
+  (ax12 : iscomm opp1)
+  (ax2 : ismonoidop opp2)
+  (m0x : ∏ x : X, opp2 (unel_is ax11) x = unel_is ax11)
+  (mx0 : ∏ x : X, opp2 x (unel_is ax11) = unel_is ax11)
+  (dax : isdistr opp1 opp2)
+  : rig.
+Proof.
+  use make_rig.
+  - exact (make_setwith2binop X (make_dirprod opp1 opp2)).
+  - use make_isrigops.
+    + exact (make_isabmonoidop ax11 ax12).
+    + exact ax2.
+    + exact m0x.
+    + exact mx0.
+    + exact dax.
 Defined.
 
 Definition rigaddabmonoid (X : rig) : abmonoid :=
@@ -115,12 +150,6 @@ Definition make_isrigfun {X Y : rig} {f : X → Y}
            (H2 : @ismonoidfun (rigmultmonoid X) (rigmultmonoid Y) f) : isrigfun f :=
   H1 ,, H2.
 
-Definition isrigfunisaddmonoidfun {X Y : rig} {f : X → Y} (H : isrigfun f) :
-  @ismonoidfun (rigaddabmonoid X) (rigaddabmonoid Y) f := dirprod_pr1 H.
-
-Definition isrigfunismultmonoidfun {X Y : rig} {f : X → Y} (H : isrigfun f) :
-  @ismonoidfun (rigmultmonoid X) (rigmultmonoid Y) f := dirprod_pr2 H.
-
 Lemma isapropisrigfun {X Y : rig} (f : X → Y) : isaprop (isrigfun f).
 Proof.
   use isapropdirprod.
@@ -128,32 +157,53 @@ Proof.
   - use isapropismonoidfun.
 Qed.
 
-Definition rigfun (X Y : rig) : UU := ∑ (f : X → Y), isrigfun f.
+Definition rigfun (X Y : rig) : UU := rig_category⟦X, Y⟧%cat.
 
-Definition isasetrigfun (X Y : rig) : isaset (rigfun X Y).
+Definition isasetrigfun (X Y : rig) : isaset (rigfun X Y) := homset_property _ X Y.
+
+Definition make_rigfun {X Y : rig} {f : X → Y} (is : isrigfun f) : rigfun X Y.
 Proof.
-  use isaset_total2.
-  - use isaset_set_fun_space.
-  - intros x. use isasetaprop. use isapropisrigfun.
-Qed.
+  exists f.
+  refine (_ ,, tt).
+  split.
+  - exists (pr11 is).
+    exact (pr2 (make_abelian_monoid_morphism _ (pr1 is))).
+  - exists (pr12 is).
+    exact (pr2 (make_monoidfun (pr2 is))).
+Defined.
 
-Definition rigfunconstr {X Y : rig} {f : X → Y} (is : isrigfun f) : rigfun X Y := f ,, is.
-
-Definition pr1rigfun (X Y : rig) : rigfun X Y → (X → Y) := @pr1 _ _.
+Definition pr1rigfun (X Y : rig) (f : rigfun X Y) : X → Y := pr1 f.
 Coercion pr1rigfun : rigfun >-> Funclass.
 
+Definition rigfunisaddmonoidfun {X Y : rig} (f : rigfun X Y) :
+  @ismonoidfun (rigaddabmonoid X) (rigaddabmonoid Y) f.
+Proof.
+  apply make_ismonoidfun.
+  - exact (pr1 (pr112 f)).
+  - exact (pr212 (pr112 f)).
+Defined.
+
 Definition rigaddfun {X Y : rig} (f : rigfun X Y) :
-  monoidfun (rigaddabmonoid X) (rigaddabmonoid Y) := make_monoidfun (pr1 (pr2 f)).
+  monoidfun (rigaddabmonoid X) (rigaddabmonoid Y)
+  := make_monoidfun (rigfunisaddmonoidfun f).
+
+Definition rigfunismultmonoidfun {X Y : rig} (f : rigfun X Y) :
+  @ismonoidfun (rigmultmonoid X) (rigmultmonoid Y) f.
+Proof.
+  apply make_ismonoidfun.
+  - exact (pr1 (pr212 f)).
+  - exact (pr22 (pr212 f)).
+Defined.
 
 Definition rigmultfun {X Y : rig} (f : rigfun X Y) :
-  monoidfun (rigmultmonoid X) (rigmultmonoid Y) := make_monoidfun (pr2 (pr2 f)).
+  monoidfun (rigmultmonoid X) (rigmultmonoid Y) := make_monoidfun (rigfunismultmonoidfun f).
 
 Definition rigfun_to_unel_rigaddmonoid {X Y : rig} (f : rigfun X Y) : f (0%rig) = 0%rig :=
-  pr2 (pr1 (pr2 f)).
+  monoidfununel (rigaddfun f).
 
 Definition rigfuncomp {X Y Z : rig} (f : rigfun X Y) (g : rigfun Y Z) : rigfun X Z.
 Proof.
-  use rigfunconstr.
+  use make_rigfun.
   - exact (g ∘ f).
   - use make_isrigfun.
     + exact (ismonoidfun_monoidfun (monoidfuncomp (rigaddfun f) (rigaddfun g))).
@@ -162,10 +212,37 @@ Defined.
 
 Lemma rigfun_paths {X Y : rig} (f g : rigfun X Y) (e : pr1 f = pr1 g) : f = g.
 Proof.
-  use total2_paths_f.
-  - exact e.
-  - use proofirrelevance. use isapropisrigfun.
+  apply subtypePath.
+  {
+    intro x.
+    refine (isapropdirprod _ unit _ isapropunit).
+    cbn -[isaprop].
+    repeat apply isapropdirprod;
+      try apply isapropunit;
+      repeat (apply impred_isaprop; intro);
+      apply setproperty.
+  }
+  exact e.
 Qed.
+
+Definition rigfun_eq
+  {X Y : rig}
+  {f g : rigfun X Y}
+  : (f = g) ≃ (∏ x, f x = g x).
+Proof.
+  use weqimplimpl.
+  - intros e x.
+    exact (maponpaths (λ (f : rigfun _ _), f x) e).
+  - intro e.
+    apply rigfun_paths, funextfun.
+    exact e.
+  - abstract apply homset_property.
+  - abstract (
+      apply impred_isaprop;
+      intro;
+      apply setproperty
+    ).
+Defined.
 
 Definition rigiso (X Y : rig) : UU := ∑ (f : X ≃ Y), isrigfun f.
 
@@ -191,7 +268,7 @@ Proof.
   - use proofirrelevance. use isapropisrigfun.
 Qed.
 
-Definition rigisotorigfun {X Y : rig} (f : rigiso X Y) : rigfun X Y := rigfunconstr (pr2 f).
+Definition rigisotorigfun {X Y : rig} (f : rigiso X Y) : rigfun X Y := make_rigfun (pr2 f).
 
 Lemma isrigfuninvmap {X Y : rig} (f : rigiso X Y) : isrigfun (invmap f).
 Proof.
@@ -217,95 +294,6 @@ Proof.
         intros x x'. use idpath.
       * use idpath.
 Defined.
-
-
-(** **** (X = Y) ≃ (rigiso X Y)
-    We use the following composition
-
-                              (X = Y) ≃ (X ╝ Y)
-                                      ≃ (rigiso' X Y)
-                                      ≃ (rigiso X Y)
-
-    where the second weak equivalence is given by univalence for setwith2binop,
-    [setwith2binop_univalence]. The reason to define rigiso' is that it allows us to use
-    [setwith2binop_univalence].
-*)
-
-Local Definition rigiso' (X Y : rig) : UU :=
-  ∑ D : (∑ w : X ≃ Y, istwobinopfun w),
-        ((pr1 D) (@rigunel1 X) = @rigunel1 Y) × ((pr1 D) (@rigunel2 X) = @rigunel2 Y).
-
-Local Definition make_rigiso' (X Y : rig) (w : X ≃ Y) (H1 : istwobinopfun w)
-           (H2 : w (@rigunel1 X) = @rigunel1 Y) (H3 : w (@rigunel2 X) = @rigunel2 Y) :
-  rigiso' X Y := (w ,, H1) ,, H2 ,, H3.
-
-Definition rig_univalence_weq1 (X Y : rig) : (X = Y) ≃ (X ╝ Y) :=
-  total2_paths_equiv _ _ _.
-
-Definition rig_univalence_weq2 (X Y : rig) : (X ╝ Y) ≃ (rigiso' X Y).
-Proof.
-  use weqbandf.
-  - exact (setwith2binop_univalence X Y).
-  - intros e. cbn. use invweq. induction X as [X Xop]. induction Y as [Y Yop]. cbn in e.
-    cbn. induction e. use weqimplimpl.
-    + intros i. use proofirrelevance. use isapropisrigops.
-    + intros i. now induction i.
-    + use isapropdirprod.
-      * use setproperty.
-      * use setproperty.
-    + use isapropifcontr. exact (@isapropisrigops X op1 op2 Xop Yop).
-Defined.
-Opaque rig_univalence_weq2.
-
-Definition rig_univalence_weq3 (X Y : rig) : (rigiso' X Y) ≃ (rigiso X Y).
-Proof.
-  use make_weq.
-  - intros i'.
-    use make_rigiso.
-    + exact (pr1 (pr1 i')).
-    + use make_isrigfun.
-      * use make_ismonoidfun.
-        -- use make_isbinopfun.
-           exact (dirprod_pr1 (pr2 (pr1 i'))).
-        -- exact (dirprod_pr1 (pr2 i')).
-      *  use make_ismonoidfun.
-        -- use make_isbinopfun.
-           exact (dirprod_pr2 (pr2 (pr1 i'))).
-        -- exact (dirprod_pr2 (pr2 i')).
-  - use isweq_iso.
-    + intros i. use make_rigiso'.
-      * exact (pr1rigiso _ _ i).
-      * use make_istwobinopfun.
-        -- exact (ismonoidfunisbinopfun (isrigfunisaddmonoidfun (rigisoisrigfun i))).
-        -- exact (ismonoidfunisbinopfun (isrigfunismultmonoidfun (rigisoisrigfun i))).
-      * exact (ismonoidfununel (isrigfunisaddmonoidfun (rigisoisrigfun i))).
-      * exact (ismonoidfununel (isrigfunismultmonoidfun (rigisoisrigfun i))).
-    + intros x. use idpath.
-    + intros x. use idpath.
-Defined.
-Opaque rig_univalence_weq3.
-
-Definition rig_univlalence_map (X Y : rig) : X = Y → rigiso X Y.
-Proof.
-  intros e. induction e. exact (idrigiso X).
-Defined.
-
-Lemma rig_univalence_isweq (X Y : rig) : isweq (rig_univlalence_map X Y).
-Proof.
-  use isweqhomot.
-  - exact (weqcomp (rig_univalence_weq1 X Y)
-                   (weqcomp (rig_univalence_weq2 X Y) (rig_univalence_weq3 X Y))).
-  - intros e. induction e.
-    refine (weqcomp_to_funcomp_app @ _).
-    exact weqcomp_to_funcomp_app.
-  - use weqproperty.
-Defined.
-Opaque rig_univalence_isweq.
-
-Definition rig_univalence (X Y : rig) : (X = Y) ≃ (rigiso X Y)
-  := make_weq
-    (rig_univlalence_map X Y)
-    (rig_univalence_isweq X Y).
 
 
 (** **** Relations similar to "greater" or "greater or equal" on rigs *)
@@ -367,9 +355,7 @@ Proof.
       simpl. apply rigrdistr.
 Defined.
 
-Definition carrierofasubrig (X : rig) (A : subrig X) : rig.
-Proof. intros. exists A. apply isrigcarrier. Defined.
-Coercion carrierofasubrig : subrig >-> rig.
+Coercion carrierofasubrig (X : rig) (A : subrig X) : rig := make_rig (isrigcarrier A).
 
 (** **** Quotient objects *)
 
@@ -449,22 +435,20 @@ Local Open Scope rig.
 (** Following Bourbaki's Algebra, I, §8.3, Example V *)
 Definition opposite_rig (X : rig) : rig.
 Proof.
-
-  (* Use the same underlying set and addition, flip the multiplication *)
-  refine (make_setwith2binop (pr1 (pr1rig X))
-                            (pr1 (pr2 (pr1rig X)) ,, λ x y, y * x),, _).
-
-  unfold op2; cbn; fold (@op1 X) (@op2 X).
-  apply (make_isrigops (rigop1axs X)).
-
-  (* For these proofs, we just have to switch some arguments around *)
-  - apply make_ismonoidop.
-    * exact (λ x y z, !rigassoc2 _ z y x).
-    * refine (1,, _). (* same unit, opposite proofs *)
-      exact (rigrunax2 _ ,, riglunax2 _).
-  - exact (rigmultx0 _).
-  - exact (rigmult0x _).
-  - exact (rigrdistr _ ,, rigldistr _).
+  use make_rig.
+  - apply (make_setwith2binop X).
+    split.
+    + exact (λ x y, x + y).
+    + exact (λ x y, y * x).
+  - apply (make_isrigops (rigop1axs X)).
+    (* For these proofs, we just have to switch some arguments around *)
+    + apply make_ismonoidop.
+      * exact (λ x y z, !rigassoc2 _ z y x).
+      * refine (1,, _). (* same unit, opposite proofs *)
+        exact (rigrunax2 _ ,, riglunax2 _).
+    + exact (rigmultx0 _).
+    + exact (rigmult0x _).
+    + exact (rigrdistr _ ,, rigldistr _).
 Defined.
 
 (** In Emacs, use the function insert-char and choose SUPERSCRIPT ZERO *)

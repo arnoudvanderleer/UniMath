@@ -104,9 +104,9 @@ Section def_commrig_category.
 
   Lemma commrig_equiv_is_z_iso (X Y : ob commrig_category)
         (f : rigiso (X : commrig) (Y : commrig)) :
-    @is_z_isomorphism commrig_precategory X Y (rigfunconstr (pr2 f)).
+    @is_z_isomorphism commrig_precategory X Y (make_rigfun (pr2 f)).
   Proof.
-    exists (rigfunconstr (pr2 (invrigiso f))).
+    exists (make_rigfun (pr2 (invrigiso f))).
     use make_is_inverse_in_precat.
     - use rigfun_paths. use funextfun. intros x. use homotinvweqweq.
     - use rigfun_paths. use funextfun. intros y. use homotweqinvweq.

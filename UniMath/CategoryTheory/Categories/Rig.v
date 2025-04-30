@@ -101,9 +101,9 @@ Section def_rig_category.
   Defined.
 
   Lemma rig_equiv_is_z_iso (X Y : ob rig_category) (f : rigiso (X : rig) (Y : rig)) :
-    @is_z_isomorphism rig_precategory X Y (rigfunconstr (pr2 f)).
+    @is_z_isomorphism rig_precategory X Y (make_rigfun (pr2 f)).
   Proof.
-    exists (rigfunconstr (pr2 (invrigiso f))).
+    exists (make_rigfun (pr2 (invrigiso f))).
     use make_is_inverse_in_precat.
     - use rigfun_paths. use funextfun. intros x. use homotinvweqweq.
     - use rigfun_paths. use funextfun. intros y. use homotweqinvweq.
@@ -113,7 +113,7 @@ Section def_rig_category.
   Lemma rig_equiv_z_iso (X Y : ob rig_category) : rigiso (X : rig) (Y : rig) -> z_iso X Y.
   Proof.
     intros f.
-    exists (rigfunconstr (pr2 f)).
+    exists (make_rigfun (pr2 f)).
     exact (rig_equiv_is_z_iso X Y f).
   Defined.
 
