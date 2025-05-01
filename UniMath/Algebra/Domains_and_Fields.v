@@ -995,7 +995,7 @@ Lemma isringmultfldfracgt (X : intdom) (is : isdeceq X) {R : hrel X} (is0 : @isb
   isringmultgt (fldfrac X is) (fldfracgt X is is0 is1 is2 nc).
 Proof.
   intros.
-  refine (ringmultgtandfun (ringfunconstr (isringfunweqfldfracgt_f X is is0 is1 is2 nc ir)) _ _).
+  refine (ringmultgtandfun (make_ringfun (isringfunweqfldfracgt_f X is is0 is1 is2 nc ir)) _ _).
   apply isringmultcommringfracgt.
 Qed.
 
@@ -1004,7 +1004,7 @@ Lemma isringaddfldfracgt (X : intdom) (is : isdeceq X) {R : hrel X} (is0 : @isbi
   @isbinophrel (fldfrac X is) (fldfracgt X is is0 is1 is2 nc).
 Proof.
   intros.
-  refine (ringaddhrelandfun (ringfunconstr (isringfunweqfldfracgt_f X is is0 is1 is2 nc ir)) _ _).
+  refine (ringaddhrelandfun (make_ringfun (isringfunweqfldfracgt_f X is is0 is1 is2 nc ir)) _ _).
   apply isringaddcommringfracgt.
 Qed.
 

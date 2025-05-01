@@ -24,8 +24,8 @@ Require Import UniMath.MoreFoundations.Orders.
 Require Import UniMath.Algebra.Groups.
 Require Export UniMath.Algebra.Monoids.
 Require Export UniMath.Algebra.Rigs.
-Require Export UniMath.CategoryTheory.Core.Categories.
-Require Export UniMath.CategoryTheory.Categories.DoubleMagma.
+Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.CategoryTheory.Categories.DoubleMagma.
 
 Local Open Scope logic.
 

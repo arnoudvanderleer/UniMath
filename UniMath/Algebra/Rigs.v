@@ -49,7 +49,28 @@ Proof.
   + exact (pr21 is ,, pr2 is).
 Defined.
 
-Definition pr1rig (R : rig) : setwith2binop.
+Definition make_rig'
+  {X : hSet}
+  (opp1 opp2 : binop X)
+  (ax11 : ismonoidop opp1)
+  (ax12 : iscomm opp1)
+  (ax2 : ismonoidop opp2)
+  (m0x : ∏ x : X, opp2 (unel_is ax11) x = unel_is ax11)
+  (mx0 : ∏ x : X, opp2 x (unel_is ax11) = unel_is ax11)
+  (dax : isdistr opp1 opp2)
+  : rig.
+Proof.
+  use make_rig.
+  - exact (make_setwith2binop X (make_dirprod opp1 opp2)).
+  - use make_isrigops.
+    + exact (make_isabmonoidop ax11 ax12).
+    + exact ax2.
+    + exact m0x.
+    + exact mx0.
+    + exact dax.
+Defined.
+
+Coercion pr1rig (R : rig) : setwith2binop.
 Proof.
   use make_setwith2binop.
   - exact (pr1 R).
@@ -57,7 +78,6 @@ Proof.
     + exact (pr1 (pr112 R)).
     + exact (pr1 (pr212 R)).
 Defined.
-Coercion pr1rig : rig >-> setwith2binop.
 
 Definition rigop1axs (X : rig) : isabmonoidop (@op1 X) := pr2 (pr112 X).
 
@@ -102,27 +122,6 @@ Proof.
   - apply rigmult0x.
   - apply rigmultx0.
   - apply rigdistraxs.
-Defined.
-
-Definition make_rig'
-  {X : hSet}
-  (opp1 opp2 : binop X)
-  (ax11 : ismonoidop opp1)
-  (ax12 : iscomm opp1)
-  (ax2 : ismonoidop opp2)
-  (m0x : ∏ x : X, opp2 (unel_is ax11) x = unel_is ax11)
-  (mx0 : ∏ x : X, opp2 x (unel_is ax11) = unel_is ax11)
-  (dax : isdistr opp1 opp2)
-  : rig.
-Proof.
-  use make_rig.
-  - exact (make_setwith2binop X (make_dirprod opp1 opp2)).
-  - use make_isrigops.
-    + exact (make_isabmonoidop ax11 ax12).
-    + exact ax2.
-    + exact m0x.
-    + exact mx0.
-    + exact dax.
 Defined.
 
 Definition rigaddabmonoid (X : rig) : abmonoid :=

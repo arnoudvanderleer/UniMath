@@ -1,6 +1,4 @@
 (** * Algebra I. Part D.  Rigs and rings. Vladimir Voevodsky. Aug. 2011 - . *)
-Require Import UniMath.Algebra.Groups.
-Require Import UniMath.Algebra.Rigs.
 (** Contents
 - Standard Algebraic Structures
  - Rings
@@ -34,9 +32,13 @@ Unset Kernel Term Sharing.
 
 (** Imports *)
 
-Require Import UniMath.MoreFoundations.Sets.
 Require Import UniMath.MoreFoundations.Orders.
+Require Import UniMath.MoreFoundations.Sets.
+Require Import UniMath.Algebra.Groups.
 Require Export UniMath.Algebra.Monoids.
+Require Import UniMath.Algebra.Rigs.
+Require Import UniMath.CategoryTheory.Categories.DoubleMagma.
+Require Import UniMath.CategoryTheory.Core.Categories.
 
 Local Open Scope logic.
 
@@ -45,18 +47,48 @@ Local Open Scope logic.
 
 (** **** General definitions *)
 
-Definition ring : UU := ∑ (X : setwith2binop), isringops (@op1 X) (@op2 X).
+Definition ring : UU := ring_category.
 
-Definition make_ring {X : setwith2binop} (is : isringops (@op1 X) (@op2 X)) : ring :=
-  X ,, is.
+Definition make_ring {X : setwith2binop} (is : isringops (@op1 X) (@op2 X))
+  : ring.
+Proof.
+  exists (X : hSet).
+  use tpair.
+  + split.
+    * exists (pr12 X).
+      exact (pr11 is).
+    * exists (pr22 X).
+      exact (pr21 is).
+  + exact (pr2 is).
+Defined.
 
-Definition pr1ring : ring → setwith2binop :=
-  @pr1 _ (λ X : setwith2binop, isringops (@op1 X) (@op2 X)).
-Coercion pr1ring : ring >-> setwith2binop.
+Definition make_ring'
+  {X : hSet}
+  (opp1 opp2 : binop X)
+  (ax11 : isgrop opp1)
+  (ax12 : iscomm opp1)
+  (ax2 : ismonoidop opp2)
+  (dax : isdistr opp1 opp2)
+  : ring.
+Proof.
+  use make_ring.
+  - exact (make_setwith2binop X (make_dirprod opp1 opp2)).
+  - use make_isringops.
+    + exact (make_isabgrop ax11 ax12).
+    + exact ax2.
+    + exact dax.
+Defined.
 
-Definition ringaxs (X : ring) : isringops (@op1 X) (@op2 X) := pr2 X.
+Coercion pr1ring (R : ring) : setwith2binop.
+Proof.
+  use make_setwith2binop.
+  - exact (pr1 R).
+  - split.
+    + exact (pr1 (pr112 R)).
+    + exact (pr1 (pr212 R)).
+Defined.
 
-Definition ringop1axs (X : ring) : isabgrop (@op1 X) := pr1 (pr1 (pr2 X)).
+Definition ringop1axs (X : ring) : isabgrop (@op1 X) := pr2 (pr112 X).
 
 Definition ringassoc1 (X : ring) : isassoc (@op1 X) := assocax_is (ringop1axs X).
 
@@ -76,7 +108,7 @@ Definition ringrinvax1 (X : ring) : ∏ x : X, op1 x (ringinv1 x) = ringunel1 :=
 
 Definition ringcomm1 (X : ring) : iscomm (@op1 X) := commax_is (ringop1axs X).
 
-Definition ringop2axs (X : ring) : ismonoidop (@op2 X) := pr2 (pr1 (pr2 X)).
+Definition ringop2axs (X : ring) : ismonoidop (@op2 X) := pr2 (pr212 X).
 
 Definition ringassoc2 (X : ring) : isassoc (@op2 X) := assocax_is (ringop2axs X).
 
@@ -92,10 +124,13 @@ Definition ringldistr (X : ring) : isldistr (@op1 X) (@op2 X) := pr1 (pr2 (pr2 X
 
 Definition ringrdistr (X : ring) : isrdistr (@op1 X) (@op2 X) := pr2 (pr2 (pr2 X)).
 
-Definition ringconstr {X : hSet} (opp1 opp2 : binop X) (ax11 : isgrop opp1) (ax12 : iscomm opp1)
-           (ax2 : ismonoidop opp2) (dax : isdistr opp1 opp2) : ring :=
-  @make_ring (make_setwith2binop X (opp1 ,, opp2))
-           (((ax11 ,, ax12) ,, ax2) ,, dax).
+Definition ringaxs (X : ring) : isringops (@op1 X) (@op2 X).
+Proof.
+  apply make_isringops.
+  - apply ringop1axs.
+  - apply ringop2axs.
+  - apply ringdistraxs.
+Defined.
 
 Definition ringmultx0 (X : ring) : ∏ x : X, (op2 x ringunel1) = ringunel1 :=
   ringmultx0_is (ringaxs X).
@@ -124,139 +159,62 @@ Notation " - x " := (ringinv1 x) : ring_scope.
 
 Delimit Scope ring_scope with ring.
 
-Definition ringtorig (X : ring) : rig := @make_rig _ (pr2 X).
-Coercion ringtorig : ring >-> rig.
+Definition ringtorig (X : ring) : rig := @make_rig _ (ringaxs X).
+(* Coercion ringtorig : ring >-> rig. *)
 
 (** **** Homomorphisms of rings *)
 
-Definition isringfun {X Y : ring} (f : X → Y) := @isrigfun X Y f.
+Definition ringfun (X Y : ring) := ring_category⟦X, Y⟧%cat.
 
-Definition ringfun (X Y : ring) := rigfun X Y.
+Definition isaset_ringfun (X Y : ring) : isaset (ringfun X Y) := homset_property ring_category X Y.
 
-Lemma isaset_ringfun (X Y : ring) : isaset (ringfun X Y).
+Definition make_ringfun {X Y : ring} {f : X → Y} (is : isrigfun (X := ringtorig X) (Y := ringtorig Y) f)
+  : ringfun X Y.
 Proof.
-   apply (isofhleveltotal2 2).
-   - use impred_isaset. intro x.
-     apply setproperty.
-   - intro f. apply isasetaprop.
-     apply isapropisrigfun.
+  exists f.
+  refine (_ ,, tt).
+  split.
+  - exists (pr11 is).
+    exact (pr2 (make_abelian_group_morphism (X := X) (Y := Y) _ (pr11 is))).
+  - exists (pr12 is).
+    exact (pr2 (make_monoidfun (pr2 is))).
 Defined.
 
-Definition ringfunconstr {X Y : ring} {f : X → Y} (is : isringfun f) : ringfun X Y := make_rigfun is.
-Identity Coercion id_ringfun : ringfun >-> rigfun.
+Coercion ringfun_to_rigfun {X Y : ring} (f : ringfun X Y)
+  : rigfun (ringtorig X) (ringtorig Y).
+Proof.
+  use make_rigfun.
+  - exact (pr1 f).
+  - apply make_isrigfun.
+    + apply make_ismonoidfun.
+      * exact (pr1 (pr112 f)).
+      * exact (pr2 (pr112 (pr112 f))).
+    + apply make_ismonoidfun.
+      * exact (pr1 (pr212 f)).
+      * exact (pr22 (pr212 f)).
+Defined.
 
-Definition ringaddfun {X Y : ring} (f : ringfun X Y) : monoidfun X Y := make_monoidfun (pr1 (pr2 f)).
-
-Definition ringmultfun {X Y : ring} (f : ringfun X Y) :
-  monoidfun (ringmultmonoid X) (ringmultmonoid Y) := make_monoidfun (pr2 (pr2 f)).
-
-Definition ringiso (X Y : ring) := rigiso X Y.
-
-Definition make_ringiso {X Y : ring} (f : X ≃ Y) (is : isringfun f) : ringiso X Y := f ,, is.
-Identity Coercion id_ringiso : ringiso >-> rigiso.
-
-Definition isringfuninvmap {X Y : ring} (f : ringiso X Y) : isringfun (invmap f) := isrigfuninvmap f.
-
-
-(** **** (X = Y) ≃ (ringiso X Y)
-    We use the following composition
-
-                           (X = Y) ≃ (make_ring' X = make_ring' Y)
-                                   ≃ ((pr1 (make_ring' X)) = (pr1 (make_ring' Y)))
-                                   ≃ (ringiso X Y)
-
-    where the third weak equivalence is given by univalence for rigs, [rig_univalence]. We define
-    ring' to be able to apply [rig_univalence].
- *)
-
-Local Definition ring' : UU :=
-  ∑ D : (∑ X : setwith2binop, isrigops (@op1 X) (@op2 X)),
-        invstruct (@op1 (pr1 D)) (dirprod_pr1 (dirprod_pr1 (pr1 (pr1 (pr2 D))))).
-
-Local Definition make_ring' (R : ring) : ring'.
+Definition ringaddfun {X Y : ring} (f : ringfun X Y) : abelian_group_morphism X Y.
 Proof.
   use tpair.
-  - exists (pr1 R).
-    use make_isrigops.
-    + use make_isabmonoidop.
-      * exact (pr1 (dirprod_pr1 (dirprod_pr1 (dirprod_pr1 (pr2 R))))).
-      * exact (dirprod_pr2 (dirprod_pr1 (dirprod_pr1 (pr2 R)))).
-    + exact (dirprod_pr2 (dirprod_pr1 (pr2 R))).
-    + exact (@mult0x_is_l (pr1 R) (@op1 (pr1 R)) (@op2 (pr1 R))
-                          (dirprod_pr1 (dirprod_pr1 (dirprod_pr1 (pr2 R))))
-                          (dirprod_pr2 (dirprod_pr1 (pr2 R))) (dirprod_pr2 (pr2 R))).
-    + exact (@multx0_is_l (pr1 R) (@op1 (pr1 R)) (@op2 (pr1 R))
-                          (dirprod_pr1 (dirprod_pr1 (dirprod_pr1 (pr2 R))))
-                          (dirprod_pr2 (dirprod_pr1 (pr2 R))) (dirprod_pr2 (pr2 R))).
-    + exact (dirprod_pr2 (pr2 R)).
-  - exact (pr2 (dirprod_pr1 (dirprod_pr1 (dirprod_pr1 (pr2 R))))).
+  - exists f.
+    exact (pr1 (pr112 f)).
+  - exact (pr2 (pr112 f)).
 Defined.
 
-Local Definition make_ring_from_ring' (R : ring') : ring.
+Definition ringmultfun {X Y : ring} (f : ringfun X Y) :
+  monoidfun (ringmultmonoid X) (ringmultmonoid Y).
 Proof.
-  use make_ring.
-  - exact (pr1 (pr1 R)).
-  - use make_isringops.
-    + use make_isabgrop.
-      * use make_isgrop.
-        -- exact (dirprod_pr1 (dirprod_pr1 (pr1 (dirprod_pr1 (pr2 (pr1 R)))))).
-        -- exact (pr2 R).
-      * exact (dirprod_pr2 (dirprod_pr1 (pr1 (dirprod_pr1 (pr2 (pr1 R)))))).
-    + exact (dirprod_pr2 (pr1 (dirprod_pr1 (pr2 (pr1 R))))).
-    + exact (dirprod_pr2 (pr2 (pr1 R))).
+  use tpair.
+  - exists f.
+    exact (pr1 (pr212 f)).
+  - exact (pr2 (pr212 f)).
 Defined.
 
-Definition ring_univalence_weq1 : ring ≃ ring'.
-Proof.
-  use make_weq.
-  - intros R. exact (make_ring' R).
-  - use isweq_iso.
-    + intros R'. exact (make_ring_from_ring' R').
-    + intros R. use idpath.
-    + intros R'.
-      use total2_paths_f.
-      * use total2_paths_f.
-        -- use idpath.
-        -- use proofirrelevance. use isapropisrigops.
-      * use proofirrelevance. use isapropinvstruct.
-Defined.
+Definition ringiso (X Y : ring) := rigiso (ringtorig X) (ringtorig Y).
 
-Definition ring_univalence_weq1' (X Y : ring) : (X = Y) ≃ (make_ring' X = make_ring' Y) :=
-  make_weq _ (@isweqmaponpaths ring ring' ring_univalence_weq1 X Y).
-
-Definition ring_univalence_weq2 (X Y : ring) :
-  ((make_ring' X) = (make_ring' Y)) ≃ ((pr1 (make_ring' X)) = (pr1 (make_ring' Y))).
-Proof.
-  use subtypeInjectivity.
-  intros w. use isapropinvstruct.
-Defined.
-Opaque ring_univalence_weq2.
-
-Definition ring_univalence_weq3 (X Y : ring) :
-  ((pr1 (make_ring' X)) = (pr1 (make_ring' Y))) ≃ (rigiso X Y) :=
-  rig_univalence (pr1 (make_ring' X)) (pr1 (make_ring' Y)).
-
-Definition ring_univalence_map (X Y : ring) : (X = Y) → (ringiso X Y).
-Proof.
-  intros e. induction e. exact (idrigiso X).
-Defined.
-
-Lemma ring_univalence_isweq (X Y : ring) : isweq (ring_univalence_map X Y).
-Proof.
-  use isweqhomot.
-  - exact (weqcomp (ring_univalence_weq1' X Y)
-                   (weqcomp (ring_univalence_weq2 X Y) (ring_univalence_weq3 X Y))).
-  - intros e. induction e.
-    refine (weqcomp_to_funcomp_app @ _).
-    exact weqcomp_to_funcomp_app.
-  - use weqproperty.
-Defined.
-Opaque ring_univalence_isweq.
-
-Definition ring_univalence (X Y : ring) : (X = Y) ≃ (ringiso X Y)
-  := make_weq
-    (ring_univalence_map X Y)
-    (ring_univalence_isweq X Y).
+Definition make_ringiso {X Y : ring} (f : X ≃ Y) (is : isrigfun (X := ringtorig X) (Y := ringtorig Y) f) : ringiso X Y := f ,, is.
+Identity Coercion id_ringiso : ringiso >-> rigiso.
 
 
 (** **** Computation lemmas for rings *)
@@ -470,7 +428,7 @@ Proof.
 Defined.
 
 Lemma isringmultgttoisrigmultgt (X : ring) {R : hrel X} (is0 : @isbinophrel X R)
-      (is : isringmultgt X R) : isrigmultgt X R.
+      (is : isringmultgt X R) : isrigmultgt (ringtorig X) R.
 Proof.
   intros. set (rer := abmonoidrer X). simpl in rer.
   intros a b c d rab rcd.

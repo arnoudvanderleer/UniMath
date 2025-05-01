@@ -103,9 +103,9 @@ Section def_commring_category.
 
   Lemma commring_equiv_is_z_iso (X Y : ob commring_category)
         (f : ringiso (X : commring) (Y : commring)) :
-    @is_z_isomorphism commring_category X Y (ringfunconstr (pr2 f)).
+    @is_z_isomorphism commring_category X Y (make_ringfun (pr2 f)).
   Proof.
-    exists (ringfunconstr (pr2 (invrigiso f))).
+    exists (make_ringfun (pr2 (invrigiso f))).
     use make_is_inverse_in_precat.
     - use rigfun_paths. use funextfun. intros x. use homotinvweqweq.
     - use rigfun_paths. use funextfun. intros y. use homotweqinvweq.

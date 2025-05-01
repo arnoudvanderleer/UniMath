@@ -102,9 +102,9 @@ Section def_intdom_category.
   Defined.
 
   Lemma intdom_equiv_is_z_iso (X Y : ob intdom_category) (f : ringiso (X : intdom) (Y : intdom)) :
-    @is_z_isomorphism intdom_precategory X Y (ringfunconstr (pr2 f)).
+    @is_z_isomorphism intdom_precategory X Y (make_ringfun (pr2 f)).
   Proof.
-    exists (ringfunconstr (pr2 (invrigiso f))).
+    exists (make_ringfun (pr2 (invrigiso f))).
     use make_is_inverse_in_precat.
     - use rigfun_paths. use funextfun. intros x. use homotinvweqweq.
     - use rigfun_paths. use funextfun. intros y. use homotweqinvweq.

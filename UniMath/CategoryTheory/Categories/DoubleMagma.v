@@ -99,7 +99,7 @@ Definition ring_category
   : category
   := total_category (sigma_disp_cat ring_disp_cat).
 
-(** * 5. The category of commutative rigs *)
+(** * 5. The category of commutative rings *)
 
 Definition pre_commutative_ring_disp_cat
   : disp_cat HSET.

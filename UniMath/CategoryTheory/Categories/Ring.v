@@ -101,9 +101,9 @@ Section def_ring_category.
   Defined.
 
   Lemma ring_equiv_is_z_iso (X Y : ob ring_category) (f : ringiso (X : ring) (Y : ring)) :
-    @is_z_isomorphism ring_category X Y (ringfunconstr (pr2 f)).
+    @is_z_isomorphism ring_category X Y (make_ringfun (pr2 f)).
   Proof.
-    exists (ringfunconstr (pr2 (invrigiso f))).
+    exists (make_ringfun (pr2 (invrigiso f))).
     use make_is_inverse_in_precat.
     - use rigfun_paths. use funextfun. intros x. use homotinvweqweq.
     - use rigfun_paths. use funextfun. intros y. use homotweqinvweq.
