@@ -322,7 +322,7 @@ Section ElementsWithInversesSet.
 
   (** For the two-sided case, we can just reuse the argument from the
       left-cancellable case. *)
-  Definition isaprop_hasinv (x : X) (can : iscancelable opp x) :
+  Definition isaprop_hasinv (x : X) :
     isaprop (hasinv opp is x).
   Proof.
     apply isaproptotal2.
@@ -330,21 +330,20 @@ Section ElementsWithInversesSet.
       + apply isapropislinvel.
       + apply isapropisrinvel.
     - intros x' x'' isinvx' isinvx''.
-      apply (Injectivity (λ x0 : X, x * x0)).
-      + apply incl_injectivity; apply (pr1 can).
-      + exact (pr2 isinvx' @ !pr2 isinvx'').
+      refine (!lunax_is is _ @ _ @ runax_is is _).
+      refine (!maponpaths_2 _ (pr1 isinvx'') _ @ _).
+      refine (_ @ maponpaths _ (pr2 isinvx')).
+      apply (assocax_is is).
   Defined.
 
   (** The subset of elements that have inverses *)
 
-  Definition merely_invertible_elements : hsubtype X := merely_hasinv opp is.
-
-  Definition invertible_elements (can : ∏ x, iscancelable opp x) : hsubtype X.
+  Definition invertible_elements : hsubtype X.
   Proof.
     intro x.
     use make_hProp.
     - exact (hasinv opp is x).
-    - apply isaprop_hasinv, can.
+    - apply isaprop_hasinv.
   Defined.
 
   (** If an element has an inverse, then it is cancellable *)

@@ -746,27 +746,21 @@ Proof. exists (setwithbinopdirprod X Y). apply isgrdirprod. Defined.
 
 Definition invertible_submonoid_grop X : isgrop (@op (invertible_submonoid X)).
 Proof.
-  pose (submon := invertible_submonoid X).
-  pose (submon_carrier := ismonoidcarrier submon).
-
-  (** We know that if each element has an inverse, it's a grop *)
-  apply (isgropif submon_carrier).
-
-  intros xpair.
-  pose (x := pr1 xpair).
-  pose (unel := unel_is submon_carrier).
-
-  (** We can use other hProps when proving an hProp (assume it has an inverse) *)
-  apply (squash_to_prop (pr2 xpair) (propproperty _)).
-
-  intros xinv.
-  unfold haslinv.
-  apply hinhpr.
-  refine ((pr1 xinv,, inverse_in_submonoid _ x (pr1 xinv) (pr2 xpair) (pr2 xinv)),, _).
-  apply subtypePath_prop.
-  exact (pr2 (pr2 xinv)).
+  apply (make_isgrop (ismonoidcarrier (invertible_submonoid X))).
+  use make_invstruct.
+  - intro xpair.
+    exists (pr12 xpair).
+    exists (pr1 xpair).
+    apply is_inv_inv.
+    exact (pr22 xpair).
+  - apply make_isinv;
+      intro x;
+      apply carrier_eq.
+    + exact (pr122 x).
+    + exact (pr222 x).
 Defined.
 
-Definition gr_merely_invertible_elements : monoid → gr :=
-  λ X, carrierofasubsetwithbinop (submonoidtosubsetswithbinop _ (invertible_submonoid X)) ,,
-       invertible_submonoid_grop X.
+Definition gr_invertible_elements (X : monoid) : gr :=
+  make_gr
+    (carrierofasubsetwithbinop (submonoidtosubsetswithbinop _ (invertible_submonoid X)))
+    (invertible_submonoid_grop X).

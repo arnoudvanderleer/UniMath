@@ -69,20 +69,22 @@ Proof.
     + use make_hSet.
       * exact (X --> X).
       * apply homset_property.
-    + exact (@compose C X X X).
+    + intros f g.
+      exact (f ∘ g).
   - use make_dirprod.
-    + exact (fun x x' x'' => !(@assoc C _ _ _ _ x x' x'')).
+    + intros x x' x''.
+      apply assoc.
     + refine (identity X,, _).
       split.
-      * exact (@id_left C X X).
       * exact (@id_right C X X).
+      * exact (@id_left C X X).
 Defined.
 
 (** The automorphism group is a submonoid of the endomorphism monoid *)
 
 (** When the hom-types of C are sets, we can form the automorphism grp *)
 Definition automorphism_grp {C : category} (X : ob C) : gr :=
-  gr_merely_invertible_elements (endomorphism_monoid X).
+  gr_invertible_elements (endomorphism_monoid X).
 
 Example symmetric_grp (X : hSet) := @automorphism_grp hset_category X.
 
@@ -104,8 +106,8 @@ Proof.
   (** We already proved this *)
   - exact (pr2 end_monoid).
   (** By assumption on C *)
-  - intros f g h; apply (to_premor_monoid C _ _ _ h).
   - intros f g h; apply (to_postmor_monoid C _ _ _ h).
+  - intros f g h; apply (to_premor_monoid C _ _ _ h).
 Defined.
 
 (** ** Algebraic structures as categories *)

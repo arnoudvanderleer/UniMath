@@ -28,7 +28,7 @@ Local Open Scope cat.
 
 Definition group_endomorphism_ring (G : abgr)
   : ring
-  := opposite_ring (endomorphism_ring (C := abgr_PreAdditive) G).
+  := endomorphism_ring (C := abgr_PreAdditive) G.
 
 Section Mod.
 
