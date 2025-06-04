@@ -1400,6 +1400,16 @@ Definition carrierofasubring (X : ring) (A : subring X) : ring.
 Proof. intros. exists A. apply isringcarrier. Defined.
 Coercion carrierofasubring : subring >-> ring.
 
+Lemma isringfun_pr1 {X : ring} (A : subring X) : @isringfun A X pr1.
+Proof.
+  apply make_isrigfun.
+  - exact (ismonoidfun_pr1 (addsubgr A)).
+  - exact (ismonoidfun_pr1 (multsubmonoid A)).
+Defined.
+
+Definition subring_incl {X : ring} (A : subring X) : ringfun A X :=
+  ringfunconstr (isringfun_pr1 A).
+
 
 (** **** Quotient objects *)
 
