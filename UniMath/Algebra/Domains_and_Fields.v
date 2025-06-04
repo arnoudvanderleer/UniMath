@@ -1,5 +1,7 @@
 (** * Algebra I. Part E. Integral domains and fields. Vladimir Voevodsky. Aug. 2011 - . *)
 Require Import UniMath.Algebra.Groups.
+Require Import UniMath.Foundations.All.
+Require Import UniMath.MoreFoundations.All.
 (** ** Contents
 - Integral domains and fields
  - Integral domains
@@ -11,6 +13,7 @@ Require Import UniMath.Algebra.Groups.
   - Main definitions
   - Field of fractions of an integral domain with decidable equality
   - Canonical homomorphism to the field of fractions
+  - Subobjects
  - Relations similar to "greater" on field of fractions
   - Description of the field of fractions as the ring of fractions
     with respect to the submonoid of "positive" elements
@@ -766,6 +769,62 @@ Definition isincltofldfrac (X : intdom) (is : isdeceq X) : isincl (tofldfrac X i
   isincltocommringfrac X (intdomnonzerosubmonoid X)
                       (λ x, pr2 (intdomiscancelable X (pr1 x) (pr2 x))).
 
+(** **** Subobjects *)
+
+Definition issubfld {X : ring} (A : hsubtype X) : UU :=
+  issubring A ×
+  (∏ (x : X) (i : multinvpair X x), A x → A (pr1invpair _ _ i)).
+
+Lemma isapropissubfld {X : ring} (A : hsubtype X) : isaprop (issubfld A).
+Proof.
+  intros.
+  apply isapropdirprod.
+  - apply isapropissubring.
+  - do 2 (apply impred_isaprop; intro).
+    apply isapropimpl.
+    apply propproperty.
+Qed.
+
+Definition subfld (X : fld) : UU
+  := ∑ (A : hsubtype X), issubfld A.
+
+Definition make_subfld {X : fld}
+  (A : hsubtype X)
+  (H : issubfld A)
+  : subfld X
+  := A ,, H.
+
+Definition pr1subfld (X : fld) (A : subfld X) : hsubtype X := pr1 A.
+
+Coercion subfld_to_subring (X : fld) (A : subfld X) : subring X
+  := (λ x, pr1 A x) ,, (pr12 A).
+
+Lemma isfldcarrier {X : fld} (A : subfld X) : isafield (carrierofasubcommring A).
+Proof.
+  split.
+  - abstract (
+      intro H;
+      refine (pr12 X _);
+      exact (maponpaths (pr1carrier _) H)
+    ).
+  - intro x.
+    induction (fldchoice (pr1 x)) as [Hx | Hx].
+    + apply inl.
+      use tpair.
+      * exists (pr1invpair _ _ Hx).
+        abstract apply (pr22 A), x.
+      * abstract (
+          split; apply carrier_eq, Hx
+        ).
+    + apply inr.
+      abstract (
+        apply carrier_eq;
+        exact Hx
+      ).
+Defined.
+
+Coercion carrierofasubfld {X : fld} (A : @subfld X) : fld :=
+  make_fld (carrierofasubcommring A) (isfldcarrier A).
 
 (** *** Relations similar to "greater" on fields of fractions
 
