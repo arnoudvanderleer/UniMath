@@ -163,6 +163,48 @@ Proof.
   - apply (pr2 (rinvpairxy _ x y (invtorinv _ x x') (invtorinv _ y y'))).
 Defined.
 
+Definition transport_invpair
+  {X : monoid} {x x' : X} (e : x = x') (i : invpair X x) : invpair X x'.
+Proof.
+  exists (pr1invpair _ _ i).
+  abstract (
+    split;
+    [ refine (!maponpaths _ e @ _);
+      exact (pr12 i)
+    | refine (!maponpaths_2 _ e _ @ _);
+      exact (pr22 i) ]
+  ).
+Defined.
+
+Definition monoidfun_on_invpair
+  {A B : monoid}
+  (f : monoidfun A B)
+  {x : A}
+  (i : invpair A x)
+  : invpair B (f x).
+Proof.
+  exists (f (pr1invpair _ _ i)).
+  abstract (
+    split;
+    refine (!binopfunisbinopfun f _ _ @ !_);
+    refine (!monoidfununel f @ !_);
+    apply maponpaths;
+    [ exact (pr12 i)
+    | exact (pr22 i) ]
+  ).
+Defined.
+
+Lemma monoidfun_preserves_inv
+  {A B : monoid}
+  (f : monoidfun A B)
+  {x : A}
+  (i : invpair A x)
+  (i' : invpair B (f x))
+  : f (pr1invpair _ _ i) = pr1invpair _ _ i'.
+Proof.
+  exact (base_paths _ _ (proofirrelevance _ (isapropinvpair _ _) (monoidfun_on_invpair f i) _)).
+Qed.
+
 (** To groups *)
 
 Lemma grfrompathsxy (X : gr) {a b : X} (e : a = b) : a * grinv X b = 1.
@@ -536,6 +578,23 @@ Defined.
 
 Definition fldmultinv {X : fld} (x : X) (ne : x != 0) : X := pr1 (fldmultinvpair X x ne).
 
+Lemma fld_neg_multinvpair_zero {X : fld} (x : X) (Hx1 : multinvpair X x) (Hx2 : x = 0) : ∅.
+Proof.
+  refine (pr12 X _).
+  refine (!pr12 Hx1 @ _).
+  refine (maponpaths _ Hx2 @ _).
+  apply (ringmultx0 X).
+Qed.
+
+Lemma fld_multinvpair_nonzero {X : fld} (x : X) (Hx1 : multinvpair X x) : x != 0.
+Proof.
+  exact (fld_neg_multinvpair_zero x Hx1).
+Qed.
+
+Lemma fld_zero_nomultinvpair {X : fld} (x : X) (Hx1 : x = 0) : ¬ (multinvpair X x).
+Proof.
+  exact (λ Hx2, fld_neg_multinvpair_zero x Hx2 Hx1).
+Qed.
 
 (** **** (X = Y) ≃ (ringiso X Y)
    We use the following composition
@@ -825,6 +884,31 @@ Defined.
 
 Coercion carrierofasubfld {X : fld} (A : @subfld X) : fld :=
   make_fld (carrierofasubcommring A) (isfldcarrier A).
+
+Lemma issubfld_image {A B : fld} (f : ringfun A B) :
+  issubfld (total_image_hsubtype f).
+Proof.
+  split.
+  - apply issubring_image.
+  - intros x i.
+    apply hinhfun.
+    intro Hx.
+    induction (fldchoice (pr1 Hx)) as [Hi | Hi].
+    + exists (pr1 Hi).
+      change (f (pr1 Hi)) with (pr1invpair _ _ (monoidfun_on_invpair (ringmultfun f) Hi)).
+      change (pr1invpair _ _ i) with (pr1invpair _ _ (transport_invpair (X := ringmultmonoid B) (!pr2 Hx) i)).
+      apply maponpaths.
+      apply proofirrelevance.
+      apply isapropinvpair.
+    + apply fromempty.
+      refine (fld_zero_nomultinvpair x _ i).
+      refine (!pr2 Hx @ _).
+      refine (maponpaths _ Hi @ _).
+      exact (monoidfununel (ringaddfun f)).
+Qed.
+
+Definition fld_image {A B : fld} (f : ringfun A B) : subfld B :=
+  make_subfld _ (issubfld_image f).
 
 (** *** Relations similar to "greater" on fields of fractions
 

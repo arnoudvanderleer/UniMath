@@ -353,6 +353,20 @@ Defined.
 Definition submonoid_incl {X : monoid} (A : submonoid X) : monoidfun A X :=
   make_monoidfun (ismonoidfun_pr1 A).
 
+Lemma monoid_image_issubmonoid {A B : monoid} (f : monoidfun A B)
+  : issubmonoid (total_image_hsubtype f).
+Proof.
+  apply make_issubmonoid.
+  - apply setwithbinop_image_issubsetwithbinop.
+  - apply hinhpr.
+    exists 1.
+    apply monoidfununel.
+Qed.
+
+Definition monoid_image {A B : monoid} (f : monoidfun A B)
+  : subsetswithbinop B
+  := make_submonoid _ (monoid_image_issubmonoid f).
+
 (** Every monoid has a submonoid which is a group, the collection of elements
     with inverses. This is used to construct the automorphism group from the
     endomorphism monoid, for instance. *)

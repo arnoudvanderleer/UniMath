@@ -326,6 +326,10 @@ Qed.
 Definition image_hsubtype {X Y : UU} (U : hsubtype X) (f : X → Y)
   : hsubtype Y := λ y : Y, (∃ x : X, f x = y × U x).
 
+Definition total_image_hsubtype {A B : UU} (f : A → B)
+  : hsubtype B
+  := λ y, ∃ x : A, (f x) = y.
+
 Lemma image_hsubtype_emptyhsubtype {X Y : UU} (f : X → Y)
   : image_hsubtype (emptysubtype X) f = emptysubtype Y.
 Proof.

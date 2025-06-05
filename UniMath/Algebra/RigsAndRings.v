@@ -1363,7 +1363,7 @@ Defined.
 
 Definition subring (X : ring) : UU := ∑ (A : hsubtype X), issubring A.
 
-Definition make_gsubring {X : ring}
+Definition make_subring {X : ring}
   (t : hsubtype X)
   (H : issubring t)
   : subring X
@@ -1409,6 +1409,17 @@ Defined.
 
 Definition subring_incl {X : ring} (A : subring X) : ringfun A X :=
   ringfunconstr (isringfun_pr1 A).
+
+Lemma issubring_image {A B : ring} (f : ringfun A B) :
+  issubring (total_image_hsubtype f).
+Proof.
+  split.
+  + exact (gr_image_issubgr (binopfun_to_group_morphism (ringaddfun f))).
+  + exact (monoid_image_issubmonoid (ringmultfun f)).
+Qed.
+
+Definition ring_image {A B : ring} (f : ringfun A B) : subring B :=
+  make_subring _ (issubring_image f).
 
 
 (** **** Quotient objects *)

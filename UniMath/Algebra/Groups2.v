@@ -407,6 +407,24 @@ Qed.
 Definition subgr_incl {X : gr} (A : subgr X) : group_morphism A X :=
   binopfun_to_group_morphism (X := A) (submonoid_incl A).
 
+Lemma gr_image_issubgr {A B : gr} (f : group_morphism A B)
+  : issubgr (total_image_hsubtype f).
+Proof.
+  apply make_issubgr.
+  - apply monoid_image_issubmonoid.
+  - intro x.
+    refine (hinhfun _).
+    intro Hx.
+    exists ((pr1 Hx)^-1).
+    refine (group_morphism_inv f _ @ _).
+    apply maponpaths.
+    exact (pr2 Hx).
+Qed.
+
+Definition gr_image {A B : gr} (f : group_morphism A B)
+  : subgr B
+  := make_subgr _ (gr_image_issubgr f).
+
 (** * 5. Quotient objects *)
 
 Lemma grquotinvcomp {X : gr} (R : binopeqrel X) : iscomprelrelfun R R (λ x, x^-1).

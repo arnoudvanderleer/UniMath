@@ -133,7 +133,7 @@ Definition module_kernel_eq {R : ring} {A B : module R} (f : modulefun A B) x :
 (** * 3. Images *)
 
 Lemma issubmodule_image {R : ring} {A B : module R} (f : modulefun A B) :
-  issubmodule (abgr_image_hsubtype (binopfun_to_abelian_group_morphism (modulefun_to_binopfun f))).
+  issubmodule (total_image_hsubtype f).
 Proof.
   split.
   - apply abgr_image_issubgr.

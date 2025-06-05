@@ -34,6 +34,7 @@
  *)
 Require Export UniMath.Foundations.Sets.
 Require Export UniMath.MoreFoundations.Propositions.
+Require Export UniMath.MoreFoundations.Subtypes.
 
 (** * 1. Unary operations *)
 
@@ -2003,6 +2004,23 @@ Proof.
   simpl. unfold binop. apply subopp.
 Defined.
 Coercion carrierofasubsetwithbinop : subsetswithbinop >-> setwithbinop.
+
+Lemma setwithbinop_image_issubsetwithbinop {A B : setwithbinop} (f : binopfun A B)
+  : issubsetwithbinop op (total_image_hsubtype f).
+Proof.
+  intros x y.
+  refine (hinhfun2 _ (pr2 x) (pr2 y)).
+  intros Hx Hy.
+  exists (op (pr1 Hx) (pr1 Hy)).
+  refine (binopfunisbinopfun f _ _ @ _).
+  apply two_arg_paths.
+  - exact (pr2 Hx).
+  - exact (pr2 Hy).
+Qed.
+
+Definition setwithbinop_subsetwithbinop {A B : setwithbinop} (f : binopfun A B)
+  : subsetswithbinop B
+  := make_subsetswithbinop _ (setwithbinop_image_issubsetwithbinop f).
 
 
 (** * 3.5. Relations compatible with a binary operation and quotient objects *)

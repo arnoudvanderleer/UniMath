@@ -264,9 +264,6 @@ Definition subabgr_incl {X : abgr} (A : subabgr X) : abelian_group_morphism A X 
 Definition abgr_kernel_hsubtype {A B : abgr} (f : abelian_group_morphism A B) : hsubtype A :=
   monoid_kernel_hsubtype f.
 
-Definition abgr_image_hsubtype {A B : abgr} (f : abelian_group_morphism A B) : hsubtype B :=
-  (λ y : B, ∃ x : A, (f x) = y).
-
 (** * 3. Kernels
     Let f : X → Y be a morphism of abelian groups. A kernel of f is given by the subgroup of X
     consisting of elements x such that [f x = 0].
@@ -303,34 +300,12 @@ Qed.
 
   (** ** Image of f is a subgroup *)
 
-Definition abgr_image_issubgr {A B : abgr} (f : abelian_group_morphism A B) : issubgr (abgr_image_hsubtype f).
-Proof.
-  apply make_issubgr.
-  - apply make_issubmonoid.
-    + intros a a'.
-      refine (hinhuniv _ (pr2 a)). intros ae.
-      refine (hinhuniv _ (pr2 a')). intros a'e.
-      apply hinhpr.
-      use tpair.
-      * exact (@op A (pr1 ae) (pr1 a'e)).
-      * refine (binopfunisbinopfun f (pr1 ae) (pr1 a'e) @ _).
-        use two_arg_paths.
-          exact (pr2 ae).
-          exact (pr2 a'e).
-    + use hinhpr. use tpair.
-      * exact (unel A).
-      * exact (monoidfununel f).
-  - intros b b'.
-    use (hinhuniv _ b'). intros eb.
-    use hinhpr.
-    use tpair.
-    + exact (grinv A (pr1 eb)).
-    + refine (_ @ maponpaths (λ bb : B, (grinv B bb)) (pr2 eb)).
-      apply group_morphism_inv.
-Qed.
+Definition abgr_image_issubgr {A B : abgr} (f : abelian_group_morphism A B)
+  : issubgr (total_image_hsubtype f)
+  := gr_image_issubgr f.
 
-Definition abgr_image {A B : abgr} (f : abelian_group_morphism A B) : @subabgr B :=
-  @subgrconstr B (@abgr_image_hsubtype A B f) (abgr_image_issubgr f).
+Definition abgr_image {A B : abgr} (f : abelian_group_morphism A B) : @subabgr B
+  := make_subgr (total_image_hsubtype f) (abgr_image_issubgr f).
 
 
 (** * 4. Quotient objects *)
