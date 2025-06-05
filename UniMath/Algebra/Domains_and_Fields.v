@@ -596,6 +596,38 @@ Proof.
   exact (λ Hx2, fld_neg_multinvpair_zero x Hx2 Hx1).
 Qed.
 
+Lemma field_morphism_reflects_zero
+  {A B : fld}
+  (f : ringfun A B)
+  (x : A) (Hx : f x = (0 : B)) : x = 0.
+Proof.
+  induction (fldchoice x) as [Hx' | Hx']; [| exact Hx'].
+  apply fromempty.
+  apply (fld_neg_multinvpair_zero (f x)).
+  - apply (monoidfun_on_invpair (ringmultfun f)).
+    exact Hx'.
+  - exact Hx.
+Qed.
+
+Definition field_morphism_reflects_equality
+  {A B : fld} (f : ringfun A B) {x x' : A} (Hf : f x = f x') : x = x'.
+Proof.
+  apply (grtopathsxy (ringaddabgr A)).
+  apply (field_morphism_reflects_zero f).
+  refine (binopfunisbinopfun (ringaddfun f) _ _ @ _).
+  refine (maponpaths _ (group_morphism_inv (binopfun_to_abelian_group_morphism (ringaddfun f)) _) @ _).
+  apply (grfrompathsxy (ringaddabgr B)).
+  apply Hf.
+Qed.
+
+Definition isInjective_field_morphism
+  {A B : fld} (f : ringfun A B) : isInjective f.
+Proof.
+  intros x x'.
+  refine (isweqimplimpl _ _ (setproperty _ _ _) (setproperty _ _ _)).
+  apply field_morphism_reflects_equality.
+Qed.
+
 (** **** (X = Y) ≃ (ringiso X Y)
    We use the following composition
 
@@ -885,30 +917,91 @@ Defined.
 Coercion carrierofasubfld {X : fld} (A : @subfld X) : fld :=
   make_fld (carrierofasubcommring A) (isfldcarrier A).
 
-Lemma issubfld_image {A B : fld} (f : ringfun A B) :
-  issubfld (total_image_hsubtype f).
-Proof.
-  split.
-  - apply issubring_image.
-  - intros x i.
-    apply hinhfun.
-    intro Hx.
-    induction (fldchoice (pr1 Hx)) as [Hi | Hi].
-    + exists (pr1 Hi).
-      change (f (pr1 Hi)) with (pr1invpair _ _ (monoidfun_on_invpair (ringmultfun f) Hi)).
-      change (pr1invpair _ _ i) with (pr1invpair _ _ (transport_invpair (X := ringmultmonoid B) (!pr2 Hx) i)).
-      apply maponpaths.
-      apply proofirrelevance.
-      apply isapropinvpair.
-    + apply fromempty.
-      refine (fld_zero_nomultinvpair x _ i).
-      refine (!pr2 Hx @ _).
-      refine (maponpaths _ Hi @ _).
-      exact (monoidfununel (ringaddfun f)).
-Qed.
+Section Image.
 
-Definition fld_image {A B : fld} (f : ringfun A B) : subfld B :=
-  make_subfld _ (issubfld_image f).
+  Context {A B : fld}.
+  Context (f : ringfun A B).
+
+  Lemma issubfld_image
+    : issubfld (total_image_hsubtype f).
+  Proof.
+    split.
+    - apply issubring_image.
+    - intros x i.
+      apply hinhfun.
+      intro Hx.
+      induction (fldchoice (pr1 Hx)) as [Hi | Hi].
+      + exists (pr1 Hi).
+        change (f (pr1 Hi)) with (pr1invpair _ _ (monoidfun_on_invpair (ringmultfun f) Hi)).
+        change (pr1invpair _ _ i) with (pr1invpair _ _ (transport_invpair (X := ringmultmonoid B) (!pr2 Hx) i)).
+        apply maponpaths.
+        apply proofirrelevance.
+        apply isapropinvpair.
+      + apply fromempty.
+        refine (fld_zero_nomultinvpair x _ i).
+        refine (!pr2 Hx @ _).
+        refine (maponpaths _ Hi @ _).
+        exact (monoidfununel (ringaddfun f)).
+  Qed.
+
+  Definition fld_image
+    : subfld B
+    := make_subfld _ issubfld_image.
+
+  Definition field_morphism_to_image
+    (x : A)
+    : fld_image
+    := f x ,, hinhpr (x ,, idpath _).
+
+  Definition lift_field_morphism_image
+    (x : fld_image)
+    : A.
+  Proof.
+    refine (squash_to_set (setproperty A) pr1 _ (pr2 x)).
+    intros Hx Hx'.
+    apply (field_morphism_reflects_equality f).
+    refine (pr2 Hx @ !_).
+    exact (pr2 Hx').
+  Defined.
+
+  Lemma field_morphism_image_weqinvweq
+    (x : fld_image)
+    : field_morphism_to_image (lift_field_morphism_image x) = x.
+  Proof.
+    apply carrier_eq.
+    induction x as [x Hx].
+    revert Hx.
+    refine (squash_rec (λ Hx, _ = _)%logic _).
+    intro Hx.
+    exact (pr2 Hx).
+  Qed.
+
+  Definition field_morphism_image_weq
+    : A ≃ fld_image
+    := weq_iso
+      field_morphism_to_image
+      lift_field_morphism_image
+      (λ _, idpath _)
+      field_morphism_image_weqinvweq.
+
+  Lemma field_morphism_to_image_isringfun
+    : isringfun (Y := fld_image) (function_to_total_image f).
+  Proof.
+    apply make_isrigfun;
+      apply make_ismonoidfun;
+      repeat intro;
+      apply carrier_eq.
+    - apply (monoidfunmul (ringaddfun f)).
+    - apply (monoidfununel (ringaddfun f)).
+    - apply (monoidfunmul (ringmultfun f)).
+    - apply (monoidfununel (ringmultfun f)).
+  Qed.
+
+  Definition field_morphism_to_image_ringfun
+    : ringfun A fld_image
+    := rigfunconstr field_morphism_to_image_isringfun.
+
+End Image.
 
 (** *** Relations similar to "greater" on fields of fractions
 

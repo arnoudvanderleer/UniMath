@@ -353,19 +353,41 @@ Defined.
 Definition submonoid_incl {X : monoid} (A : submonoid X) : monoidfun A X :=
   make_monoidfun (ismonoidfun_pr1 A).
 
-Lemma monoid_image_issubmonoid {A B : monoid} (f : monoidfun A B)
-  : issubmonoid (total_image_hsubtype f).
-Proof.
-  apply make_issubmonoid.
-  - apply setwithbinop_image_issubsetwithbinop.
-  - apply hinhpr.
-    exists 1.
-    apply monoidfununel.
-Qed.
+Section Image.
 
-Definition monoid_image {A B : monoid} (f : monoidfun A B)
-  : subsetswithbinop B
-  := make_submonoid _ (monoid_image_issubmonoid f).
+  Context {A B : monoid}.
+  Context (f : monoidfun A B).
+
+  Lemma monoid_image_issubmonoid
+    : issubmonoid (total_image_hsubtype f).
+  Proof.
+    apply make_issubmonoid.
+    - apply setwithbinop_image_issubsetwithbinop.
+    - apply hinhpr.
+      exists 1.
+      apply monoidfununel.
+  Qed.
+
+  Definition monoid_image
+    : submonoid B
+    := make_submonoid _ monoid_image_issubmonoid.
+
+  Lemma monoidfun_to_image_ismonoidfun
+    : ismonoidfun (Y := monoid_image) (function_to_total_image f).
+  Proof.
+    apply make_ismonoidfun.
+    - intros x y.
+      refine (function_to_total_image_isbinopfun f x y @ _).
+      now apply carrier_eq.
+    - apply carrier_eq.
+      apply monoidfununel.
+  Qed.
+
+  Definition monoidfun_to_image_monoidfun
+    : monoidfun A monoid_image
+    := make_monoidfun monoidfun_to_image_ismonoidfun.
+
+End Image.
 
 (** Every monoid has a submonoid which is a group, the collection of elements
     with inverses. This is used to construct the automorphism group from the

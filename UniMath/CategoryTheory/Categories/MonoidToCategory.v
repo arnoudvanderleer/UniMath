@@ -152,7 +152,7 @@ Section MonoidToCategory.
         exact (#f (m : monoid_to_category_ob M⟦tt, tt⟧)).
       Defined.
 
-      Lemma functor_to_is_monoidfun
+      Lemma functor_to_ismonoidfun
         : ismonoidfun functor_to_monoidfun_data.
       Proof.
         use make_ismonoidfun.
@@ -163,7 +163,7 @@ Section MonoidToCategory.
 
       Definition functor_to_monoidfun
         : monoidfun M M'
-        := make_monoidfun functor_to_is_monoidfun.
+        := make_monoidfun functor_to_ismonoidfun.
 
     End Mor.
 

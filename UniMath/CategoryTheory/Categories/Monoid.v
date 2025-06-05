@@ -11,6 +11,7 @@
   2.1. The Forgetful functor [monoid_forgetful_functor]
   2.2. The Free functor [monoid_free_functor]
   2.3. The adjunction [monoid_free_forgetful_adjunction]
+  3. A constructor for monoid isomorphisms [make_monoid_z_iso]
 
  *)
 Require Import UniMath.Foundations.All.
@@ -19,11 +20,12 @@ Require Import UniMath.Algebra.BinaryOperations.
 Require Import UniMath.Algebra.Monoids2.
 
 Require Import UniMath.Algebra.Free_Monoids_and_Groups.
-Require Import UniMath.Combinatorics.Lists.
 Require Import UniMath.Algebra.IteratedBinaryOperations.
+Require Import UniMath.Combinatorics.Lists.
 
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
 Require Import UniMath.CategoryTheory.Categories.HSET.Core.
+Require Import UniMath.CategoryTheory.Categories.Magma.
 Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.DisplayedCats.Total.
 Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
@@ -163,3 +165,36 @@ Proof.
     apply maponpaths; assumption.
   - reflexivity.
 Qed.
+
+(** ** 3. A constructor for monoid isomorphisms *)
+
+Lemma ismonoidfun_z_iso_inv
+  {X Y : monoid}
+  (f : z_iso (C := HSET) (X : hSet) (Y : hSet))
+  (H : ismonoidfun (z_iso_mor f))
+  : ismonoidfun (inv_from_z_iso f).
+Proof.
+  apply make_ismonoidfun.
+  - apply isbinopfun_z_iso_inv.
+    apply (ismonoidfunisbinopfun H).
+  - refine (!_ @ eqtohomot (z_iso_inv_after_z_iso f) _).
+    apply (maponpaths (inv_from_z_iso f)).
+    apply (ismonoidfununel H).
+Qed.
+
+Definition make_monoid_z_iso
+  {X Y : monoid}
+  (f : z_iso (C := HSET) (X : hSet) (Y : hSet))
+  (H : ismonoidfun (z_iso_mor f))
+  : z_iso (C := monoid_category) X Y.
+Proof.
+  use make_z_iso.
+  - exact (make_monoidfun H).
+  - exact (make_monoidfun (ismonoidfun_z_iso_inv f H)).
+  - abstract (
+      split;
+      apply monoidfun_paths;
+      [ exact (z_iso_inv_after_z_iso f)
+      | exact (z_iso_after_z_iso_inv f) ]
+    ).
+Defined.

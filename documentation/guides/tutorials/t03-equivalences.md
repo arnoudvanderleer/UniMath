@@ -99,6 +99,8 @@ Proof.
 Defined.
 ```
 
+If `X` and `Y` are mere propositions (see the [next tutorial](./t04-htypes)), coherence of `f` and its inverse `g` is trivial, so `weqimplimpl f g: isaprop X → isaprop Y → X ≃ Y` can be used to construct an equivalence. There are also the related `isweqimplimpl` which shows `isweq f`, and `weqiff` which takes a single logical implication `fg : X <-> Y` instead of separate functions `f` and `g`.
+
 Another common way to show `isweq f` is to use the lemma `weqhomot`, which takes as inputs some `f' : X ≃ Y`  and a proof that `f' ~ f` (notation for `homot f' f`, which means `∏ x, f' x = f x`). There is also the related lemma `isweqhomot`, where the input `f' : X ≃ Y` is split into `f' : X → Y` and `H : isweq f'`.
 
 `weqhomot` is often used in univalence proofs: in those cases, there is a fairly simple function `f : X → Y`, but the 'simplest' way to get an equivalence `X ≃ Y` is as a complicated composition `f4 ∘ f3 ∘ f2 ∘ f1 : X ≃ W ≃ Z ≃ Y`. Then, one can show using `weqhomot` that `f` is an equivalence as well.

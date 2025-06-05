@@ -2018,10 +2018,23 @@ Proof.
   - exact (pr2 Hy).
 Qed.
 
-Definition setwithbinop_subsetwithbinop {A B : setwithbinop} (f : binopfun A B)
+Definition setwithbinop_image {A B : setwithbinop} (f : binopfun A B)
   : subsetswithbinop B
   := make_subsetswithbinop _ (setwithbinop_image_issubsetwithbinop f).
 
+Lemma function_to_total_image_isbinopfun
+  {A B : setwithbinop} (f : binopfun A B)
+  : isbinopfun (Y := setwithbinop_image f) (function_to_total_image f).
+Proof.
+  intros x y.
+  apply carrier_eq.
+  apply binopfunisbinopfun.
+Qed.
+
+Definition function_to_total_image_binopfun
+  {A B : setwithbinop} (f : binopfun A B) (x : A)
+  : binopfun A (setwithbinop_image f)
+  := make_binopfun _ (function_to_total_image_isbinopfun f).
 
 (** * 3.5. Relations compatible with a binary operation and quotient objects *)
 

@@ -125,6 +125,39 @@ Coercion magma_morphism_to_binopfun
   : binopfun X Y
   := f.
 
+(** ** 1.3. A constructor for magma isos *)
+
+Lemma isbinopfun_z_iso_inv
+  {X Y : magma}
+  (f : z_iso (C := HSET) (X : hSet) (Y : hSet))
+  (H : isbinopfun (z_iso_mor f))
+  : isbinopfun (inv_from_z_iso f).
+Proof.
+  intros x y.
+  refine (!_ @ eqtohomot (z_iso_inv_after_z_iso f) _).
+  apply (maponpaths (inv_from_z_iso f)).
+  refine (H _ _ @ _).
+  apply two_arg_paths;
+    exact (eqtohomot (z_iso_after_z_iso_inv f) _).
+Qed.
+
+Definition make_magma_z_iso
+  {X Y : magma}
+  (f : z_iso (C := HSET) (X : hSet) (Y : hSet))
+  (H : isbinopfun (z_iso_mor f))
+  : z_iso (C := magma_category) X Y.
+Proof.
+  use make_z_iso.
+  - exact (make_binopfun _ H).
+  - exact (make_binopfun _ (isbinopfun_z_iso_inv f H)).
+  - abstract (
+      split;
+      apply binopfun_paths;
+      [ exact (z_iso_inv_after_z_iso f)
+      | exact (z_iso_after_z_iso_inv f) ]
+    ).
+Defined.
+
 (** * 2. The category of abelian magmas *)
 
 Definition abelian_magma_disp_cat

@@ -6,6 +6,7 @@
 
   Contents
   1. The univalent category of groups [group_univalent_category]
+  2. A constructor for group isomorphisms [make_group_z_iso]
 
  *)
 Require Import UniMath.Foundations.All.
@@ -18,6 +19,7 @@ Require Import UniMath.CategoryTheory.Core.Categories.
 Require Import UniMath.CategoryTheory.Core.Isos.
 Require Import UniMath.CategoryTheory.Core.Univalence.
 Require Import UniMath.CategoryTheory.Core.Functors.
+Require Import UniMath.CategoryTheory.Categories.HSET.Core.
 Require Import UniMath.CategoryTheory.Categories.Magma.
 Require Import UniMath.CategoryTheory.Categories.Monoid.
 Require Import UniMath.CategoryTheory.DisplayedCats.Examples.Sigma.
@@ -68,3 +70,22 @@ Definition is_univalent_group_category
 
 Definition group_univalent_category : univalent_category
   := make_univalent_category group_category is_univalent_group_category.
+
+(** ** 3. A constructor for group isomorphisms *)
+
+Definition make_group_z_iso
+  {X Y : gr}
+  (f : z_iso (C := HSET) (X : hSet) (Y : hSet))
+  (H : isbinopfun (z_iso_mor f))
+  : z_iso (C := group_category) X Y.
+Proof.
+  use make_z_iso.
+  - exact (make_group_morphism _ H).
+  - exact (make_group_morphism _ (isbinopfun_z_iso_inv f H)).
+  - abstract (
+      split;
+      apply group_morphism_paths;
+      [ exact (z_iso_inv_after_z_iso f)
+      | exact (z_iso_after_z_iso_inv f) ]
+    ).
+Defined.

@@ -330,6 +330,11 @@ Definition total_image_hsubtype {A B : UU} (f : A → B)
   : hsubtype B
   := λ y, ∃ x : A, (f x) = y.
 
+Definition function_to_total_image
+  {A B : UU} (f : A → B) (x : A)
+  : total_image_hsubtype f
+  := f x ,, hinhpr (x ,, idpath _).
+
 Lemma image_hsubtype_emptyhsubtype {X Y : UU} (f : X → Y)
   : image_hsubtype (emptysubtype X) f = emptysubtype Y.
 Proof.
