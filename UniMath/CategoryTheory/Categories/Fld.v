@@ -228,8 +228,9 @@ Section SubfieldWeqSlice.
     use tpair.
     - use make_ring_z_iso.
       + apply hset_equiv_weq_z_iso.
-        exact (field_morphism_image_weq (pr2 k)).
-      + exact (field_morphism_to_image_isringfun (pr2 k)).
+        apply domain_weq_image.
+        apply isInjective_field_morphism.
+      + apply ring_morphism_to_image_isringfun.
     - abstract now apply rigfun_paths.
   Defined.
 

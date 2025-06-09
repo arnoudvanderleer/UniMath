@@ -115,6 +115,14 @@ Definition make_group_morphism
   : group_morphism X Y
   := (f ,, H) ,, ((tt ,, binopfun_preserves_unit f H) ,, binopfun_preserves_inv f H).
 
+Definition monoidfun_to_group_morphism
+  {X Y : gr}
+  (f : monoidfun X Y)
+  : group_morphism X Y
+  := ((f : _ → _) ,, monoidfunmul f) ,,
+    (tt ,, monoidfununel f) ,,
+    binopfun_preserves_inv f (monoidfunmul f).
+
 Definition binopfun_to_group_morphism
   {X Y : gr}
   (f : binopfun X Y)
@@ -407,19 +415,25 @@ Qed.
 Definition subgr_incl {X : gr} (A : subgr X) : group_morphism A X :=
   binopfun_to_group_morphism (X := A) (submonoid_incl A).
 
-Lemma gr_image_issubgr {A B : gr} (f : group_morphism A B)
-  : issubgr (total_image_hsubtype f).
+Lemma gr_image_contains_inv
+  {A B : gr}
+  (f : group_morphism A B)
+  (x : B)
+  : total_image_hsubtype f x → total_image_hsubtype f x^-1.
 Proof.
-  apply make_issubgr.
-  - apply monoid_image_issubmonoid.
-  - intro x.
-    refine (hinhfun _).
-    intro Hx.
-    exists ((pr1 Hx)^-1).
-    refine (group_morphism_inv f _ @ _).
-    apply maponpaths.
-    exact (pr2 Hx).
+  apply hinhfun.
+  intro Hx.
+  exists ((pr1 Hx)^-1).
+  refine (group_morphism_inv f _ @ _).
+  apply maponpaths.
+  exact (pr2 Hx).
 Qed.
+
+Definition gr_image_issubgr {A B : gr} (f : group_morphism A B)
+  : issubgr (total_image_hsubtype f)
+  := make_issubgr
+      (monoid_image_issubmonoid f)
+      (gr_image_contains_inv f).
 
 Definition gr_image {A B : gr} (f : group_morphism A B)
   : subgr B

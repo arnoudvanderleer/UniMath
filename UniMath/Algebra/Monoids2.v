@@ -358,15 +358,19 @@ Section Image.
   Context {A B : monoid}.
   Context (f : monoidfun A B).
 
-  Lemma monoid_image_issubmonoid
-    : issubmonoid (total_image_hsubtype f).
+  Lemma monoid_image_contains_1
+    : total_image_hsubtype f 1.
   Proof.
-    apply make_issubmonoid.
-    - apply setwithbinop_image_issubsetwithbinop.
-    - apply hinhpr.
-      exists 1.
-      apply monoidfununel.
+    apply hinhpr.
+    exists 1.
+    apply monoidfununel.
   Qed.
+
+  Definition monoid_image_issubmonoid
+    : issubmonoid (total_image_hsubtype f)
+    := make_issubmonoid
+      (setwithbinop_image_issubsetwithbinop f)
+      monoid_image_contains_1.
 
   Definition monoid_image
     : submonoid B
@@ -376,9 +380,7 @@ Section Image.
     : ismonoidfun (Y := monoid_image) (function_to_total_image f).
   Proof.
     apply make_ismonoidfun.
-    - intros x y.
-      refine (function_to_total_image_isbinopfun f x y @ _).
-      now apply carrier_eq.
+    - apply function_to_total_image_isbinopfun.
     - apply carrier_eq.
       apply monoidfununel.
   Qed.

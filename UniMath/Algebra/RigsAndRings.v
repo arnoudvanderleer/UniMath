@@ -1361,6 +1361,13 @@ Proof.
   - apply isapropissubmonoid.
 Defined.
 
+Definition make_issubring {X : ring}
+  {A : hsubtype X}
+  (H1 : @issubgr X A)
+  (H2 : @issubmonoid (ringmultmonoid X) A)
+  : issubring A
+  := make_dirprod H1 H2.
+
 Definition subring (X : ring) : UU := ∑ (A : hsubtype X), issubring A.
 
 Definition make_subring {X : ring}
@@ -1410,16 +1417,31 @@ Defined.
 Definition subring_incl {X : ring} (A : subring X) : ringfun A X :=
   ringfunconstr (isringfun_pr1 A).
 
-Lemma issubring_image {A B : ring} (f : ringfun A B) :
-  issubring (total_image_hsubtype f).
-Proof.
-  split.
-  + exact (gr_image_issubgr (binopfun_to_group_morphism (ringaddfun f))).
-  + exact (monoid_image_issubmonoid (ringmultfun f)).
-Qed.
+Section Image.
 
-Definition ring_image {A B : ring} (f : ringfun A B) : subring B :=
-  make_subring _ (issubring_image f).
+  Context {A B : ring}.
+  Context (f : ringfun A B).
+
+  Definition issubring_image
+    : issubring (total_image_hsubtype f)
+    := make_issubring
+        (gr_image_issubgr (monoidfun_to_group_morphism (ringaddfun f)))
+        (monoid_image_issubmonoid (ringmultfun f)).
+
+  Definition ring_image : subring B :=
+    make_subring _ issubring_image.
+
+  Definition ring_morphism_to_image_isringfun
+    : isringfun (Y := ring_image) (function_to_total_image f)
+    := make_isrigfun (X := A) (Y := ring_image)
+        (monoidfun_to_image_ismonoidfun (ringaddfun f))
+        (monoidfun_to_image_ismonoidfun (ringmultfun f)).
+
+  Definition ring_morphism_to_image_ringfun
+    : ringfun A ring_image
+    := ringfunconstr ring_morphism_to_image_isringfun.
+
+End Image.
 
 
 (** **** Quotient objects *)

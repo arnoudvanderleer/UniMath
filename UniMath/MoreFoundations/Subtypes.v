@@ -714,6 +714,10 @@ Section IsomorphismTheorem.
 
     Context (Hf : isInjective f).
 
+    Definition domain_to_coimage
+      : X → coimage
+      := setquotpr _.
+
     Definition coimage_to_domain
       : coimage → X.
     Proof.
@@ -725,11 +729,7 @@ Section IsomorphismTheorem.
         ).
     Defined.
 
-    Definition domain_to_coimage
-      : X → coimage
-      := setquotpr _.
-
-    Lemma domain_weq_coimage_invweqweq
+    Lemma coimage_weq_domain_weqinvweq
       (x : coimage)
       : domain_to_coimage (coimage_to_domain x) = x.
     Proof.
@@ -737,17 +737,23 @@ Section IsomorphismTheorem.
       now refine (setquotunivprop _ (λ _, _ = _)%logic _).
     Qed.
 
-    Definition coimage_weq_domain
-      : coimage ≃ X
-      := weq_iso
-        coimage_to_domain
+    Definition isweq_domain_coimage_setquotpr
+      : isweq (setquotpr (same_fiber_eqrel f))
+      := isweq_iso
         domain_to_coimage
-        domain_weq_coimage_invweqweq
-        (λ _, idpath _).
+        coimage_to_domain
+        (λ _, idpath _)
+        coimage_weq_domain_weqinvweq.
+
+    Definition coimage_weq_domain
+      : X ≃ coimage
+      := make_weq
+        domain_to_coimage
+        isweq_domain_coimage_setquotpr.
 
     Definition domain_weq_image
       : X ≃ image
-      := (coimage_weq_image ∘ invweq coimage_weq_domain)%weq.
+      := (coimage_weq_image ∘ coimage_weq_domain)%weq.
 
   End Injective.
 
@@ -774,13 +780,19 @@ Section IsomorphismTheorem.
       now apply carrier_eq.
     Qed.
 
-    Definition image_weq_codomain
-      : image ≃ Y
-      := weq_iso
+    Definition isweq_pr1carrier_image_codomain
+      : isweq (pr1carrier (total_image_hsubtype f))
+      := isweq_iso
         image_to_codomain
         codomain_to_image
         codomain_weq_image_invweqweq
         (λ _, idpath _).
+
+    Definition image_weq_codomain
+      : image ≃ Y
+      := make_weq
+        image_to_codomain
+        isweq_pr1carrier_image_codomain.
 
     Definition coimage_weq_codomain
       : coimage ≃ Y
@@ -792,6 +804,6 @@ Section IsomorphismTheorem.
     (Hi : isInjective f)
     (Hs : issurjective f)
     : X ≃ Y
-    := (image_weq_codomain Hs ∘ coimage_weq_image ∘ invweq (coimage_weq_domain Hi))%weq.
+    := (image_weq_codomain Hs ∘ coimage_weq_image ∘ coimage_weq_domain Hi)%weq.
 
 End IsomorphismTheorem.

@@ -866,6 +866,14 @@ Definition issubfld {X : ring} (A : hsubtype X) : UU :=
   issubring A ×
   (∏ (x : X) (i : multinvpair X x), A x → A (pr1invpair _ _ i)).
 
+Definition make_issubfld
+  {X : ring}
+  {A : hsubtype X}
+  (H1 : issubring A)
+  (H2 : ∏ (x : X) (i : multinvpair X x), A x → A (pr1invpair _ _ i))
+  : issubfld A
+  := make_dirprod H1 H2.
+
 Lemma isapropissubfld {X : ring} (A : hsubtype X) : isaprop (issubfld A).
 Proof.
   intros.
@@ -922,27 +930,32 @@ Section Image.
   Context {A B : fld}.
   Context (f : ringfun A B).
 
-  Lemma issubfld_image
-    : issubfld (total_image_hsubtype f).
+  Lemma fld_image_contains_inv
+    (x : B)
+    (i : multinvpair B x)
+    : total_image_hsubtype f x → total_image_hsubtype f (pr1invpair _ _ i).
   Proof.
-    split.
-    - apply issubring_image.
-    - intros x i.
-      apply hinhfun.
-      intro Hx.
-      induction (fldchoice (pr1 Hx)) as [Hi | Hi].
-      + exists (pr1 Hi).
-        change (f (pr1 Hi)) with (pr1invpair _ _ (monoidfun_on_invpair (ringmultfun f) Hi)).
-        change (pr1invpair _ _ i) with (pr1invpair _ _ (transport_invpair (X := ringmultmonoid B) (!pr2 Hx) i)).
-        apply maponpaths.
-        apply proofirrelevance.
-        apply isapropinvpair.
-      + apply fromempty.
-        refine (fld_zero_nomultinvpair x _ i).
-        refine (!pr2 Hx @ _).
-        refine (maponpaths _ Hi @ _).
-        exact (monoidfununel (ringaddfun f)).
+    apply hinhfun.
+    intro Hx.
+    induction (fldchoice (pr1 Hx)) as [Hi | Hi].
+    - exists (pr1 Hi).
+      change (f (pr1 Hi)) with (pr1invpair _ _ (monoidfun_on_invpair (ringmultfun f) Hi)).
+      change (pr1invpair _ _ i) with (pr1invpair _ _ (transport_invpair (X := ringmultmonoid B) (!pr2 Hx) i)).
+      apply maponpaths.
+      apply proofirrelevance.
+      apply isapropinvpair.
+    - apply fromempty.
+      refine (fld_zero_nomultinvpair x _ i).
+      refine (!pr2 Hx @ _).
+      refine (maponpaths _ Hi @ _).
+      exact (monoidfununel (ringaddfun f)).
   Qed.
+
+  Definition issubfld_image
+    : issubfld (total_image_hsubtype f)
+    := make_issubfld
+        (issubring_image f)
+        fld_image_contains_inv.
 
   Definition fld_image
     : subfld B
@@ -952,54 +965,6 @@ Section Image.
     (x : A)
     : fld_image
     := f x ,, hinhpr (x ,, idpath _).
-
-  Definition lift_field_morphism_image
-    (x : fld_image)
-    : A.
-  Proof.
-    refine (squash_to_set (setproperty A) pr1 _ (pr2 x)).
-    intros Hx Hx'.
-    apply (field_morphism_reflects_equality f).
-    refine (pr2 Hx @ !_).
-    exact (pr2 Hx').
-  Defined.
-
-  Lemma field_morphism_image_weqinvweq
-    (x : fld_image)
-    : field_morphism_to_image (lift_field_morphism_image x) = x.
-  Proof.
-    apply carrier_eq.
-    induction x as [x Hx].
-    revert Hx.
-    refine (squash_rec (λ Hx, _ = _)%logic _).
-    intro Hx.
-    exact (pr2 Hx).
-  Qed.
-
-  Definition field_morphism_image_weq
-    : A ≃ fld_image
-    := weq_iso
-      field_morphism_to_image
-      lift_field_morphism_image
-      (λ _, idpath _)
-      field_morphism_image_weqinvweq.
-
-  Lemma field_morphism_to_image_isringfun
-    : isringfun (Y := fld_image) (function_to_total_image f).
-  Proof.
-    apply make_isrigfun;
-      apply make_ismonoidfun;
-      repeat intro;
-      apply carrier_eq.
-    - apply (monoidfunmul (ringaddfun f)).
-    - apply (monoidfununel (ringaddfun f)).
-    - apply (monoidfunmul (ringmultfun f)).
-    - apply (monoidfununel (ringmultfun f)).
-  Qed.
-
-  Definition field_morphism_to_image_ringfun
-    : ringfun A fld_image
-    := rigfunconstr field_morphism_to_image_isringfun.
 
 End Image.
 
