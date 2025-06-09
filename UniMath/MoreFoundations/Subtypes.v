@@ -640,3 +640,158 @@ Section CarrierSubtypes.
   Qed.
 
 End CarrierSubtypes.
+
+Section IsomorphismTheorem.
+
+  Context (X Y : hSet).
+  Context (f : X → Y).
+
+  Let coimage
+    : hSet
+    := setquotinset (same_fiber_eqrel f).
+
+  Let image
+    : hSet
+    := carrier_subset (total_image_hsubtype f).
+
+  Definition coimage_to_image
+    : coimage → image.
+  Proof.
+    use setquotuniv.
+    - intro x.
+      exact (f x ,, hinhpr (x ,, idpath _)).
+    - abstract (
+        intros x y Hxy;
+        apply carrier_eq;
+        apply Hxy
+      ).
+  Defined.
+
+  Definition image_to_coimage
+    : image → coimage.
+  Proof.
+    intro x.
+    simple refine (squash_to_set (setproperty coimage) _ _ (pr2 x)).
+    - intro Hx.
+      apply setquotpr.
+      exact (pr1 Hx).
+    - abstract (
+        intros Hx Hx';
+        apply weqpathsinsetquot;
+        refine (pr2 Hx @ !pr2 Hx')
+      ).
+  Defined.
+
+  Lemma coimage_weq_image_invweqweq
+    (x : coimage)
+    : image_to_coimage (coimage_to_image x) = x.
+  Proof.
+    revert x.
+    now refine (setquotunivprop _ (λ _, _ = _)%logic _).
+  Qed.
+
+  Lemma coimage_weq_image_weqinvweq
+    (x : image)
+    : coimage_to_image (image_to_coimage x) = x.
+  Proof.
+    induction x as [x Hx].
+    revert Hx.
+    refine (squash_rec (λ Hx, _ = _)%logic _).
+    intro Hx.
+    apply carrier_eq.
+    exact (pr2 Hx).
+  Qed.
+
+  Definition coimage_weq_image
+    : coimage ≃ image
+    := weq_iso
+      coimage_to_image
+      image_to_coimage
+      coimage_weq_image_invweqweq
+      coimage_weq_image_weqinvweq.
+
+  Section Injective.
+
+    Context (Hf : isInjective f).
+
+    Definition coimage_to_domain
+      : coimage → X.
+    Proof.
+      use setquotuniv.
+      - apply idfun.
+      - abstract (
+          intros x y Hxy;
+          exact (invmap (Injectivity _ Hf _ _) Hxy)
+        ).
+    Defined.
+
+    Definition domain_to_coimage
+      : X → coimage
+      := setquotpr _.
+
+    Lemma domain_weq_coimage_invweqweq
+      (x : coimage)
+      : domain_to_coimage (coimage_to_domain x) = x.
+    Proof.
+      revert x.
+      now refine (setquotunivprop _ (λ _, _ = _)%logic _).
+    Qed.
+
+    Definition coimage_weq_domain
+      : coimage ≃ X
+      := weq_iso
+        coimage_to_domain
+        domain_to_coimage
+        domain_weq_coimage_invweqweq
+        (λ _, idpath _).
+
+    Definition domain_weq_image
+      : X ≃ image
+      := (coimage_weq_image ∘ invweq coimage_weq_domain)%weq.
+
+  End Injective.
+
+  Section Surjective.
+
+    Context (Hf : issurjective f).
+
+    Definition image_to_codomain
+      : image → Y
+      := pr1carrier _.
+
+    Definition codomain_to_image
+      : Y → image.
+    Proof.
+      intro y.
+      exists y.
+      exact (Hf y).
+    Defined.
+
+    Lemma codomain_weq_image_invweqweq
+      (x : image)
+      : codomain_to_image (image_to_codomain x) = x.
+    Proof.
+      now apply carrier_eq.
+    Qed.
+
+    Definition image_weq_codomain
+      : image ≃ Y
+      := weq_iso
+        image_to_codomain
+        codomain_to_image
+        codomain_weq_image_invweqweq
+        (λ _, idpath _).
+
+    Definition coimage_weq_codomain
+      : coimage ≃ Y
+      := (image_weq_codomain ∘ coimage_weq_image)%weq.
+
+  End Surjective.
+
+  Definition domain_weq_codomain
+    (Hi : isInjective f)
+    (Hs : issurjective f)
+    : X ≃ Y
+    := (image_weq_codomain Hs ∘ coimage_weq_image ∘ invweq (coimage_weq_domain Hi))%weq.
+
+End IsomorphismTheorem.
