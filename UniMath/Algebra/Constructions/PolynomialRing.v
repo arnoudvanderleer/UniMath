@@ -91,6 +91,53 @@ Section PolynomialRing.
 
 End PolynomialRing.
 
+Section PowerSeries.
+
+  Context {R : commring}.
+
+  Definition constant_series_data
+    (r : R)
+    : fpscommring R
+    := nat_rect (λ _, R) r (λ _ _, 0).
+
+  Lemma isringfun_constant_series
+    : isringfun constant_series_data.
+  Proof.
+    apply make_isrigfun.
+    - apply make_ismonoidfun.
+      + intros x y.
+        apply funextfun.
+        intro n.
+        induction n.
+        -- reflexivity.
+        -- refine (!ringlunax1 _ _).
+      + apply funextfun.
+        intro n.
+        induction n;
+          reflexivity.
+    - apply make_ismonoidfun.
+      * intros x y.
+        apply funextfun.
+        intro n.
+        induction n.
+        -- reflexivity.
+        -- refine (_ @ !natsummationae0bottom _ _).
+          ++ exact (!ringmultx0 R _).
+          ++ intros m Hm.
+            induction m; [induction (nopathsfalsetotrue Hm)|].
+            exact (ringmult0x R _).
+      * apply funextfun.
+        intro n.
+        induction n;
+          reflexivity.
+  Qed.
+
+  Definition constant_series
+    : ringfun R (fpscommring R)
+    := ringfunconstr isringfun_constant_series.
+
+End PowerSeries.
+
 Section PolynomialRing.
 
   Context (R : commring).
@@ -179,5 +226,28 @@ Section PolynomialRing.
         * induction (nopathsfalsetotrue Hm).
         * reflexivity.
   Qed.
+
+  Definition polynomial_subring
+    : subring (fpscommring R)
+    := make_subring _ issubring_is_polynomial.
+
+  Lemma is_polynomial_constant_series
+    (r : R)
+    : is_polynomial (constant_series r).
+  Proof.
+    apply hinhpr.
+    exists 1%nat.
+    intros m Hm.
+    destruct m.
+    - induction (nopathsfalsetotrue Hm).
+    - reflexivity.
+  Qed.
+
+  Definition polynomial_ring_embedding
+    : ringfun R polynomial_subring
+    := ringfun_to_subring
+      (A := polynomial_subring)
+      constant_series
+      is_polynomial_constant_series.
 
 End PolynomialRing.
