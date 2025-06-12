@@ -27,6 +27,12 @@ Definition length : list -> nat := pr1.
 Definition list_to_vec: ∏ l: list, vec A (length l) := pr2.
 Coercion list_to_vec: list >-> vec.
 
+Definition make_list
+  {n : nat}
+  (v : vec A n)
+  : list
+  := n ,, v.
+
 (** The empty list *)
 Definition nil : list := (0,, vnil).
 
