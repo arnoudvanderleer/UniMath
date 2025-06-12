@@ -412,7 +412,7 @@ Section preadditive_quotient.
       use tpair.
       + use tpair.
         * exact (op (pr1 t) (pr1 t0)).
-        * exact (pr2subsetswithbinop B t t0).
+        * exact (pr2subsetwithbinop B t t0).
       + cbn. rewrite p. rewrite p0. rewrite <- (assocax A).
         apply maponpaths_2. rewrite assocax. rewrite grlinvax. rewrite runax.
         apply idpath.

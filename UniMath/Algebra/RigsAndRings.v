@@ -1432,7 +1432,7 @@ Section Image.
     make_subring _ issubring_image.
 
   Definition ring_morphism_to_image_isringfun
-    : isringfun (Y := ring_image) (function_to_total_image f)
+    : isringfun (Y := ring_image) (domain_to_image f)
     := make_isrigfun (X := A) (Y := ring_image)
         (monoidfun_to_image_ismonoidfun (ringaddfun f))
         (monoidfun_to_image_ismonoidfun (ringmultfun f)).
@@ -1442,6 +1442,26 @@ Section Image.
     := ringfunconstr ring_morphism_to_image_isringfun.
 
 End Image.
+
+Lemma isringfun_function_to_subtype
+  {X Y : ring}
+  (f : ringfun X Y)
+  {A : subring Y}
+  (Hf : ∏ x, A (f x))
+  : isringfun (Y := A) (function_to_subtype f Hf).
+Proof.
+  apply make_isrigfun.
+  - apply (ismonoidfun_function_to_subtype (A := addsubgr A) (ringaddfun f) Hf).
+  - apply (ismonoidfun_function_to_subtype (A := multsubmonoid A) (ringmultfun f) Hf).
+Qed.
+
+Definition ringfun_to_subring
+  {X Y : ring}
+  (f : ringfun X Y)
+  {A : subring Y}
+  (Hf : ∏ x, A (f x))
+  : ringfun X A
+  := ringfunconstr (isringfun_function_to_subtype f Hf).
 
 
 (** **** Quotient objects *)

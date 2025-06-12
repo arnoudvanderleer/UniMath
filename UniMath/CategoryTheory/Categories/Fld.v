@@ -230,7 +230,7 @@ Section SubfieldWeqSlice.
       + apply hset_equiv_weq_z_iso.
         apply domain_weq_image.
         apply isInjective_field_morphism.
-      + apply ring_morphism_to_image_isringfun.
+      + exact (ring_morphism_to_image_isringfun (pr2 k)).
     - abstract now apply rigfun_paths.
   Defined.
 

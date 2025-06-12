@@ -330,11 +330,6 @@ Definition total_image_hsubtype {A B : UU} (f : A → B)
   : hsubtype B
   := λ y, ∃ x : A, (f x) = y.
 
-Definition function_to_total_image
-  {A B : UU} (f : A → B) (x : A)
-  : total_image_hsubtype f
-  := f x ,, hinhpr (x ,, idpath _).
-
 Lemma image_hsubtype_emptyhsubtype {X Y : UU} (f : X → Y)
   : image_hsubtype (emptysubtype X) f = emptysubtype Y.
 Proof.
@@ -509,6 +504,14 @@ Proof.
   - apply idpath.
 Qed.
 
+Definition function_to_subtype
+  {X Y : UU}
+  (f : X → Y)
+  {A : hsubtype Y}
+  (Hf : ∏ x, A (f x))
+  : X → A
+  := λ x, f x ,, Hf x.
+
 Section ContainedSubtypes.
 
   Context {X : UU}.
@@ -643,7 +646,7 @@ End CarrierSubtypes.
 
 Section IsomorphismTheorem.
 
-  Context (X Y : hSet).
+  Context {X Y : hSet}.
   Context (f : X → Y).
 
   Let coimage
@@ -805,5 +808,10 @@ Section IsomorphismTheorem.
     (Hs : issurjective f)
     : X ≃ Y
     := (image_weq_codomain Hs ∘ coimage_weq_image ∘ coimage_weq_domain Hi)%weq.
+
+  Definition domain_to_image
+    (x : X)
+    : total_image_hsubtype f
+    := f x ,, hinhpr (x ,, idpath _).
 
 End IsomorphismTheorem.

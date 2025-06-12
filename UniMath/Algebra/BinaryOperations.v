@@ -1968,33 +1968,33 @@ Proof.
   apply (pr2 (A (opp (pr1 a) (pr1 a')))).
 Defined.
 
-Definition subsetswithbinop (X : setwithbinop) : UU :=
+Definition subsetwithbinop (X : setwithbinop) : UU :=
   ∑ (A : hsubtype X), issubsetwithbinop (@op X) A.
 
-Definition make_subsetswithbinop
+Definition make_subsetwithbinop
   {X : setwithbinop}
   (t : hsubtype X)
   (H : issubsetwithbinop op t)
-  : subsetswithbinop X
+  : subsetwithbinop X
   := t ,, H.
 
-Definition subsetswithbinopconstr {X : setwithbinop} :
+Definition subsetwithbinopconstr {X : setwithbinop} :
   ∏ (t : hsubtype X), (λ A : hsubtype X, issubsetwithbinop op A) t →
-                       ∑ A : hsubtype X, issubsetwithbinop op A := @make_subsetswithbinop X.
+                       ∑ A : hsubtype X, issubsetwithbinop op A := @make_subsetwithbinop X.
 
-Definition pr1subsetswithbinop (X : setwithbinop) : subsetswithbinop X → hsubtype X :=
+Definition pr1subsetwithbinop (X : setwithbinop) : subsetwithbinop X → hsubtype X :=
   @pr1 _ (λ A : hsubtype X, issubsetwithbinop (@op X) A).
-Coercion pr1subsetswithbinop : subsetswithbinop >-> hsubtype.
+Coercion pr1subsetwithbinop : subsetwithbinop >-> hsubtype.
 
-Definition pr2subsetswithbinop {X : setwithbinop} (Y : subsetswithbinop X) :
-  issubsetwithbinop (@op X) (pr1subsetswithbinop X Y) := pr2 Y.
+Definition pr2subsetwithbinop {X : setwithbinop} (Y : subsetwithbinop X) :
+  issubsetwithbinop (@op X) (pr1subsetwithbinop X Y) := pr2 Y.
 
-Definition totalsubsetwithbinop (X : setwithbinop) : subsetswithbinop X.
+Definition totalsubsetwithbinop (X : setwithbinop) : subsetwithbinop X.
 Proof.
   exists (λ x : X, htrue). intros x x'. apply tt.
 Defined.
 
-Definition carrierofasubsetwithbinop {X : setwithbinop} (A : subsetswithbinop X) : setwithbinop.
+Definition carrierofasubsetwithbinop {X : setwithbinop} (A : subsetwithbinop X) : setwithbinop.
 Proof.
   set (aset := (make_hSet (carrier A) (isasetsubset (pr1carrier A) (setproperty X)
                                                    (isinclpr1carrier A))) : hSet).
@@ -2003,7 +2003,7 @@ Proof.
                    (A → A → A)).
   simpl. unfold binop. apply subopp.
 Defined.
-Coercion carrierofasubsetwithbinop : subsetswithbinop >-> setwithbinop.
+Coercion carrierofasubsetwithbinop : subsetwithbinop >-> setwithbinop.
 
 Lemma setwithbinop_image_issubsetwithbinop {A B : setwithbinop} (f : binopfun A B)
   : issubsetwithbinop op (total_image_hsubtype f).
@@ -2019,22 +2019,42 @@ Proof.
 Qed.
 
 Definition setwithbinop_image {A B : setwithbinop} (f : binopfun A B)
-  : subsetswithbinop B
-  := make_subsetswithbinop _ (setwithbinop_image_issubsetwithbinop f).
+  : subsetwithbinop B
+  := make_subsetwithbinop _ (setwithbinop_image_issubsetwithbinop f).
 
-Lemma function_to_total_image_isbinopfun
+Lemma domain_to_image_isbinopfun
   {A B : setwithbinop} (f : binopfun A B)
-  : isbinopfun (Y := setwithbinop_image f) (function_to_total_image f).
+  : isbinopfun (Y := setwithbinop_image f) (domain_to_image f).
 Proof.
   intros x y.
   apply carrier_eq.
   apply binopfunisbinopfun.
 Qed.
 
-Definition function_to_total_image_binopfun
+Definition domain_to_image_binopfun
   {A B : setwithbinop} (f : binopfun A B) (x : A)
   : binopfun A (setwithbinop_image f)
-  := make_binopfun _ (function_to_total_image_isbinopfun f).
+  := make_binopfun _ (domain_to_image_isbinopfun f).
+
+Lemma isbinopfun_function_to_subtype
+  {X Y : setwithbinop}
+  (f : binopfun X Y)
+  {A : subsetwithbinop Y}
+  (Hf : ∏ x, A (f x))
+  : isbinopfun (Y := A) (function_to_subtype f Hf).
+Proof.
+  intros x y.
+  apply carrier_eq.
+  apply binopfunisbinopfun.
+Qed.
+
+Definition binopfun_to_subsetswithbinop
+  {X Y : setwithbinop}
+  (f : binopfun X Y)
+  {A : subsetwithbinop Y}
+  (Hf : ∏ x, A (f x))
+  : binopfun X A
+  := make_binopfun _ (isbinopfun_function_to_subtype f Hf).
 
 (** * 3.5. Relations compatible with a binary operation and quotient objects *)
 

@@ -794,5 +794,5 @@ Defined.
 
 Definition gr_invertible_elements (X : monoid) : gr :=
   make_gr
-    (carrierofasubsetwithbinop (submonoidtosubsetswithbinop _ (invertible_submonoid X)))
+    (carrierofasubsetwithbinop (submonoidtosubsetwithbinop _ (invertible_submonoid X)))
     (invertible_submonoid_grop X).

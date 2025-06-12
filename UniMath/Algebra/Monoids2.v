@@ -302,9 +302,9 @@ Proof.
   - apply idpath.
 Defined.
 
-Definition submonoidtosubsetswithbinop (X : monoid) : submonoid X → @subsetswithbinop X :=
-  λ A, make_subsetswithbinop (pr1 A) (pr1 (pr2 A)).
-Coercion submonoidtosubsetswithbinop : submonoid >-> subsetswithbinop.
+Definition submonoidtosubsetwithbinop (X : monoid) : submonoid X → @subsetwithbinop X :=
+  λ A, make_subsetwithbinop (pr1 A) (pr1 (pr2 A)).
+Coercion submonoidtosubsetwithbinop : submonoid >-> subsetwithbinop.
 
 Lemma ismonoidcarrier {X : monoid} (A : submonoid X) : ismonoidop (@op A).
 Proof.
@@ -377,10 +377,10 @@ Section Image.
     := make_submonoid _ monoid_image_issubmonoid.
 
   Lemma monoidfun_to_image_ismonoidfun
-    : ismonoidfun (Y := monoid_image) (function_to_total_image f).
+    : ismonoidfun (Y := monoid_image) (domain_to_image f).
   Proof.
     apply make_ismonoidfun.
-    - apply function_to_total_image_isbinopfun.
+    - apply domain_to_image_isbinopfun.
     - apply carrier_eq.
       apply monoidfununel.
   Qed.
@@ -390,6 +390,27 @@ Section Image.
     := make_monoidfun monoidfun_to_image_ismonoidfun.
 
 End Image.
+
+Lemma ismonoidfun_function_to_subtype
+  {X Y : monoid}
+  (f : monoidfun X Y)
+  {A : submonoid Y}
+  (Hf : ∏ x, A (f x))
+  : ismonoidfun (Y := A) (function_to_subtype f Hf).
+Proof.
+  apply make_ismonoidfun.
+  - apply isbinopfun_function_to_subtype.
+  - apply carrier_eq.
+    apply monoidfununel.
+Qed.
+
+Definition monoidfun_to_submonoid
+  {X Y : monoid}
+  (f : monoidfun X Y)
+  {A : submonoid Y}
+  (Hf : ∏ x, A (f x))
+  : monoidfun X A
+  := make_monoidfun (ismonoidfun_function_to_subtype f Hf).
 
 (** Every monoid has a submonoid which is a group, the collection of elements
     with inverses. This is used to construct the automorphism group from the
