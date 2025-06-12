@@ -78,6 +78,8 @@ Defined.
 ```
 Take a look at [MoreFoundations/PartA](../../../UniMath/MoreFoundations/PartA.v) for more variants, like `maponpaths_1234`.
 
+Another lemma that may be useful is `two_arg_paths`, which shows `f x y = f x' y'` from `x = x'` and `y = y'`.
+
 ## Functions
 Now we will take a look at lemmas for specific type formers. We will start with functions.
 
