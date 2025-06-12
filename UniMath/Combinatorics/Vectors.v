@@ -356,3 +356,14 @@ Proof.
     induction v2 as [x2 xs2].
     exact ((x1 ,, x2) ::: IHn xs1 xs2).
 Defined.
+
+Lemma el_vec_zip {A B: UU} {n: nat} (v1: vec A n) (v2: vec B n) (i : stn n)
+  : el (vec_zip v1 v2) i = (make_dirprod (el v1 i) (el v2 i)).
+Proof.
+  induction n.
+  - exact (fromstn0 i).
+  - induction i as [i Hi].
+    induction i as [|i IHi].
+    + reflexivity.
+    + apply IHn.
+Qed.
