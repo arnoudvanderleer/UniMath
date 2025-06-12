@@ -115,7 +115,7 @@ Lemma natsummationshift { R : commring } ( upper : nat ) ( f : nat -> R )
 Proof.
   revert f i p. induction upper.
   - intros f i p.
-    destruct i.
+    induction i.
     + unfold natcoface. simpl.
       set (H:=pr2 R). simpl in H.
       set (H1:=pr1 H).
@@ -126,9 +126,9 @@ Proof.
       apply H4.
     + apply fromempty.
       exact ( negnatlehsn0 i p ).
-  - intros f i p. destruct i.
+  - intros f i p. induction i.
     + apply natsummationshift0.
-    + destruct ( natlehchoice ( S i ) ( S upper ) p ) as [ h | k ].
+    + induction ( natlehchoice ( S i ) ( S upper ) p ) as [ h | k ].
       * change ( natsummation0 ( S upper ) f + f ( S ( S upper ) ) =
                  natsummation0 ( S upper ) ( funcomp ( natcoface ( S i ) ) f ) + f ( S i ) ).
         rewrite ( IHupper f ( S i ) ).
@@ -205,11 +205,11 @@ Lemma natsummationsswapminus { R : commring } { upper n : nat } ( f : nat -> R )
   natsummation0 ( sub ( S upper ) n ) f.
 Proof.
   revert n f q. induction upper.
-  - intros n f q. destruct n.
+  - intros n f q. induction n.
     + auto.
     + apply fromempty.
       exact ( negnatlehsn0 n q ).
-  - intros n f q. destruct n.
+  - intros n f q. induction n.
     + auto.
     + change ( natsummation0 ( S ( sub upper n ) ) f =
                natsummation0 ( sub ( S upper ) n ) f ).
@@ -329,7 +329,7 @@ Definition nattruncautoinv { upper : nat } { i : nat -> nat }
   ( p : isnattruncauto upper i ) : nat -> nat.
 Proof.
   intros n.
-  destruct ( natgthorleh n upper ) as [ l | r ].
+  induction ( natgthorleh n upper ) as [ l | r ].
   - exact n.
   - exact ( nattruncautopreimage p r ).
 Defined.
@@ -342,7 +342,7 @@ Proof.
     + apply (pr2 p). assumption.
     + split.
       * unfold nattruncautoinv.
-        destruct ( natgthorleh ( i n ) upper ) as [ l | r ].
+        induction ( natgthorleh ( i n ) upper ) as [ l | r ].
         -- apply fromempty.
            apply ( isirreflnatlth ( i n ) ).
            apply ( natlehlthtrans _ upper ).
@@ -353,14 +353,14 @@ Proof.
            ++ assumption.
            ++ apply ( nattruncautopreimagepath p r ).
       * intros m x v. unfold nattruncautoinv in v.
-        destruct ( natgthorleh m upper ) as [ l | r ].
+        induction ( natgthorleh m upper ) as [ l | r ].
         -- apply fromempty.
            apply ( isirreflnatlth upper ).
            apply ( natlthlehtrans _ m ); assumption.
         -- rewrite <- v.
            apply ( nattruncautopreimagepath p r ).
   - intros x X. unfold nattruncautoinv.
-    destruct ( natgthorleh x upper ) as [ l | r ].
+    induction ( natgthorleh x upper ) as [ l | r ].
     * assumption.
     * apply ( nattruncautopreimageineq p r ).
 Defined.
@@ -383,9 +383,9 @@ Lemma truncnattruncautobound { upper : nat } ( i : nat -> nat )
   natleh ( truncnattruncauto p n ) upper.
 Proof.
   intros. unfold truncnattruncauto.
-  destruct ( natlthorgeh ( i n ) ( S upper) ) as [ l | r ].
+  induction ( natlthorgeh ( i n ) ( S upper) ) as [ l | r ].
   - apply natlthsntoleh. assumption.
-  - destruct ( natgehchoice ( i n ) ( S upper ) ) as [ l' | r' ].
+  - induction ( natgehchoice ( i n ) ( S upper ) ) as [ l' | r' ].
     + apply fromempty.
       apply ( isirreflnatlth ( i n ) ).
       apply ( natlehlthtrans _ ( S upper ) ).
@@ -395,7 +395,7 @@ Proof.
         -- assumption.
         -- apply natlthnsn.
       * assumption.
-    + destruct ( isdeceqnat n ( S upper ) ) as [ l'' | r'' ].
+    + induction ( isdeceqnat n ( S upper ) ) as [ l'' | r'' ].
       * apply fromempty.
         apply ( isirreflnatlth upper ).
         apply ( natlthlehtrans _ ( S upper ) ).
@@ -404,7 +404,7 @@ Proof.
            assumption.
       * assert ( natleh ( i ( S upper ) ) ( S upper ) ) as aux.
         { apply (pr2 p). apply isreflnatleh. }
-        destruct ( natlehchoice _ _ aux ) as [ l''' | r''' ].
+        induction ( natlehchoice _ _ aux ) as [ l''' | r''' ].
         -- apply natlthsntoleh. assumption.
         -- apply fromempty.
            apply r''.
@@ -433,12 +433,12 @@ Proof.
     + assumption.
     + apply natlthnsn.
   - unfold truncnattruncauto in s.
-    destruct ( natlthorgeh ( i n ) ( S upper ) ) as [ a0 | a1 ].
-    + destruct ( natlthorgeh ( i m ) ( S upper ) ) as [ b0 | b1 ].
+    induction ( natlthorgeh ( i n ) ( S upper ) ) as [ a0 | a1 ].
+    + induction ( natlthorgeh ( i m ) ( S upper ) ) as [ b0 | b1 ].
       * assumption.
       * apply fromempty.
         assert ( i m = S upper ) as f0.
-        { destruct ( natgehchoice ( i m ) ( S upper ) b1 ) as [ l | l' ].
+        { induction ( natgehchoice ( i m ) ( S upper ) b1 ) as [ l | l' ].
           -- apply fromempty.
              apply ( isirreflnatlth ( S upper ) ).
              apply ( natlehlthtrans _ ( i n ) ).
@@ -446,11 +446,11 @@ Proof.
              ++ assumption.
           -- assumption.
         }
-        destruct (natgehchoice ( i m ) ( S upper ) b1 ) as [ a00 | a10 ].
+        induction (natgehchoice ( i m ) ( S upper ) b1 ) as [ a00 | a10 ].
         -- apply (isirreflnatgth ( S upper ) ).
            rewrite f0 in a00.
            assumption.
-        -- destruct ( isdeceqnat m ( S upper ) ) as [ a000 | a100 ].
+        -- induction ( isdeceqnat m ( S upper ) ) as [ a000 | a100 ].
            ++ rewrite s in a0. rewrite f0 in a0.
               apply ( isirreflnatlth ( S upper ) ).
               assumption.
@@ -469,7 +469,7 @@ Proof.
               ** rewrite <- f1, f0.
                  apply natlthnsn.
               ** assumption.
-    + destruct ( natgehchoice ( i n ) ( S upper ) a1 ) as [ a00 | a01 ].
+    + induction ( natgehchoice ( i n ) ( S upper ) a1 ) as [ a00 | a01 ].
       * apply fromempty.
         apply ( isirreflnatlth ( S upper ) ).
         apply ( natlthlehtrans _ ( i n ) ).
@@ -479,8 +479,8 @@ Proof.
            apply ( natlehlthtrans _ upper ).
            ++ assumption.
            ++ apply natlthnsn.
-      * destruct ( natlthorgeh ( i m ) ( S upper ) ) as [ b0 | b1 ].
-        -- destruct ( isdeceqnat n ( S upper ) ) as [ a000 | a001 ].
+      * induction ( natlthorgeh ( i m ) ( S upper ) ) as [ b0 | b1 ].
+        -- induction ( isdeceqnat n ( S upper ) ) as [ a000 | a001 ].
            ++ assumption.
            ++ assert ( S upper = m ) as f0.
               { apply ( nattruncautoisinj p ).
@@ -498,7 +498,7 @@ Proof.
               apply ( natlehlthtrans _ upper ).
               ** rewrite f0. assumption.
               ** apply natlthnsn.
-        -- destruct ( natgehchoice ( i m ) ( S upper ) b1 ) as [ b00 | b01 ].
+        -- induction ( natgehchoice ( i m ) ( S upper ) b1 ) as [ b00 | b01 ].
            ++ apply fromempty.
               apply ( isirreflnatlth ( i m ) ).
               apply ( natlehlthtrans _ ( S upper ) ).
@@ -523,12 +523,12 @@ Proof.
       + assumption.
       + apply natlthnsn.
     }
-    destruct ( isdeceqnat ( nattruncautopreimage p q' ) ( S upper ) ) as [ i0 | i1 ].
+    induction ( isdeceqnat ( nattruncautopreimage p q' ) ( S upper ) ) as [ i0 | i1 ].
     + split with ( nattruncautopreimage p ( isreflnatleh ( S upper ) ) ).
       split.
       * assert ( natleh ( nattruncautopreimage p ( isreflnatleh ( S upper ) ) )
                         ( S upper ) ) as aux by apply nattruncautopreimageineq.
-        destruct ( natlehchoice _ _ aux ) as [ l | r ].
+        induction ( natlehchoice _ _ aux ) as [ l | r ].
         -- apply natlthsntoleh.
            assumption.
         -- assert ( n = S upper ) as f0.
@@ -549,7 +549,7 @@ Proof.
            ++ apply natlthtoleh.
               apply ( natlehlthtrans _ upper ).
               ** apply truncnattruncautobound.
-                 destruct ( natlehchoice _ _ ( nattruncautopreimageineq p
+                 induction ( natlehchoice _ _ ( nattruncautopreimageineq p
                                    ( isreflnatleh ( S upper ) ) ) ) as [ l | r].
                  --- apply natlthsntoleh. assumption.
                  --- apply fromempty.
@@ -567,7 +567,7 @@ Proof.
               ** apply natlthnsn.
            ++ assumption.
            ++ unfold truncnattruncauto.
-              destruct ( isdeceqnat ( nattruncautopreimage p
+              induction ( isdeceqnat ( nattruncautopreimage p
                                (isreflnatleh ( S upper ) ) ) ) as [ l | r ].
               ** apply fromempty.
                  assert ( S upper = n ) as f0.
@@ -581,13 +581,13 @@ Proof.
                  apply ( natlehlthtrans _ upper ).
                  --- rewrite f0. assumption.
                  --- apply natlthnsn.
-              ** destruct ( natlthorgeh ( i ( nattruncautopreimage p
+              ** induction ( natlthorgeh ( i ( nattruncautopreimage p
                      ( isreflnatleh ( S upper ) ) ) ) ( S upper ) ) as [ l' | r' ].
                  --- apply fromempty.
                      apply ( isirreflnatlth ( S upper ) ).
                      rewrite ( nattruncautopreimagepath p ) in l'.
                      assumption.
-                 --- destruct ( natgehchoice _ _ r' ) as [ l'' | r'' ].
+                 --- induction ( natgehchoice _ _ r' ) as [ l'' | r'' ].
                      +++ apply fromempty.
                          apply ( isirreflnatlth ( S upper ) ).
                          rewrite ( nattruncautopreimagepath p ) in l''.
@@ -603,7 +603,7 @@ Proof.
               ** assumption.
               ** apply natlthnsn.
            ++ unfold truncnattruncauto in y.
-              destruct ( natlthorgeh ( i x ) ( S upper ) ) as [ l | r ].
+              induction ( natlthorgeh ( i x ) ( S upper ) ) as [ l | r ].
               ** assert ( S upper = x ) as f0.
                  { apply ( nattruncautoisinj p ).
                    --- apply isreflnatleh.
@@ -621,13 +621,13 @@ Proof.
                  apply ( natlehlthtrans _ upper ).
                  --- rewrite f0. assumption.
                  --- apply natlthnsn.
-               ** destruct ( isdeceqnat x ( S upper ) ) as [ l' | r' ].
+               ** induction ( isdeceqnat x ( S upper ) ) as [ l' | r' ].
                  --- apply fromempty.
                      apply ( isirreflnatlth ( S upper ) ).
                      apply ( natlehlthtrans _ upper ).
                      +++ rewrite <- l'. assumption.
                      +++ apply natlthnsn.
-                 --- destruct ( natgehchoice _ _ r ) as [ l'' | r'' ].
+                 --- induction ( natgehchoice _ _ r ) as [ l'' | r'' ].
                      +++ apply fromempty.
                          apply ( isirreflnatlth n ).
                          apply ( natlehlthtrans _ ( S upper ) ).
@@ -638,17 +638,17 @@ Proof.
                          apply idpath.
     + split with ( nattruncautopreimage p q' ).
       split.
-      * destruct ( natlehchoice _ _ ( nattruncautopreimageineq p q' ) ) as [ l | r ].
+      * induction ( natlehchoice _ _ ( nattruncautopreimageineq p q' ) ) as [ l | r ].
         -- apply natlthsntoleh. assumption.
         -- apply fromempty.
            apply i1.
            assumption.
       * split.
         -- unfold truncnattruncauto.
-           destruct ( natlthorgeh ( i ( nattruncautopreimage p q' ) )
+           induction ( natlthorgeh ( i ( nattruncautopreimage p q' ) )
                                              ( S upper ) ) as [ l | r ].
            ++ apply nattruncautopreimagepath.
-           ++ destruct ( natgehchoice _ _ r ) as [ l' | r' ].
+           ++ induction ( natgehchoice _ _ r ) as [ l' | r' ].
               ** apply nattruncautopreimagepath.
               ** apply fromempty.
                  apply ( isirreflnatlth ( S upper ) ).
@@ -669,15 +669,15 @@ Proof.
               ** apply natlthnsn.
            ++ rewrite ( nattruncautopreimagepath p q' ).
               unfold truncnattruncauto in y.
-              destruct ( natlthorgeh ( i x ) ( S upper ) ) as [ l | r ].
+              induction ( natlthorgeh ( i x ) ( S upper ) ) as [ l | r ].
               ** rewrite y. apply idpath.
-              ** destruct ( isdeceqnat x ( S upper ) ) as [ l' | r' ].
+              ** induction ( isdeceqnat x ( S upper ) ) as [ l' | r' ].
                  --- apply fromempty.
                      apply ( isirreflnatlth ( S upper ) ).
                      apply ( natlehlthtrans _ upper ).
                      +++ rewrite <- l'. assumption.
                      +++ apply natlthnsn.
-                 --- destruct ( natgehchoice _ _ r ).
+                 --- induction ( natgehchoice _ _ r ).
                      +++ rewrite y. apply idpath.
                      +++ apply fromempty.
                          apply i1.
@@ -714,7 +714,7 @@ Proof.
       + exact ( natlthnsn upper ).
     }
     set ( m' := nattruncautopreimage p aaa ).
-    destruct ( natlthorgeh m' v ) as [ l | r ].
+    induction ( natlthorgeh m' v ) as [ l | r ].
     + (* CASE m' < v *) split with m'. split.
       * apply natlthsntoleh.
         apply ( natlthlehtrans _ v ).
@@ -732,7 +732,7 @@ Proof.
              ++ assumption.
            }
            rewrite <- f0.
-           destruct ( natgthorleh v n ) as [ l' | r' ].
+           induction ( natgthorleh v n ) as [ l' | r' ].
            ++ unfold natcoface.
               rewrite l'.
               apply idpath.
@@ -750,7 +750,7 @@ Proof.
       change ( nattruncautopreimage p aaa ) with m' in j.
       set ( m'' := sub m' 1 ).
       assert ( natleh m'' upper ) as a0.
-      { destruct ( natlthorgeh 0 m' ) as [ h | h' ].
+      { induction ( natlthorgeh 0 m' ) as [ h | h' ].
         * rewrite <- ( minussn1 upper ).
           apply minus1leh.
           -- assumption.
@@ -758,21 +758,21 @@ Proof.
              ++ apply natleh0n.
              ++ apply natlthnsn.
           -- apply nattruncautopreimageineq.
-        * destruct ( natgehchoice 0 m' h' ) as [ k | k' ].
+        * induction ( natgehchoice 0 m' h' ) as [ k | k' ].
           -- apply fromempty.
              apply ( negnatgth0n m' k ).
           -- unfold m''.
              rewrite <- k'.
              apply natleh0n.
       }
-      destruct ( natgehchoice m' v r ) as [ l' | r' ].
+      induction ( natgehchoice m' v r ) as [ l' | r' ].
       * assert ( natleh v m'' ) as a2.
         { apply natlthsntoleh.
           unfold m''.
           rewrite pathssminus.
           -- rewrite minussn1.
              assumption.
-          -- destruct ( natlehchoice 0 m' ( natleh0n m' ) ) as [ k | k' ].
+          -- induction ( natlehchoice 0 m' ( natleh0n m' ) ) as [ k | k' ].
              ++ assumption.
              ++ apply fromempty.
                 apply ( negnatgth0n v ).
@@ -786,7 +786,7 @@ Proof.
           rewrite pathssminus.
           -- rewrite minussn1.
              assumption.
-          -- destruct ( natlehchoice 0 m' ( natleh0n m' ) ) as [ k | k' ].
+          -- induction ( natlehchoice 0 m' ( natleh0n m' ) ) as [ k | k' ].
              ++ assumption.
              ++ apply fromempty.
                 apply ( negnatgth0n v ).
@@ -841,14 +841,14 @@ Proof.
       apply natcofaceleh.
       assumption.
     }
-    destruct ( natlehchoice _ _ a0 ) as [ l | r ].
+    induction ( natlehchoice _ _ a0 ) as [ l | r ].
     + apply natlthsntoleh.
       assumption.
     + assert ( v = natcoface v x ) as g.
       { unfold v.
         apply ( nattruncautopreimagecanon p ( isreflnatleh ( S upper ) ) ).
         * unfold natcoface.
-          -- destruct ( natgthorleh v x ) as [ a | b ].
+          -- induction ( natgthorleh v x ) as [ a | b ].
              ++ unfold v in a.
                 rewrite a.
                 apply natlthtoleh.
@@ -861,7 +861,7 @@ Proof.
         * assumption.
       }
       apply fromempty.
-      destruct ( natgthorleh v x ) as [ a | b ].
+      induction ( natgthorleh v x ) as [ a | b ].
       * unfold natcoface in g.
         rewrite a in g.
         apply ( isirreflnatlth x ).
@@ -939,7 +939,7 @@ Proof.
     assert ( natleh m' upper ) as a0 by apply minusleh.
     assert ( nattruncreverse upper m' = m ) as a1.
     { unfold nattruncreverse.
-      + destruct ( natgthorleh m' upper ).
+      + induction ( natgthorleh m' upper ).
         * apply fromempty.
           apply isirreflnatlth with ( n := m' ).
           apply natlehlthtrans with ( m := upper ).
@@ -958,7 +958,7 @@ Proof.
         unfold m'.
         rewrite <- u.
         unfold nattruncreverse.
-        destruct ( natgthorleh n upper ) as [ l | r ].
+        induction ( natgthorleh n upper ) as [ l | r ].
         -- apply fromempty.
            apply ( isirreflnatlth n ).
            apply ( natlehlthtrans _ upper ).
@@ -969,7 +969,7 @@ Proof.
            ++ assumption.
   - intros x X.
     unfold nattruncreverse.
-    destruct ( natgthorleh x upper ) as [ l | r ].
+    induction ( natgthorleh x upper ) as [ l | r ].
     + assumption.
     + apply minusleh.
 Defined.
@@ -979,33 +979,33 @@ Lemma nattruncbottomtopswapselfinv ( upper n : nat ) :
 Proof.
   intros.
   unfold nattruncbottomtopswap.
-  destruct ( isdeceqnat upper n ) as [ i | e ].
-  - destruct ( isdeceqnat 0%nat n ) as [i0 | _ ].
-    + destruct ( isdeceqnat 0%nat upper ) as [ i1 | e1 ].
+  induction ( isdeceqnat upper n ) as [ i | e ].
+  - induction ( isdeceqnat 0%nat n ) as [i0 | _ ].
+    + induction ( isdeceqnat 0%nat upper ) as [ i1 | e1 ].
       * rewrite <- i0. rewrite <- i1. apply idpath.
       * apply fromempty.
         apply e1.
         rewrite i.
         rewrite i0.
         apply idpath.
-    + destruct ( isdeceqnat 0%nat 0%nat ) as [ _ | e1 ].
+    + induction ( isdeceqnat 0%nat 0%nat ) as [ _ | e1 ].
       * assumption.
       * apply fromempty.
         apply e1.
         auto.
-  - destruct ( isdeceqnat 0%nat n ) as [i0 | e0 ].
-    + destruct ( isdeceqnat 0%nat upper ) as [ i1 | _ ].
+  - induction ( isdeceqnat 0%nat n ) as [i0 | e0 ].
+    + induction ( isdeceqnat 0%nat upper ) as [ i1 | _ ].
       * rewrite <- i0. rewrite i1. apply idpath.
-      * destruct ( isdeceqnat upper upper ) as [ _ | e2 ].
+      * induction ( isdeceqnat upper upper ) as [ _ | e2 ].
         -- assumption.
         -- apply fromempty.
            apply e2.
            auto.
-    + destruct ( isdeceqnat 0%nat n ) as [ i1 | _ ].
+    + induction ( isdeceqnat 0%nat n ) as [ i1 | _ ].
       * apply fromempty.
         apply e0.
         assumption.
-      * destruct ( isdeceqnat upper n ) as [ i2 | _ ].
+      * induction ( isdeceqnat upper n ) as [ i2 | _ ].
         -- apply fromempty.
            apply e.
            assumption.
@@ -1017,12 +1017,12 @@ Lemma nattruncbottomtopswapbound ( upper n : nat ) ( p : natleh n upper ) :
 Proof.
   intros.
   unfold nattruncbottomtopswap.
-  destruct (isdeceqnat 0%nat n).
+  induction (isdeceqnat 0%nat n).
   - auto. (* does not seem to do anything *)
-    destruct ( isdeceqnat upper n ). (* logically not needed *)
+    induction ( isdeceqnat upper n ). (* logically not needed *)
     + apply isreflnatleh.
     + apply isreflnatleh.
-  - destruct ( isdeceqnat upper n ).
+  - induction ( isdeceqnat upper n ).
     + apply natleh0n.
     + assumption.
 Defined.
@@ -1059,7 +1059,7 @@ Proof.
   - intros m q.
     set ( v := nattruncautopreimage p (natlthtoleh m (S upper)
                (natlehlthtrans m upper (S upper) q (natlthnsn upper)))).
-    destruct ( isdeceqnat 0%nat v ) as [ i0 | i1 ].
+    induction ( isdeceqnat 0%nat v ) as [ i0 | i1 ].
     + apply fromempty.
       apply ( isirreflnatlth ( i 0%nat ) ).
       apply ( natlehlthtrans _ upper ).
@@ -1070,7 +1070,7 @@ Proof.
       * rewrite j.
         apply natlthnsn.
     + assert ( natlth 0 v ) as aux.
-      { destruct ( natlehchoice _ _ ( natleh0n v ) ).
+      { induction ( natlehchoice _ _ ( natleh0n v ) ).
         * assumption.
         * apply fromempty.
           apply i1.
@@ -1101,7 +1101,7 @@ Proof.
     assert ( natleh ( i ( S x ) ) ( S upper ) ) as aux.
     + apply (pr2 p).
       assumption.
-    + destruct ( natlehchoice _ _ aux ) as [ h | k ].
+    + induction ( natlehchoice _ _ aux ) as [ h | k ].
       * apply natlthsntoleh.
         assumption.
       * apply fromempty.
@@ -1132,7 +1132,7 @@ Proof.
   induction upper.
   - intros. simpl.
     assert ( 0%nat = i 0%nat ) as f0.
-    { destruct ( natlehchoice ( i 0%nat ) 0%nat ( pr2 p 0%nat ( isreflnatleh 0%nat ) ) )
+    { induction ( natlehchoice ( i 0%nat ) 0%nat ( pr2 p 0%nat ( isreflnatleh 0%nat ) ) )
         as [ h | k ].
       + apply fromempty.
         exact ( negnatlthn0 ( i 0%nat ) h ).
@@ -1145,10 +1145,10 @@ Proof.
     set ( j := nattruncautopreimagepath p ( isreflnatleh ( S upper ) ) ).
     set ( v := nattruncautopreimage p ( isreflnatleh ( S upper ) ) ).
     change ( nattruncautopreimage p ( isreflnatleh ( S upper ) ) ) with v in j.
-    destruct ( natlehchoice 0%nat v ( natleh0n v ) ) as [ h | p0 ] .
+    induction ( natlehchoice 0%nat v ( natleh0n v ) ) as [ h | p0 ] .
     + set ( aaa := nattruncautopreimageineq p ( isreflnatleh ( S upper ) ) ).
       change ( nattruncautopreimage p ( isreflnatleh ( S upper ) ) ) with v in aaa.
-      destruct ( natlehchoice v ( S upper ) aaa ) as [ l | r ].
+      induction ( natlehchoice v ( S upper ) aaa ) as [ l | r ].
       * rewrite ( IHupper ( funcomp ( natcoface v ) i ) ).
         -- change ( funcomp ( funcomp ( natcoface v ) i ) f ) with
                ( funcomp ( natcoface v ) ( funcomp i f ) ).
@@ -1260,7 +1260,7 @@ Definition fpszero ( R : commring ) : fps R := fun n : nat => 0.
 Definition fpsone ( R : commring ) : fps R.
 Proof.
   intros. intro n.
-  destruct n.
+  induction n.
   - exact 1.
   - exact 0.
 Defined.
@@ -1475,7 +1475,7 @@ Proof.
                    fpsone R x * s ( sub n x ) ) ) = s ).
       apply funextfun.
       intro n.
-      destruct n.
+      induction n.
       * simpl.
         rewrite ( ringlunax2 R ).
         apply idpath.
@@ -1502,7 +1502,7 @@ Proof.
                    ( fun x : nat => s x * fpsone R ( sub n x ) ) ) = s ).
       apply funextfun.
       intro n.
-      destruct n.
+      induction n.
       * simpl.
         rewrite ( ringrunax2 R ).
         apply idpath.
@@ -1717,7 +1717,7 @@ Proof.
   intros. intros P s.
   use ( hinhuniv _ ( acommring_acotrans R ( a + b ) a 0 p ) ).
   intro k.
-  destruct k as [ l | r ].
+  induction k as [ l | r ].
   - apply s.
     apply ii2.
     assert ( a + b # a ) as l' by apply l.
@@ -1747,11 +1747,11 @@ Proof.
     simpl in p.
     use ( hinhuniv _ (apartbinarysum0 R _ _ p ) ).
     intro k.
-    destruct k as [ l | r ].
+    induction k as [ l | r ].
     + use ( hinhuniv _ (IHupper f l ) ).
       intro k.
-      destruct k as [ n ab ].
-      destruct ab as [ a b ].
+      induction k as [ n ab ].
+      induction ab as [ a b ].
       apply s.
       split with n.
       split.
@@ -1779,7 +1779,7 @@ Proof.
     assert ( hfalse ) as i.
     { use (hinhuniv _ f).
       intro k.
-      destruct k as [ n p ].
+      induction k as [ n p ].
       apply (acommring_airrefl R ( s n ) p).
     }
     apply i.
@@ -1787,17 +1787,17 @@ Proof.
     + intros s t p P j.
       use (hinhuniv _ p).
       intro k.
-      destruct k as [ n q ].
+      induction k as [ n q ].
       apply j.
       split with n.
       apply ( acommring_asymm R ( s n ) ( t n ) q ).
     + intros s t u p P j.
       use (hinhuniv _ p).
       intro k.
-      destruct k as [ n q ].
+      induction k as [ n q ].
       use ( hinhuniv _ (acommring_acotrans R ( s n ) ( t n ) ( u n ) q ) ).
       intro l.
-      destruct l as [ l | r ].
+      induction l as [ l | r ].
       * apply j.
         apply ii1.
         intros v V.
@@ -1818,7 +1818,7 @@ Proof.
   intros. intros a b c p. intros P s.
   use (hinhuniv _ p).
   intro k.
-  destruct k as [ n q ].
+  induction k as [ n q ].
   apply s.
   change ( ( a + b ) n ) with ( ( a n ) + ( b n ) ) in q.
   change ( ( a + c ) n ) with ( ( a n ) + ( c n ) ) in q.
@@ -1842,7 +1842,7 @@ Proof.
   intros. intros a b c p. intros P s.
   use (hinhuniv _ p).
   intro k.
-  destruct k as [ n q ].
+  induction k as [ n q ].
   change ( ( a * b ) n ) with
     ( natsummation0 n ( fun x : nat => a x * b ( sub n x ) ) ) in q.
   change ( ( a * c ) n ) with
@@ -1870,8 +1870,8 @@ Proof.
   }
   use ( hinhuniv _ ( apartnatsummation0 R n _ q' ) ).
   intro k.
-  destruct k as [ m g ].
-  destruct g as [ g g' ].
+  induction k as [ m g ].
+  induction g as [ g g' ].
   apply s.
   split with ( sub n m ).
   apply ( pr1 ( acommring_amult R ) ( a m )
@@ -1920,7 +1920,7 @@ Proof.
     change ( ( a * b ) 0%nat ) with ( ( a 0%nat ) * ( b 0%nat ) ).
     apply R; assumption.
   - intros b q.
-    destruct ( is ( b 0%nat ) 0 ) as [ left | right ].
+    induction ( is ( b 0%nat ) 0 ) as [ left | right ].
     + intros P s.
       apply s.
       split with 0%nat.
@@ -1933,7 +1933,7 @@ Proof.
         assumption. }
       use (hinhuniv _ j).
       intro k.
-      destruct k as [ k i ].
+      induction k as [ k i ].
       intros P s.
       apply s.
       rewrite <- ( fpsshiftandmult a b right k ) in i.
@@ -1951,14 +1951,14 @@ Proof.
   - intros a b p q.
     use (hinhuniv _ q).
     intros k.
-    destruct k as [ k k0 ].
+    induction k as [ k k0 ].
     apply ( leadingcoefficientapartdec R a is p k ).
     assumption.
   - intros a b p q.
-    destruct ( is ( a 0%nat ) 0 ) as [ left | right ].
+    induction ( is ( a 0%nat ) 0 ) as [ left | right ].
     + use (hinhuniv _ q).
       intros k.
-      destruct k as [ k k0 ].
+      induction k as [ k k0 ].
       apply ( leadingcoefficientapartdec R a is left k ).
       assumption.
     + assert ( acommringapartrel ( acommringfps R ) ( ( fpsshift a ) * b ) 0 ) as i.
@@ -1969,7 +1969,7 @@ Proof.
       }
       use (hinhuniv _ i).
       intros k.
-      destruct k as [ k k0 ].
+      induction k as [ k k0 ].
       intros P s.
       apply s.
       split with ( S k ).
@@ -1995,7 +1995,7 @@ Proof.
   - intros a b p q.
     use (hinhuniv _ p).
     intro n.
-    destruct n as [ n n0 ].
+    induction n as [ n n0 ].
     apply ( apartdecintdom0 R is n); assumption.
 Defined.
 
