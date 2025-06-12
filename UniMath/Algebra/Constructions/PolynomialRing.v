@@ -2,6 +2,7 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.Vectors.
 Require Import UniMath.Algebra.AbelianGroups.
 Require Import UniMath.PAdics.fps.
 
@@ -62,7 +63,7 @@ Section PolynomialRing.
     := polynomial_ring_ind_X PR PR (idfun _ ,, (pr2 (idrigiso _))).
 
   Definition Xn
-    (n : nat)
+    (n : ℕ)
     : pr1 PR.
   Proof.
     induction n as [|n IHn].
@@ -70,7 +71,7 @@ Section PolynomialRing.
     - exact (IHn * X).
   Defined.
 
-  Definition polynomial
+  (* Definition polynomial
     (n : nat)
     (a : stn n → R)
     : PR.
@@ -81,7 +82,7 @@ Section PolynomialRing.
         IHn (a ∘ dni lastelement)
         + constant_polynomial PR (a lastelement) * Xn n
       ).
-  Defined.
+  Defined. *)
 
   Definition evaluate
     (f : PR)
@@ -95,10 +96,66 @@ Section PowerSeries.
 
   Context {R : commring}.
 
+  Definition vec_to_series
+    {m : ℕ}
+    (f : vec R m)
+    : fpscommring R.
+  Proof.
+    intro n.
+    induction (natgthorleh m n) as [Hn | Hn].
+    - exact (el f (make_stn m n Hn)).
+    - exact 0.
+  Defined.
+
+  Definition vec_to_series_gt
+    {m : ℕ}
+    {f : vec R m}
+    {n : ℕ}
+    (Hn : m > n)
+    : vec_to_series f n = el f (make_stn _ n Hn).
+  Proof.
+    unfold vec_to_series.
+    induction (natgthorleh m n) as [Hn' | Hn'].
+    - apply (maponpaths (λ x, el f (make_stn _ _ x))).
+      apply propproperty.
+    - induction (isirreflnatgth _ (natgehgthtrans _ _ _ Hn' Hn)).
+  Qed.
+
+  Definition vec_to_series_le
+    {m : ℕ}
+    {f : vec R m}
+    {n : ℕ}
+    (Hn : m ≤ n)
+    : vec_to_series f n = 0.
+  Proof.
+    unfold vec_to_series.
+    induction (natgthorleh m n) as [Hn' | Hn'].
+    - induction (isirreflnatgth _ (natgehgthtrans _ _ _ Hn Hn')).
+    - reflexivity.
+  Qed.
+
+  Definition vec_to_series_add
+    {n : ℕ}
+    (f g : vec R n)
+    : vec_to_series (vec_map (λ (fg : R × R), dirprod_pr1 fg + dirprod_pr2 fg) (vec_zip f g))
+      = vec_to_series f + vec_to_series g.
+  Proof.
+    apply funextfun.
+    intro m.
+    induction (natgthorleh n m) as [Hm | Hm].
+    - refine (vec_to_series_gt Hm @ _).
+      refine (el_vec_map _ _ _ @ _).
+      refine (two_arg_paths (maponpaths pr1 (el_vec_zip _ _ _)) (maponpaths dirprod_pr2 (el_vec_zip _ _ _)) @ !_).
+      exact (two_arg_paths (vec_to_series_gt Hm) (vec_to_series_gt Hm)).
+    - refine (vec_to_series_le Hm @ !_).
+      refine (two_arg_paths (vec_to_series_le Hm) (vec_to_series_le Hm) @ !_).
+      exact (!ringlunax1 _ _).
+  Qed.
+
   Definition constant_series_data
     (r : R)
     : fpscommring R
-    := nat_rect (λ _, R) r (λ _ _, 0).
+    := vec_to_series ([( r )]).
 
   Lemma isringfun_constant_series
     : isringfun constant_series_data.
@@ -106,11 +163,7 @@ Section PowerSeries.
     apply make_isrigfun.
     - apply make_ismonoidfun.
       + intros x y.
-        apply funextfun.
-        intro n.
-        induction n.
-        -- reflexivity.
-        -- refine (!ringlunax1 _ _).
+        exact (vec_to_series_add [(x)] [(y)]).
       + apply funextfun.
         intro n.
         induction n;
@@ -146,7 +199,7 @@ Section PolynomialRing.
     : hsubtype (fpscommring R)
     := λ f, ∃ n, ∀ m, (m > n ⇒ f m = 0)%logic.
 
-  Definition natlehandminusl (n m k : nat) (is : natgeh n m)
+  Definition natlehandminusl (n m k : ℕ) (is : natgeh n m)
     : natgeh (k - m) (k - n).
   Proof.
     revert m k is.
@@ -160,6 +213,27 @@ Section PolynomialRing.
     apply (IHn m k). apply is.
   Qed.
 
+  Local Lemma aux1
+    {k l m n : ℕ}
+    (H1 : k > m + n)
+    (H2 : l ≤ m)
+    : k - l > n.
+  Proof.
+    refine (natgehgthtrans _ _ _ (natlehandminusl _ _ _ H2) _).
+    refine (natgthandpluslinv _ _ m _).
+    refine (transportb (λ x, x > _) _ H1).
+    refine (natplusminusle _ @ _).
+    {
+      apply natgthtogeh.
+      apply (natgthgehtrans _ _ _ H1).
+      apply natgehplusnmn.
+    }
+    rewrite natpluscomm.
+    refine (!natplusminusle (isreflnatgeh _) @ _).
+    rewrite minusxx.
+    apply natplusr0.
+  Qed.
+
   Lemma issubring_is_polynomial
     : issubring is_polynomial.
   Proof.
@@ -171,16 +245,10 @@ Section PolynomialRing.
           intros Hf Hg.
           exists (pr1 Hf + pr1 Hg)%nat.
           intros m Hm.
-          refine (two_arg_paths (pr2 Hf m _) (pr2 Hg m _) @ _).
-          -- apply (natgthgehtrans _ _ _ Hm).
-            refine (transportb (λ x, x > _) (plus_n_Sm _ _) _).
-            refine (transportf (λ x, _ > x) (natplusr0 _) _).
-            apply (natgthandplusl (S (pr1 Hg)) 0 (pr1 Hf)).
-            apply natgthsn0.
-          -- apply (natgthgehtrans _ _ _ Hm).
-            apply (natgthandplusr (S (pr1 Hf)) 0).
-            apply natgthsn0.
-          -- apply (lunax (ringaddabgr _)).
+          refine (two_arg_paths (pr2 Hf m _) (pr2 Hg m _) @ ringlunax1 _ _);
+            apply (natgthgehtrans _ _ _ Hm).
+          -- apply natgehplusnmn.
+          -- apply natgehplusnmm.
         * exact (hinhpr (0%nat ,, λ _ _, idpath 0)).
       + intros f.
         refine (hinhfun _).
@@ -202,19 +270,7 @@ Section PolynomialRing.
           -- refine (maponpaths (λ x, x * _) (pr2 Hf n Hn) @ _).
             apply ringmult0x.
           -- refine (maponpaths (λ x, _ * x) (pr2 Hg _ _) @ ringmultx0 _ _).
-            refine (natgehgthtrans _ _ _ (natlehandminusl _ _ m Hn) _).
-            refine (natgthandpluslinv _ _ (pr1 Hf) _).
-            refine (transportb (λ x, x > _) _ Hm).
-            refine (natplusminusle _ @ _).
-            {
-              apply natgthtogeh.
-              apply (natgthgehtrans _ _ _ Hm).
-              apply natgehplusnmn.
-            }
-            rewrite natpluscomm.
-            refine (!natplusminusle (isreflnatgeh _) @ _).
-            rewrite minusxx.
-            apply natplusr0.
+            exact (aux1 Hm Hn).
         }
         refine (natsummationae0bottom m _ @ _);
           intros;
@@ -227,27 +283,37 @@ Section PolynomialRing.
         * reflexivity.
   Qed.
 
+  Lemma vec_to_is_polynomial
+    {n : ℕ}
+    (f : vec R n)
+    : is_polynomial (vec_to_series f).
+  Proof.
+    apply hinhpr.
+    exists n.
+    intros m Hm.
+    refine (vec_to_series_le _).
+    now apply natgthtogeh.
+  Qed.
+
   Definition polynomial_subring
     : subring (fpscommring R)
     := make_subring _ issubring_is_polynomial.
-
-  Lemma is_polynomial_constant_series
-    (r : R)
-    : is_polynomial (constant_series r).
-  Proof.
-    apply hinhpr.
-    exists 1%nat.
-    intros m Hm.
-    destruct m.
-    - induction (nopathsfalsetotrue Hm).
-    - reflexivity.
-  Qed.
 
   Definition polynomial_ring_embedding
     : ringfun R polynomial_subring
     := ringfun_to_subring
       (A := polynomial_subring)
       constant_series
-      is_polynomial_constant_series.
+      (λ _, vec_to_is_polynomial _).
+
+  Definition vec_to_polynomial
+    {n : ℕ}
+    (f : vec R n)
+    : polynomial_subring
+    := make_carrier _ (vec_to_series f) (vec_to_is_polynomial f).
+
+  Definition polynomial_subring_X
+    : polynomial_subring
+    := vec_to_polynomial [(0 ; 1)].
 
 End PolynomialRing.
