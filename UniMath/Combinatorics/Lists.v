@@ -78,9 +78,10 @@ Definition foldr1 (f : A -> A -> A) (a : A) : list → A.
 Proof.
   apply list_ind.
   - exact a.
-  - intros a' l fl. revert l. apply list_ind.
-    + exact a'.
-    + intros _ _ _. exact (f a' fl).
+  - clear a.
+    intros a l fl. refine (list_ind _ _ _ l).
+    + exact a.
+    + intros _ _ _. exact (f a fl).
 Defined.
 
 (** Variation of foldr1 with embedded mapping, see below for [foldr1_foldr1_map] *)
@@ -93,9 +94,36 @@ Proof.
     + intros _ _ _. exact (f (h a') fl).
 Defined.
 
+Definition foldl {B : UU} (f : B -> A -> B) (b : B) : list → B
+  := λ l, (list_ind _ (λ acc, acc) (λ a tl f_tl acc, f_tl (f acc a))) l b.
+
+Definition foldl1 (f : A -> A -> A) (a : A) : list -> A.
+Proof.
+  apply list_ind.
+  - exact a.
+  - clear a.
+    intros a tl a_tl.
+    refine (list_ind (λ _, A → A) _ _ tl a).
+    + exact (λ acc, acc).
+    + intros a' tl' f_tl' acc.
+      exact (f_tl' (f acc a')).
+Defined.
+
+(** Variation of foldl1 with embedded mapping, see below for [foldl1_foldl1_map] *)
+Definition foldl1_map {B : UU} (f : B -> B -> B) (b : B) (h : A -> B) : list → B.
+Proof.
+  apply list_ind.
+  - exact b.
+  - intros a tl b_tl.
+    refine (list_ind (λ _, B → B) _ _ tl (h a)).
+    + exact (λ b, b).
+    + intros a' tl' f_tl' acc.
+      exact (f_tl' (f acc (h a'))).
+Defined.
+
 (** The n-th element of a list *)
 
-Definition nth x : stn(length x) -> A := el (pr2 x).
+Definition nth x : stn (length x) -> A := el (pr2 x).
 
 Definition functionToList' n : (stn n -> A) -> vec A n.
 Proof.
@@ -221,6 +249,46 @@ Qed.
 Lemma foldr1_map_cons {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B)
   (x y : A) (xs : list A) :
   foldr1_map f b h (cons x (cons y xs)) = f (h x) (foldr1_map f b h (cons y xs)).
+Proof.
+  apply idpath.
+Qed.
+
+Lemma foldl_nil {A B : UU} (f : B -> A -> B) (b : B) : foldl f b nil = b.
+Proof.
+  apply idpath.
+Qed.
+
+Lemma foldl_cons {A B : UU} (f : B -> A -> B) (b : B) (x : A) (xs : list A) :
+  foldl f b (cons x xs) = foldl f (f b x) xs.
+Proof.
+  apply idpath.
+Qed.
+
+Lemma foldl1_nil {A: UU} (f : A -> A -> A) (a : A) : foldr1 f a nil = a.
+Proof.
+  apply idpath.
+Qed.
+
+Lemma foldl1_cons_nil {A : UU} (f : A -> A -> A) (a : A) (x : A) :
+  foldl1 f a (cons x nil) = x.
+Proof.
+apply idpath.
+Qed.
+
+Lemma foldl1_cons {A : UU} (f : A -> A -> A) (a : A) (x y : A) (xs : list A) :
+  foldl1 f a (cons x (cons y xs)) = foldl1 f a (cons (f x y) xs).
+Proof.
+apply idpath.
+Qed.
+
+Lemma foldl1_map_nil {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B) :
+  foldl1_map f b h nil = b.
+Proof.
+  apply idpath.
+Qed.
+
+Lemma foldl1_map_cons_nil {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B)
+  (x : A) : foldl1_map f b h (cons x nil) = h x.
 Proof.
   apply idpath.
 Qed.
