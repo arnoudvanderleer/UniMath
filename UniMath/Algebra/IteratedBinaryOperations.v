@@ -158,6 +158,56 @@ Section Monoids.
 
   (* some rewriting rules *)
 
+  Lemma mon_foldr1_eq_foldr
+    : ∏ (l : list M), foldr1 op (unel M) l = foldr op (unel M) l.
+  Proof.
+    apply list_ind.
+    - reflexivity.
+    - intros a tl Ha.
+      refine (list_ind (λ tl, ∏ a, _ = _) _ _ tl a).
+      + intro a'.
+        exact (!runax M a').
+      + intros a' tl' Ha' a''.
+        rewrite foldr1_cons.
+        rewrite foldr_cons.
+        now rewrite Ha'.
+  Qed.
+
+  Lemma mon_foldl1_eq_foldl
+    : ∏ (l : list M), foldl1 op (unel M) l = foldl op (unel M) l.
+  Proof.
+    apply list_ind.
+    - reflexivity.
+    - intros a tl Ha.
+      rewrite foldl_cons.
+      now rewrite (lunax M a).
+  Qed.
+
+  Lemma mon_foldl_split_acc
+    : ∏ (l : list M) acc1 acc2, foldl op (op acc1 acc2) l = op acc1 (foldl op acc2 l).
+  Proof.
+    refine (list_ind _ _ _).
+    - intro m.
+      reflexivity.
+    - intros m ms Hm acc1 acc2.
+      rewrite !foldl_cons.
+      rewrite assocax.
+      apply Hm.
+  Qed.
+
+  Lemma mon_foldl_eq_foldr
+    : ∏ (l : list M), foldl op (unel M) l = foldr op (unel M) l.
+  Proof.
+    refine (list_ind _ _ _).
+    - reflexivity.
+    - intros a tl Ha.
+      rewrite foldl_cons.
+      rewrite foldr_cons.
+      rewrite <- Ha.
+      refine (maponpaths (λ x, foldl op x tl) (lunax M a @ !runax M a) @ _).
+      apply mon_foldl_split_acc.
+  Qed.
+
   Lemma iterop_seq_mon_len1 (x : stn 1 → M) :
     iterop_seq_mon (functionToSequence x) = x lastelement.
   Proof.
