@@ -19,8 +19,73 @@ Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.MoreFoundations.PartA.
 Require Import UniMath.MoreFoundations.Tactics.
+Require Import UniMath.MoreFoundations.Propositions.
 
 Local Open Scope transport.
+
+(* TODO: UPSTREAM *)
+
+Section Upstream.
+
+  (* induction principle for contractible types, as a warmup *)
+
+  (* Three ways.  Use induction: *)
+
+  Definition iscontr_rect' X (i : iscontr X) (x0 : X) (P : X ->UU) (p0 : P x0) : ∏ x:X, P x.
+  Proof. intros. induction (pr1 (isapropifcontr i x0 x)). exact p0. Defined.
+
+  Definition iscontr_rect_compute' X (i : iscontr X) (x : X) (P : X ->UU) (p : P x) :
+    iscontr_rect' X i x P p x = p.
+  Proof.
+    intros.
+    (* this step might be a problem in more complicated situations: *)
+    unfold iscontr_rect'.
+    induction (pr1 (isasetifcontr i x x (idpath _) (pr1 (isapropifcontr i x x)))).
+    reflexivity.
+  Defined.
+
+  (* ... or use weqsecovercontr, but specializing x to pr1 i: *)
+
+  Definition iscontr_rect'' X (i : iscontr X) (P : X ->UU) (p0 : P (pr1 i)) : ∏ x:X, P x.
+  Proof. intros. exact (invmap (weqsecovercontr P i) p0 x). Defined.
+
+  Definition iscontr_rect_compute'' X (i : iscontr X) (P : X ->UU) (p : P(pr1 i)) :
+    iscontr_rect'' X i P p (pr1 i) = p.
+  Proof. try reflexivity. intros. exact (homotweqinvweq (weqsecovercontr P i) p).
+  Defined.
+
+  (* .... or use transport explicitly: *)
+
+  Definition iscontr_adjointness X (is:iscontr X) (x:X) : pr1 (isapropifcontr is x x) = idpath x.
+  (* we call this adjointness, because if [unit] had η-reduction, then adjointness of
+    the weq [unit ≃ X] would give it to us, in the case where x is [pr1 is] *)
+  Proof. intros. now apply isasetifcontr. Defined.
+
+  Definition iscontr_rect X (is : iscontr X) (x0 : X) (P : X ->UU) (p0 : P x0) : ∏ x:X, P x.
+  Proof. intros. exact (transportf P (pr1 (isapropifcontr is x0 x)) p0). Defined.
+
+  Definition iscontr_rect_compute X (is : iscontr X) (x : X) (P : X ->UU) (p : P x) :
+    iscontr_rect X is x P p x = p.
+  Proof. intros. unfold iscontr_rect. now rewrite iscontr_adjointness. Defined.
+
+  Corollary weqsecovercontr':     (* reprove weqsecovercontr, move upstream *)
+    ∏ (X:UU) (P:X->UU) (is:iscontr X), (∏ x:X, P x) ≃ P (pr1 is).
+  Proof.
+    intros.
+    set (x0 := pr1 is).
+    set (secs := ∏ x : X, P x).
+    set (fib  := P x0).
+    set (destr := (λ f, f x0) : secs->fib).
+    set (constr:= iscontr_rect X is x0 P : fib->secs).
+    exists destr.
+    apply (isweq_iso destr constr).
+    - intros f. apply funextsec; intros x.
+      unfold destr, constr.
+      apply transport_section.
+    - apply iscontr_rect_compute.
+  Defined.
+
+End Upstream.
 
 (** ** Vectors *)
 
@@ -109,25 +174,100 @@ Proof.
     * simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
 Defined.
 
+Lemma append_and_drop_vec {X n} (xs : Vector X n) (x : X) :
+  append_vec xs x ∘ dni_lastelement = xs.
+Proof.
+  intros.
+  apply funextsec; intros i.
+  simpl.
+  unfold append_vec.
+  induction (natlehchoice4 (pr1 (dni_lastelement i)) n (pr2 (dni_lastelement i))) as [I|J].
+  - apply (maponpaths xs).
+    now apply stn_eq.
+  - apply fromempty. simpl in J.
+    induction i as [i r]. simpl in J. induction J.
+    exact (isirreflnatlth _ r).
+Qed.
+
 (** An induction principle for vectors: If a statement is true for the empty
     vector, and if it is true for vectors of length n it is also true for those
     of length S n, then it is true for all vectors.
  *)
-Definition Vector_rect {X : UU} {P : ∏ n, Vector X n -> UU}
-           (p0 : P 0 empty_vec)
-           (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
-                  P n vec -> P (S n) (append_vec vec x))
-           {n : nat} (vec : Vector X n) : P n vec.
+Definition Vector_rect' {X : UU} {P : ∏ n, Vector X n -> UU}
+  (p0 : P 0 empty_vec)
+  (ind : ∏ (n : nat) (vec : Vector X (S n)),
+        P n (vec ∘ dni_lastelement) -> P (S n) vec)
+  {n : nat} (vec : Vector X n) : P n vec.
 Proof.
   intros.
   induction n as [|n IH].
   - refine (transportf (P 0) _ p0).
     apply proofirrelevancecontr, iscontr_vector_0.
-  - exact (transportf (P _) (drop_and_append_vec vec)
-                      (ind _ (vec ∘ dni_lastelement)
-                             (vec lastelement)
-                             (IH (vec ∘ dni_lastelement)))).
+  - apply ind.
+    apply IH.
 Defined.
+
+Lemma Vector_rect_empty' {X : UU} {P : ∏ n, Vector X n -> UU}
+  (p0 : P 0 empty_vec)
+  (ind : ∏ (n : nat) (vec : Vector X (S n)),
+        P n (vec ∘ dni_lastelement) -> P (S n) vec)
+  : Vector_rect' p0 ind empty_vec = p0.
+Proof.
+  refine (maponpaths (λ e, transportf (P 0) e p0) (_ : _ = idpath _)).
+  do 2 apply isapropifcontr.
+  apply iscontr_vector_0.
+Qed.
+
+Lemma Vector_rect_append' {X : UU} {P : ∏ n, Vector X n -> UU}
+  (p0 : P 0 empty_vec)
+  (ind : ∏ (n : nat) (vec : Vector X (S n)),
+        P n (vec ∘ dni_lastelement) -> P (S n) vec)
+  (x : X) {n : nat} (l : Vector X n)
+  : Vector_rect' p0 ind (append_vec l x) = ind n (append_vec l x) (Vector_rect' p0 ind (append_vec l x ∘ dni_lastelement)).
+Proof.
+  reflexivity.
+Qed.
+
+Definition Vector_rect {X : UU} {P : ∏ n, Vector X n -> UU}
+  (p0 : P 0 empty_vec)
+  (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
+        P n vec -> P (S n) (append_vec vec x))
+  {n : nat} (vec : Vector X n) : P n vec.
+Proof.
+  refine (Vector_rect' p0 _ vec).
+  clear n vec.
+  intros n vec Hn.
+  exact (transportf (P _) (drop_and_append_vec vec) (ind n (vec ∘ dni_lastelement) (vec lastelement) Hn)).
+Defined.
+
+Lemma Vector_rect_empty {X : UU} {P : ∏ n, Vector X n -> UU}
+  (p0 : P 0 empty_vec)
+  (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
+        P n vec -> P (S n) (append_vec vec x))
+  : Vector_rect p0 ind empty_vec = p0.
+Proof.
+  apply Vector_rect_empty'.
+Qed.
+
+(* The current proof needs X to be an hSet, because it uses the fact that Vector X n is a set *)
+Lemma Vector_rect_append {X : UU} (HX : isaset X) {P : ∏ n, Vector X n -> UU}
+  (p0 : P 0 empty_vec)
+  (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
+        P n vec -> P (S n) (append_vec vec x))
+  (x : X) {n : nat} (l : Vector X n)
+  : Vector_rect p0 ind (append_vec l x) = ind n l x (Vector_rect p0 ind l).
+Proof.
+  refine (_ @ transport_section (λ (l : Vector X n), ind n l x (Vector_rect p0 ind l)) (append_and_drop_vec l x)).
+  refine (_ @ !functtransportf (λ l, append_vec l x) _ _ _).
+  apply transportf_transpose_right.
+  refine (_ @ transport_section (λ (a : X), ind n (append_vec l x ∘ dni_lastelement) a (Vector_rect p0 ind (append_vec l x ∘ dni_lastelement))) (append_vec_compute_2 l x)).
+  refine (_ @ !functtransportf (λ x, append_vec _ x) _ _ _).
+  refine (transport_f_f _ _ _ _ @ _).
+  refine (maponpaths (λ x, transportf _ x _) _).
+  refine (proofirrelevance _ ((_ : isaset _) _ _) _ _).
+  apply funspace_isaset.
+  exact HX.
+Qed.
 
 Section Lemmas.
 
@@ -339,64 +479,6 @@ Proof.
   intros. unfold nil. apply maponpaths. apply isapropifcontr. apply iscontr_vector_0.
 Defined.
 
-(* induction principle for contractible types, as a warmup *)
-
-(* Three ways.  Use induction: *)
-
-Definition iscontr_rect' X (i : iscontr X) (x0 : X) (P : X ->UU) (p0 : P x0) : ∏ x:X, P x.
-Proof. intros. induction (pr1 (isapropifcontr i x0 x)). exact p0. Defined.
-
-Definition iscontr_rect_compute' X (i : iscontr X) (x : X) (P : X ->UU) (p : P x) :
-  iscontr_rect' X i x P p x = p.
-Proof.
-  intros.
-  (* this step might be a problem in more complicated situations: *)
-  unfold iscontr_rect'.
-  induction (pr1 (isasetifcontr i x x (idpath _) (pr1 (isapropifcontr i x x)))).
-  reflexivity.
-Defined.
-
-(* ... or use weqsecovercontr, but specializing x to pr1 i: *)
-
-Definition iscontr_rect'' X (i : iscontr X) (P : X ->UU) (p0 : P (pr1 i)) : ∏ x:X, P x.
-Proof. intros. exact (invmap (weqsecovercontr P i) p0 x). Defined.
-
-Definition iscontr_rect_compute'' X (i : iscontr X) (P : X ->UU) (p : P(pr1 i)) :
-  iscontr_rect'' X i P p (pr1 i) = p.
-Proof. try reflexivity. intros. exact (homotweqinvweq (weqsecovercontr P i) p).
-Defined.
-
-(* .... or use transport explicitly: *)
-
-Definition iscontr_adjointness X (is:iscontr X) (x:X) : pr1 (isapropifcontr is x x) = idpath x.
-(* we call this adjointness, because if [unit] had η-reduction, then adjointness of
-   the weq [unit ≃ X] would give it to us, in the case where x is [pr1 is] *)
-Proof. intros. now apply isasetifcontr. Defined.
-
-Definition iscontr_rect X (is : iscontr X) (x0 : X) (P : X ->UU) (p0 : P x0) : ∏ x:X, P x.
-Proof. intros. exact (transportf P (pr1 (isapropifcontr is x0 x)) p0). Defined.
-
-Definition iscontr_rect_compute X (is : iscontr X) (x : X) (P : X ->UU) (p : P x) :
-  iscontr_rect X is x P p x = p.
-Proof. intros. unfold iscontr_rect. now rewrite iscontr_adjointness. Defined.
-
-Corollary weqsecovercontr':     (* reprove weqsecovercontr, move upstream *)
-  ∏ (X:UU) (P:X->UU) (is:iscontr X), (∏ x:X, P x) ≃ P (pr1 is).
-Proof.
-  intros.
-  set (x0 := pr1 is).
-  set (secs := ∏ x : X, P x).
-  set (fib  := P x0).
-  set (destr := (λ f, f x0) : secs->fib).
-  set (constr:= iscontr_rect X is x0 P : fib->secs).
-  exists destr.
-  apply (isweq_iso destr constr).
-  - intros f. apply funextsec; intros x.
-    unfold destr, constr.
-    apply transport_section.
-  - apply iscontr_rect_compute.
-Defined.
-
 (*  *)
 
 Definition nil_length {X} (x : Sequence X) : length x = 0 <-> x = nil.
@@ -418,22 +500,12 @@ Defined.
 Definition drop' {X} (x:Sequence X) : x != nil -> Sequence X.
 Proof. intros h. exact (drop x (pr2 (logeqnegs (nil_length x)) h)). Defined.
 
-Lemma append_and_drop_fun {X n} (x : stn n -> X) y :
-  append_vec x y ∘ dni lastelement = x.
+Lemma append_and_drop_fun {X} (x : Sequence X) (y : X) :
+  drop (append x y) (negpathssx0 _) = x.
 Proof.
-  intros.
-  apply funextsec; intros i.
-  simpl.
-  unfold append_vec.
-  induction (natlehchoice4 (pr1 (dni lastelement i)) n (pr2 (dni lastelement i))) as [I|J].
-  - simpl. apply maponpaths. apply subtypePath_prop. simpl. apply di_eq1. exact (stnlt i).
-  - apply fromempty. simpl in J.
-    assert (P : di n i = i).
-    { apply di_eq1. exact (stnlt i). }
-    induction (!P); clear P.
-    induction i as [i r]. simpl in J. induction J.
-    exact (isirreflnatlth _ r).
-Defined.
+  apply pair_path_in2.
+  apply append_and_drop_vec.
+Qed.
 
 Definition drop_and_append' {X n} (x : stn (S n) -> X) :
   append (drop (S n,,x) (negpathssx0 _)) (x lastelement) = (S n,, x).
@@ -490,36 +562,25 @@ Definition Sequence_rect {X} {P : Sequence X ->UU}
            (p0 : P nil)
            (ind : ∏ (x : Sequence X) (y : X), P x -> P (append x y))
            (x : Sequence X) : P x.
-Proof. intros. induction x as [n x]. induction n as [|n IH].
-  - exact (transportf P (nil_unique x) p0).
-  - exact (transportf P (drop_and_append x)
-                      (ind (n,,x ∘ dni_lastelement)
-                           (x lastelement)
-                           (IH (x ∘ dni_lastelement)))).
+Proof.
+  exact (Vector_rect (P := λ n v, P (n ,, v)) p0 (λ n xs x' Hx, ind (n ,, xs) x' Hx) x).
 Defined.
 
 Lemma Sequence_rect_compute_nil {X} {P : Sequence X ->UU} (p0 : P nil)
       (ind : ∏ (s : Sequence X) (x : X), P s -> P (append s x)) :
   Sequence_rect p0 ind nil = p0.
 Proof.
-  intros.
-  try reflexivity.
-  unfold Sequence_rect; simpl.
-  change p0 with (transportf P (idpath nil) p0) at 2.
-  apply (maponpaths (λ e, transportf P e p0)).
-  exact (maponpaths (maponpaths functionToSequence) (iscontr_adjointness _ _ _)).
-Defined.
+  exact (Vector_rect_empty _ _).
+Qed.
 
 Lemma Sequence_rect_compute_cons
-      {X} {P : Sequence X ->UU} (p0 : P nil)
+      {X : UU} (HX : isaset X) {P : Sequence X ->UU} (p0 : P nil)
       (ind : ∏ (s : Sequence X) (x : X), P s -> P (append s x))
       (p := Sequence_rect p0 ind) (x:X) (l:Sequence X) :
   p (append l x) = ind l x (p l).
 Proof.
-  intros.
-  cbn.
-  (* proof needed to complete induction for sequences *)
-Abort.
+  exact (Vector_rect_append HX _ _ x l).
+Qed.
 
 Lemma append_length {X} (x:Sequence X) (y:X) :
   length (append x y) = S (length x).
