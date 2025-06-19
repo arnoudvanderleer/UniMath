@@ -3,6 +3,7 @@ Require Import UniMath.MoreFoundations.PartA.
 Require Import UniMath.MoreFoundations.Nat.
 Require Import UniMath.MoreFoundations.Tactics.
 
+Require Import UniMath.Combinatorics.Matrices.
 Require Import UniMath.Algebra.Matrix.
 
 Require Import UniMath.Algebra.Domains_and_Fields.

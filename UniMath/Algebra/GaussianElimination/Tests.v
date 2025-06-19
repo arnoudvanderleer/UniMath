@@ -5,6 +5,7 @@ Require Import UniMath.Algebra.Matrix.
 
 Require Import UniMath.Combinatorics.Maybe.
 Require Import UniMath.Combinatorics.FiniteSequences.
+Require Import UniMath.Combinatorics.Matrices.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.Combinatorics.Vectors.
 

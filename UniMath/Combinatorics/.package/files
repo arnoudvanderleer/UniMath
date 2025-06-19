@@ -12,6 +12,7 @@ Equivalence_Relations.v
 WellFoundedRelations.v
 ZFstructures.v
 FiniteSequences.v
+Matrices.v
 BoundedSearch.v
 MetricTree.v
 Tests.v
