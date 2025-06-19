@@ -106,7 +106,7 @@ Section BinaryOperations.
     - simpl. rewrite append_vec_compute_2. apply pathsinv0. apply lunax.
     - simpl. rewrite append_vec_compute_2.
       apply (maponpaths (λ y, op y x)). apply maponpaths.
-      apply append_and_drop_fun.
+      apply append_and_drop_vec.
   Defined.
 
   Definition iterop_fun_step (lunax : islunit op unel) {m} (x:stn(S m) → X) :
