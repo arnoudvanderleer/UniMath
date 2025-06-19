@@ -64,7 +64,7 @@ Section Append.
   Definition append_vec : Vector X (S n).
   Proof.
     intros i.
-    induction (natlehchoice4 (pr1 i) n (pr2 i)) as [c|d].
+    induction (natlehchoice4 i n (stnlt i)) as [c|d].
     - exact (vec (pr1 i,,c)).
     - exact x.
   Defined.
@@ -72,8 +72,8 @@ Section Append.
   Definition append_vec_compute_1 i : append_vec (dni lastelement i) = vec i.
   Proof.
     intros.
-    induction i as [i b]; simpl.
     rewrite replace_dni_last.
+    induction i as [i b]; simpl.
     unfold append_vec; simpl.
     induction (natlehchoice4 i n (natlthtolths i n b)) as [p|p].
     - simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
@@ -91,38 +91,38 @@ Section Append.
 End Append.
 
 Lemma drop_and_append_vec {X n} (x : Vector X (S n)) :
-  append_vec (x ∘ dni_lastelement) (x lastelement) = x.
+  append_vec (x ∘ dni lastelement) (x lastelement) = x.
 Proof.
   intros.
-  apply funextfun; intros [i b].
+  apply funextfun; intro i.
   simpl.
-  induction (natlehchoice4 i n b) as [p|p].
-  - simpl.
-    unfold append_vec. simpl.
-    induction (natlehchoice4 i n b) as [q|q].
-    + simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
-    + induction q. contradicts p (isirreflnatlth i).
-  - induction p.
-    unfold append_vec; simpl.
-    induction (natlehchoice4 i i b) as [r|r].
-    * simpl. apply maponpaths.
-      apply isinjstntonat; simpl. reflexivity.
-    * simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
+  unfold append_vec.
+  induction (natlehchoice4 i n (stnlt i)) as [p|p].
+  + simpl. apply maponpaths.
+    apply isinjstntonat; simpl.
+    apply di_eq1.
+    exact p.
+  + apply (maponpaths x).
+    apply stn_eq.
+    exact (!p).
 Defined.
 
 Lemma append_and_drop_vec {X n} (xs : Vector X n) (x : X) :
-  append_vec xs x ∘ dni_lastelement = xs.
+  append_vec xs x ∘ dni lastelement = xs.
 Proof.
   intros.
-  apply funextsec; intros i.
+  apply funextsec; intro i.
   simpl.
   unfold append_vec.
-  induction (natlehchoice4 (pr1 (dni_lastelement i)) n (pr2 (dni_lastelement i))) as [I|J].
+  induction (natlehchoice4 (dni lastelement i) n (stnlt (dni lastelement i))) as [I|J].
   - apply (maponpaths xs).
-    now apply stn_eq.
-  - apply fromempty. simpl in J.
-    induction i as [i r]. simpl in J. induction J.
-    exact (isirreflnatlth _ r).
+    apply isinjstntonat; simpl.
+    apply di_eq1.
+    apply stnlt.
+  - apply fromempty.
+    apply (isirreflnatlth n).
+    refine (transportf (λ x, x < n) (!di_eq1 (stnlt i) @ J) _).
+    apply stnlt.
 Qed.
 
 (** An induction principle for vectors: If a statement is true for the empty
@@ -132,7 +132,7 @@ Qed.
 Definition Vector_rect' {X : UU} {P : ∏ n, Vector X n -> UU}
   (p0 : P 0 empty_vec)
   (ind : ∏ (n : nat) (vec : Vector X (S n)),
-        P n (vec ∘ dni_lastelement) -> P (S n) vec)
+        P n (vec ∘ dni lastelement) -> P (S n) vec)
   {n : nat} (vec : Vector X n) : P n vec.
 Proof.
   intros.
@@ -146,7 +146,7 @@ Defined.
 Lemma Vector_rect_empty' {X : UU} {P : ∏ n, Vector X n -> UU}
   (p0 : P 0 empty_vec)
   (ind : ∏ (n : nat) (vec : Vector X (S n)),
-        P n (vec ∘ dni_lastelement) -> P (S n) vec)
+        P n (vec ∘ dni lastelement) -> P (S n) vec)
   : Vector_rect' p0 ind empty_vec = p0.
 Proof.
   refine (maponpaths (λ e, transportf (P 0) e p0) (_ : _ = idpath _)).
@@ -157,9 +157,9 @@ Qed.
 Lemma Vector_rect_append' {X : UU} {P : ∏ n, Vector X n -> UU}
   (p0 : P 0 empty_vec)
   (ind : ∏ (n : nat) (vec : Vector X (S n)),
-        P n (vec ∘ dni_lastelement) -> P (S n) vec)
+        P n (vec ∘ dni lastelement) -> P (S n) vec)
   (x : X) {n : nat} (l : Vector X n)
-  : Vector_rect' p0 ind (append_vec l x) = ind n (append_vec l x) (Vector_rect' p0 ind (append_vec l x ∘ dni_lastelement)).
+  : Vector_rect' p0 ind (append_vec l x) = ind n (append_vec l x) (Vector_rect' p0 ind (append_vec l x ∘ dni lastelement)).
 Proof.
   reflexivity.
 Qed.
@@ -173,7 +173,7 @@ Proof.
   refine (Vector_rect' p0 _ vec).
   clear n vec.
   intros n vec Hn.
-  exact (transportf (P _) (drop_and_append_vec vec) (ind n (vec ∘ dni_lastelement) (vec lastelement) Hn)).
+  exact (transportf (P _) (drop_and_append_vec vec) (ind n (vec ∘ dni lastelement) (vec lastelement) Hn)).
 Defined.
 
 Lemma Vector_rect_empty {X : UU} {P : ∏ n, Vector X n -> UU}
@@ -196,7 +196,7 @@ Proof.
   refine (_ @ transport_section (λ (l : Vector X n), ind n l x (Vector_rect p0 ind l)) (append_and_drop_vec l x)).
   refine (_ @ !functtransportf (λ l, append_vec l x) _ _ _).
   apply transportf_transpose_right.
-  refine (_ @ transport_section (λ (a : X), ind n (append_vec l x ∘ dni_lastelement) a (Vector_rect p0 ind (append_vec l x ∘ dni_lastelement))) (append_vec_compute_2 l x)).
+  refine (_ @ transport_section (λ (a : X), ind n (append_vec l x ∘ dni lastelement) a (Vector_rect p0 ind (append_vec l x ∘ dni lastelement))) (append_vec_compute_2 l x)).
   refine (_ @ !functtransportf (λ x, append_vec _ x) _ _ _).
   refine (transport_f_f _ _ _ _ @ _).
   refine (maponpaths (λ x, transportf _ x _) _).
@@ -357,7 +357,7 @@ Proof. intros x y. exact (S (length x),, append_vec (pr2 x) y).
 Defined.
 
 Definition drop_and_append {X n} (x : stn (S n) -> X) :
-  append (n,,x ∘ dni_lastelement) (x lastelement) = (S n,, x).
+  append (n,,x ∘ dni lastelement) (x lastelement) = (S n,, x).
 Proof.
   intros. apply pair_path_in2. apply drop_and_append_vec.
 Defined.
@@ -384,7 +384,7 @@ Proof.
   revert x. intros [n x] h.
   induction n as [|n].
   - simpl in h. contradicts h (idpath 0).
-  - exact (n,,x ∘ dni_lastelement).
+  - exact (n,,x ∘ dni lastelement).
 Defined.
 
 Definition drop' {X} (x:Sequence X) : x != nil -> Sequence X.
@@ -409,7 +409,7 @@ Proof.
   induction x as [n x].
   induction n as [|n].
   - exact (ii1 tt).
-  - exact (ii2(x lastelement,,(n,,x ∘ dni_lastelement))).
+  - exact (ii2(x lastelement,,(n,,x ∘ dni lastelement))).
 Defined.
 
 Definition assembleSequence {X} : coprod unit (X × Sequence X) -> Sequence X.
@@ -435,6 +435,7 @@ Proof.
     apply proofirrelevancecontr. apply iscontrunit. }
   induction p as [x y]. induction y as [n y].
   apply (maponpaths (@inr unit (X × Sequence X))).
+  rewrite replace_dni_last.
   unfold append_vec, lastelement; simpl.
   unfold append_vec. simpl.
   induction (natlehchoice4 n n (natgthsnn n)) as [e|e].
@@ -512,8 +513,9 @@ Proof.
         set (tmp := natlehnplusnm m n).
         set (tmp2 := natlehlthtrans _ _ _ tmp H).
         exact (isirreflnatlth _ tmp2).
-    + induction (natlehchoice4 i (m + n) s) as [I|J].
-      * apply maponpaths, subtypePath_prop. rewrite replace_dni_last. reflexivity.
+    + rewrite replace_dni_last.
+      induction (natlehchoice4 i (m + n) s) as [I|J].
+      * apply maponpaths, subtypePath_prop. reflexivity.
       * apply maponpaths, subtypePath_prop. simpl.
         induction (!J). rewrite natpluscomm. apply plusminusnmm.
 Qed.
