@@ -1500,3 +1500,64 @@ Section surjectivity.
     exact(inr gfiber).
   Qed.
 End surjectivity.
+
+(* The induction principle for contractible types *)
+Section IsContrInduction.
+
+  (* Three ways.  Use induction: *)
+
+  Definition iscontr_rect' X (i : iscontr X) (x0 : X) (P : X ->UU) (p0 : P x0) : ∏ x:X, P x.
+  Proof. intros. induction (pr1 (isapropifcontr i x0 x)). exact p0. Defined.
+
+  Definition iscontr_rect_compute' X (i : iscontr X) (x : X) (P : X ->UU) (p : P x) :
+    iscontr_rect' X i x P p x = p.
+  Proof.
+    intros.
+    (* this step might be a problem in more complicated situations: *)
+    unfold iscontr_rect'.
+    induction (pr1 (isasetifcontr i x x (idpath _) (pr1 (isapropifcontr i x x)))).
+    reflexivity.
+  Defined.
+
+  (* ... or use weqsecovercontr, but specializing x to pr1 i: *)
+
+  Definition iscontr_rect'' X (i : iscontr X) (P : X ->UU) (p0 : P (pr1 i)) : ∏ x:X, P x.
+  Proof. intros. exact (invmap (weqsecovercontr P i) p0 x). Defined.
+
+  Definition iscontr_rect_compute'' X (i : iscontr X) (P : X ->UU) (p : P(pr1 i)) :
+    iscontr_rect'' X i P p (pr1 i) = p.
+  Proof. try reflexivity. intros. exact (homotweqinvweq (weqsecovercontr P i) p).
+  Defined.
+
+  (* .... or use transport explicitly: *)
+
+  Definition iscontr_adjointness X (is:iscontr X) (x:X) : pr1 (isapropifcontr is x x) = idpath x.
+  (* we call this adjointness, because if [unit] had η-reduction, then adjointness of
+    the weq [unit ≃ X] would give it to us, in the case where x is [pr1 is] *)
+  Proof. intros. now apply isasetifcontr. Defined.
+
+  Definition iscontr_rect X (is : iscontr X) (x0 : X) (P : X ->UU) (p0 : P x0) : ∏ x:X, P x.
+  Proof. intros. exact (transportf P (pr1 (isapropifcontr is x0 x)) p0). Defined.
+
+  Definition iscontr_rect_compute X (is : iscontr X) (x : X) (P : X ->UU) (p : P x) :
+    iscontr_rect X is x P p x = p.
+  Proof. intros. unfold iscontr_rect. now rewrite iscontr_adjointness. Defined.
+
+  Corollary weqsecovercontr':     (* reprove weqsecovercontr, move upstream *)
+    ∏ (X:UU) (P:X->UU) (is:iscontr X), (∏ x:X, P x) ≃ P (pr1 is).
+  Proof.
+    intros.
+    set (x0 := pr1 is).
+    set (secs := ∏ x : X, P x).
+    set (fib  := P x0).
+    set (destr := (λ f, f x0) : secs->fib).
+    set (constr:= iscontr_rect X is x0 P : fib->secs).
+    exists destr.
+    apply (isweq_iso destr constr).
+    - intros f. apply funextsec; intros x.
+      unfold destr, constr.
+      apply transport_section.
+    - apply iscontr_rect_compute.
+  Defined.
+
+End IsContrInduction.
