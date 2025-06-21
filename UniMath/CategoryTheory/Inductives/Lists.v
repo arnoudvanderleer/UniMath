@@ -11,7 +11,7 @@ Require Import UniMath.Foundations.Propositions.
 Require Import UniMath.Foundations.Sets.
 Require Import UniMath.Foundations.NaturalNumbers.
 
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 Require Import UniMath.MoreFoundations.PartA. (* flip *)
 Require Import UniMath.MoreFoundations.Tactics.

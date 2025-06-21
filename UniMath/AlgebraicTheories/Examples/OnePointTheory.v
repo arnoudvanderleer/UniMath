@@ -14,7 +14,7 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.Algebras.

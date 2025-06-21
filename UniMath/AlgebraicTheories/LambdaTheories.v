@@ -22,7 +22,7 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Categories.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
+Require Import UniMath.Combinatorics.FVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.LambdaTheoryCategoryCore.
@@ -57,7 +57,7 @@ Definition extended_composition
   (f : T (S m))
   (g : stn m → T n)
   : T (S n)
-  := f • (extend_tuple (λ i, inflate (g i)) (var (stnweq (inr tt)))).
+  := f • (append_vec (λ i, inflate (g i)) (var lastelement)).
 
 Definition app_subst_ax
   (L : lambda_theory_data)
@@ -185,15 +185,15 @@ Qed.
 (** * 4. Lemmas on the interaction of abs with subst *)
 
 Definition subst_abs (L : lambda_theory) {m n : nat} (f : L (S m)) (g : stn m → L n)
-  : subst (abs f) g = abs (subst f (extend_tuple (λ i, inflate (g i)) (var (stnweq (inr tt)))))
+  : subst (abs f) g = abs (subst f (append_vec (λ i, inflate (g i)) (var lastelement)))
   := !abs_subst _ _ _.
 
 Definition inflate_abs (L : lambda_theory) {n : nat} (f : L (S n))
-  : inflate (abs f) = abs (subst f (extend_tuple (λ i, var (stnweq (inl (stnweq (inl i))))) (var (stnweq (inr tt))))).
+  : inflate (abs f) = abs (subst f (append_vec (λ i, var (dni lastelement (dni lastelement i))) (var lastelement))).
 Proof.
   unfold inflate.
   rewrite subst_abs.
-  apply (maponpaths (λ x, abs (f • extend_tuple x _))).
+  apply (maponpaths (λ x, abs (f • append_vec x _))).
   apply funextfun.
   intro i.
   apply inflate_var.
@@ -202,13 +202,13 @@ Qed.
 (** * 5. The definition and properties of app and beta_equality *)
 
 Definition app {L : lambda_theory_data} {n : nat} (f g : L n) : L n
-  := appx f • extend_tuple var g.
+  := appx f • append_vec var g.
 
 Lemma appx_to_app
   {L : lambda_theory}
   {n : nat}
   (f : L n)
-  : appx f = app (inflate f) (var (stnweq (inr tt))).
+  : appx f = app (inflate f) (var lastelement).
 Proof.
   symmetry.
   refine (maponpaths (λ x, x • _) (app_subst _ _ _) @ _).
@@ -216,16 +216,15 @@ Proof.
   refine (_ @ subst_var _ _).
   apply maponpaths.
   apply funextfun.
-  intro i.
-  rewrite <- (homotweqinvweq stnweq i).
-  induction (invmap stnweq i) as [i' | i'].
-  - refine (maponpaths (λ x, x • _) (extend_tuple_inl _ _ _) @ _).
+  refine (stn_sn_ind _ _).
+  - intro i.
+    refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ _).
     refine (subst_inflate _ _ _ @ _).
     refine (var_subst _ _ _ @ _).
-    apply extend_tuple_inl.
-  - refine (maponpaths (λ x, x • _) (extend_tuple_inr _ _ _) @ _).
+    apply append_vec_compute_1.
+  - refine (maponpaths (λ x, x • _) (append_vec_compute_2 _ _) @ _).
     refine (var_subst _ _ _ @ _).
-    apply extend_tuple_inr.
+    apply append_vec_compute_2.
 Qed.
 
 Lemma subst_app (L : lambda_theory) {m n : nat} (f g : L m) (h : stn m → L n)
@@ -237,20 +236,19 @@ Proof.
   do 2 rewrite (subst_subst _ (appx f)).
   apply maponpaths.
   apply funextfun.
-  intro i.
-  rewrite <- (homotweqinvweq stnweq i).
-  induction (invmap stnweq i) as [i' | i'].
-  - do 2 rewrite extend_tuple_inl.
+  refine (stn_sn_ind _ _).
+  - intro i.
+    do 2 refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ !_).
     rewrite var_subst.
     rewrite subst_inflate.
     refine (!subst_var _ _ @ _).
     apply maponpaths.
     apply funextfun.
     intro j.
-    now rewrite extend_tuple_inl.
-  - do 2 rewrite extend_tuple_inr.
+    now rewrite append_vec_compute_1.
+  - do 2 refine (maponpaths (λ x, x • _) (append_vec_compute_2 _ _) @ !_).
     rewrite var_subst.
-    now rewrite extend_tuple_inr.
+    now rewrite append_vec_compute_2.
 Qed.
 
 Definition inflate_app (L : lambda_theory) {n : nat} (f g : L n)
@@ -258,7 +256,7 @@ Definition inflate_app (L : lambda_theory) {n : nat} (f g : L n)
   := subst_app L _ _ _.
 
 Definition beta_equality (L : lambda_theory) (H : has_β L) {n : nat} (f : L (S n)) (g : L n)
-  : app (abs f) g = subst f (extend_tuple var g).
+  : app (abs f) g = subst f (append_vec var g).
 Proof.
   unfold app, abs.
   now rewrite H.
@@ -300,7 +298,7 @@ Section AppAbs.
     {s : (L (S n) : hSet)}
     {t : (L n : hSet)}
     (H2 : extended_composition (app' L) (λ _ : (⟦ 1 ⟧)%stn, t) = s)
-    : abs s = app' L • extend_tuple (λ _ : (⟦ 1 ⟧)%stn, lift_constant n (one L)) t.
+    : abs s = app' L • append_vec (λ _ : (⟦ 1 ⟧)%stn, lift_constant n (one L)) t.
   Proof.
     refine (!maponpaths _ H2 @ _).
     refine (abs_subst _ _ _ @ _).
@@ -308,13 +306,13 @@ Section AppAbs.
     refine (maponpaths (λ x, x • _) (app_from_app' (one L)) @ _).
     refine (subst_subst _ (app' L) _ _ @ _).
     apply maponpaths.
-    refine (!extend_tuple_eq _ _).
+    apply append_vec_eq.
     - intro i'.
-      refine (!_ @ !maponpaths (λ x, x • _) (extend_tuple_inl _ _ _)).
+      refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ _).
       refine (subst_subst _ (one L) _ _ @ _).
       apply (maponpaths (subst _)).
-      apply (pr2 (iscontr_empty_tuple _)).
-    - refine (!_ @ !maponpaths (λ x, x • _) (extend_tuple_inr _ _ _)).
+      apply (uniqueness (iscontr_vector_0 _)).
+    - refine (maponpaths (λ x, x • _) (append_vec_compute_2 _ _) @ _).
       apply var_subst.
   Qed.
 
@@ -323,7 +321,7 @@ Section AppAbs.
     (s : (L (S n) : hSet))
     (t : (L n : hSet))
     : abs s = t
-    ≃ (app' L • extend_tuple (λ _, lift_constant _ (one L)) t = t)
+    ≃ (app' L • append_vec (λ _, lift_constant _ (one L)) t = t)
       × (extended_composition (app' L) (λ _, t) = s).
   Proof.
     use (logeqweq

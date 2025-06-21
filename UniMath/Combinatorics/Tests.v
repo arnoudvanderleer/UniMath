@@ -1,9 +1,8 @@
 Require Import UniMath.Foundations.Preamble.
-Require UniMath.Combinatorics.Lists.
+Require UniMath.Combinatorics.PLists.
 Require UniMath.Combinatorics.StandardFiniteSets.
 Require UniMath.Combinatorics.FiniteSets.
-Require UniMath.Combinatorics.FiniteSequences.
-Require UniMath.Combinatorics.FiniteSets.
+Require UniMath.Combinatorics.FVectors.
 Require UniMath.OrderTheory.OrderedSets.OrderedSets.
 Require UniMath.Combinatorics.StandardFiniteSets.
 Require UniMath.Combinatorics.BoundedSearch.
@@ -12,7 +11,7 @@ Require UniMath.MoreFoundations.NegativePropositions.
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.MoreFoundations.NegativePropositions.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 Section Test_list.
 
@@ -342,14 +341,6 @@ Section Test_fin.
   End Test_isfinite_isdeceq.
 
 End Test_fin.
-
-Section Test_seq.
-
-  Import UniMath.Combinatorics.FiniteSequences.
-
-  Local Open Scope stn.
-
-End Test_seq.
 
 Section Test_finite_sets.
   Import UniMath.Combinatorics.FiniteSets.

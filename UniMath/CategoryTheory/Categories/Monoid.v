@@ -21,7 +21,7 @@ Require Import UniMath.Algebra.Monoids2.
 
 Require Import UniMath.Algebra.Free_Monoids_and_Groups.
 Require Import UniMath.Algebra.IteratedBinaryOperations.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
 Require Import UniMath.CategoryTheory.Categories.HSET.Core.
@@ -88,7 +88,7 @@ Defined.
 
 (** **  2.3. The adjunction *)
 
-Local Definition singleton {A : UU} (x : A) := cons x Lists.nil.
+Local Definition singleton {A : UU} (x : A) := cons x PLists.nil.
 
 (** The unit of this adjunction is the singleton function [x ↦ x::nil] *)
 Definition monoid_free_forgetful_unit :

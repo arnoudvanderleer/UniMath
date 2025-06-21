@@ -38,7 +38,7 @@ Require Import UniMath.CategoryTheory.Limits.Preservation.
 Require Import UniMath.CategoryTheory.Limits.Products.
 Require Import UniMath.CategoryTheory.Limits.Terminal.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
+Require Import UniMath.Combinatorics.FVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryMorphisms.
@@ -147,17 +147,16 @@ Section EndomorphismTheory.
         refine (assoc' _ _ _ @ _).
         refine (maponpaths _ (pow_commutes _ _ _ _) @ !_).
         refine (pow_commutes _ _ _ _ @ _).
-        refine (extend_tuple_inl _ _ _ @ _).
+        refine (append_vec_compute_1 _ _ _ @ _).
         apply (maponpaths (λ x, x · _)).
         apply ProductArrow_eq.
         intro j.
         refine (pow_commutes _ _ _ _ @ _).
-        exact (maponpaths _ (homotinvweqweq _ (inl j))).
+        exact (append_vec_compute_1 _ _ j).
       + refine (bp_commutes_2 _ _ _ _ @ _).
         refine (id_right _ @ !_).
         refine (bp_commutes_2 _ _ _ _ @ _).
-        refine (extend_tuple_inr _ _ _ @ _).
-        exact (maponpaths _ (homotinvweqweq _ (inr tt))).
+        now do 2 refine (append_vec_compute_2 _ _ @ _).
     - intros m n f g.
       refine (_ @ assoc' _ _ _).
       refine (_ @ maponpaths (λ x, x · _) (φ_adj_natural_precomp (pr2 (is_exponentiable_to_is_exponentiable' _ _ E)) _ _ _ _ _)).
@@ -165,23 +164,24 @@ Section EndomorphismTheory.
       apply ProductArrow_eq.
       intro i.
       refine (pow_commutes _ _ _ _ @ !_).
-      rewrite <- (homotweqinvweq stnweq i).
-      induction (invmap stnweq i) as [i' | i'];
-        refine (maponpaths (λ x, _ · (_ x)) (homotinvweqweq stnweq _) @ _).
-      + refine (assoc _ _ _ @ _).
+      revert i.
+      refine (stn_sn_ind _ _).
+      + intro i.
+        refine (maponpaths (λ x, _ · x) (append_vec_compute_1 _ _ _) @ _).
+        refine (assoc _ _ _ @ _).
         refine (maponpaths (λ x, x · _) (bp_commutes_1 _ _ _ _) @ _).
         refine (assoc' _ _ _ @ _).
         refine (maponpaths (λ x, _ · x) (pow_commutes _ _ _ _) @ !_).
-        refine (extend_tuple_inl _ _ _ @ _).
+        refine (append_vec_compute_1 _ _ _ @ _).
         apply (maponpaths (λ x, x · _)).
         apply ProductArrow_eq.
         intro j.
         refine (pow_commutes _ _ _ _ @ _).
-        exact (maponpaths _ (homotinvweqweq _ (inl j))).
-      + refine (bp_commutes_2 _ _ _ _ @ _).
+        refine (append_vec_compute_1 _ _ _).
+      + refine (maponpaths (λ x, _ · x) (append_vec_compute_2 _ _) @ _).
+        refine (bp_commutes_2 _ _ _ _ @ _).
         refine (id_right _ @ !_).
-        refine (extend_tuple_inr _ _ _ @ _).
-        exact (maponpaths _ (homotinvweqweq _ (inr tt))).
+        now do 2 refine (append_vec_compute_2 _ _ @ _).
   Qed.
 
   Definition endomorphism_lambda_theory
@@ -297,11 +297,12 @@ Section Morphism.
   Proof.
     induction n as [ | n IHn].
     - induction (negnatlthn0 _ (stnlt i)).
-    - rewrite <- (homotweqinvweq stnweq i).
-      induction (invmap stnweq i) as [i' | i'];
-        refine (maponpaths (λ x, # F(_ x)) (homotinvweqweq stnweq _) @ !_);
-        refine (maponpaths (λ x, _ · _ x · _) (homotinvweqweq stnweq _) @ !_).
-      + refine (_ @ maponpaths (λ x, x · _) (assoc' _ _ _)).
+    - revert i.
+      refine (stn_sn_ind _ _).
+      + intro i.
+        refine (maponpaths (λ x, # F x) (append_vec_compute_1 _ _ _) @ !_).
+        refine (maponpaths (λ x, _ · x · _) (append_vec_compute_1 _ _ _) @ !_).
+        refine (_ @ maponpaths (λ x, x · _) (assoc' _ _ _)).
         refine (_ @ maponpaths (λ x, x · _ · _) (assoc _ _ _)).
         refine (_ @ !maponpaths (λ x, _ · x · _ · _) (BinProductOfArrowsPr1 _ _ _ _ _)).
         refine (_ @ maponpaths (λ x, x · _ · _) (assoc' _ _ _)).
@@ -310,7 +311,9 @@ Section Morphism.
         refine (maponpaths _ (IHn _) @ _).
         refine (assoc _ _ _ @ _).
         exact (maponpaths (λ x, x · _) (assoc _ _ _)).
-      + refine (_ @ maponpaths (λ x, x · _) (assoc _ _ _)).
+      + refine (maponpaths (λ x, # F x) (append_vec_compute_2 _ _) @ !_).
+        refine (maponpaths (λ x, _ · x · _) (append_vec_compute_2 _ _) @ !_).
+        refine (_ @ maponpaths (λ x, x · _) (assoc _ _ _)).
         refine (_ @ !maponpaths (λ x, _ x · _) (BinProductOfArrowsPr2 _ _ _ _ _)).
         refine (_ @ maponpaths (λ x, x · _) (assoc' _ _ _)).
         refine (_ @ assoc _ _ _).

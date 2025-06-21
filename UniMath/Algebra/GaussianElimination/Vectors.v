@@ -12,7 +12,7 @@ Require Import UniMath.MoreFoundations.Nat.
 Require Import UniMath.MoreFoundations.Tactics.
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Require Import UniMath.Algebra.RigsAndRings.
 Require Import UniMath.Algebra.IteratedBinaryOperations.

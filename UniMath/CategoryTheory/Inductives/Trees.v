@@ -254,4 +254,4 @@ Proof.
   - exact t.
 Defined.
 
-Goal Lists.sum (flatten _ testtree) = sum testtree. reflexivity. Qed.
+Goal PLists.sum (flatten _ testtree) = sum testtree. reflexivity. Qed.

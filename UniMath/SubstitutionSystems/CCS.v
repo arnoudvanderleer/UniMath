@@ -14,7 +14,7 @@ Require Import UniMath.Foundations.Sets.
 Require Import UniMath.MoreFoundations.Tactics.
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 Require Import UniMath.CategoryTheory.Core.Categories.
 Require Import UniMath.CategoryTheory.Core.Functors.

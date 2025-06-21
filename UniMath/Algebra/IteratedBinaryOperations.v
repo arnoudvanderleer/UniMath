@@ -1,5 +1,6 @@
-Require Export UniMath.Combinatorics.Lists.
-Require Export UniMath.Combinatorics.FiniteSequences.
+Require Export UniMath.Combinatorics.PLists.
+Require Export UniMath.Combinatorics.FVectors.
+Require Export UniMath.Combinatorics.FLists.
 Require Export UniMath.Algebra.RigsAndRings.
 Require Export UniMath.Foundations.UnivalenceAxiom.
 
@@ -7,11 +8,7 @@ Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.Algebra.Groups.
 Require Import UniMath.MoreFoundations.NegativePropositions.
 
-(* move upstream *)
-
-(* end of move upstream *)
-
-Local Notation "[]" := Lists.nil (at level 0, format "[]").
+Local Notation "[]" := PLists.nil (at level 0, format "[]").
 Local Infix "::" := cons.
 
 (** general associativity for binary operations on types *)
@@ -26,7 +23,7 @@ Section BinaryOperations.
   Definition iterop_list : list X → X :=
     foldr1 op unel.
 
-  Definition iterop_fun {n} (x:stn n->X) : X.
+  Definition iterop_fun {n} (x:Vector X n) : X.
   Proof.
     intros.
     induction n as [|n _].
@@ -62,13 +59,13 @@ Section BinaryOperations.
     exact (iterop_fun_fun (λ i j, x i j)).
   Defined.
 
-  Definition isAssociative_list := ∏ (x:list (list X)), iterop_list (Lists.flatten x) = iterop_list_list x.
+  Definition isAssociative_list := ∏ (x:list (list X)), iterop_list (PLists.flatten x) = iterop_list_list x.
 
   Definition isAssociative_fun :=
     ∏ n (m:stn n → nat) (x : ∏ i (j:stn (m i)), X), iterop_fun (StandardFiniteSets.flatten' x) = iterop_fun_fun x.
 
   Definition isAssociative_seq :=
-    ∏ (x : Sequence (Sequence X)), iterop_seq (FiniteSequences.flatten x) = iterop_seq_seq x.
+    ∏ (x : Sequence (Sequence X)), iterop_seq (FLists.flatten x) = iterop_seq_seq x.
 
   Local Open Scope stn.
 
@@ -293,11 +290,11 @@ End Monoids2.
 (** The general associativity theorem. *)
 
 Lemma iterop_list_mon_concatenate {M : monoid} (l s : list M) :
-  iterop_list_mon (Lists.concatenate l s) = iterop_list_mon l * iterop_list_mon s.
+  iterop_list_mon (PLists.concatenate l s) = iterop_list_mon l * iterop_list_mon s.
 Proof.
   revert l. apply list_ind.
   - apply pathsinv0, lunax.
-  - intros x xs J. rewrite Lists.concatenateStep.
+  - intros x xs J. rewrite PLists.concatenateStep.
     unfold iterop_list_mon.
     rewrite 2 (iterop_list_step _ _ (runax M)).
     rewrite assocax. apply maponpaths. exact J.
@@ -311,7 +308,7 @@ Proof.
   apply list_ind.
   - simpl. reflexivity.
   - intros x xs I. simpl in I.
-    rewrite Lists.flattenStep. refine (iterop_list_mon_concatenate _ _ @ _).
+    rewrite PLists.flattenStep. refine (iterop_list_mon_concatenate _ _ @ _).
     unfold iterop_list_list. rewrite mapStep.
     rewrite (iterop_list_step _ _ (runax M)).
     + apply (maponpaths (λ x, _ * x)). exact I.
@@ -373,7 +370,7 @@ Proof.
   Local Open Scope transport.
   set (f := nil □ j □ S O □ n-j : stn 3 → nat).
   assert (B : stnsum f = S n).
-  { unfold stnsum, f; simpl. repeat unfold append_vec; simpl. rewrite natplusassoc.
+  { unfold stnsum, f; simpl. unfold append_vec; simpl. rewrite natplusassoc.
     rewrite (natpluscomm 1). rewrite <- natplusassoc.
     rewrite natpluscomm. apply (maponpaths S). rewrite natpluscomm. now apply minusplusnmm. }
   set (r := weqfibtototal _ _ (λ k, eqweqmap (maponpaths (λ n, k < n : UU) B) ) :

@@ -14,7 +14,7 @@ Written by: Anders Mörtberg, 2016
 *)
 
 Require Import UniMath.Foundations.PartD.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 Require Import UniMath.MoreFoundations.Tactics.
 

@@ -19,7 +19,7 @@ Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.LambdaTheories.
 Require Import UniMath.AlgebraicTheories.LambdaCalculus.
-Require Import UniMath.Combinatorics.Tuples.
+Require Import UniMath.Combinatorics.FVectors.
 
 (** * 1. The algebraic theory of the λ-calculus *)
 
@@ -53,17 +53,17 @@ Proof.
       do 3 rewrite subst_abs.
       rewrite Hl.
       do 2 apply maponpaths.
-      refine (!extend_tuple_eq _ _).
+      refine (append_vec_eq _ _).
       * intro.
-        refine (_ @ !maponpaths (λ x, subst x _) (extend_tuple_inl _ _ _)).
+        refine (maponpaths (λ x, subst x _) (append_vec_compute_1 _ _ _) @ _).
         rewrite inflate_subst.
         unfold inflate.
         rewrite subst_subst.
         apply maponpaths.
         apply funextfun.
         intro.
-        now rewrite var_subst, extend_tuple_inl.
-      * now rewrite extend_tuple_inr, var_subst, extend_tuple_inr.
+        now rewrite var_subst, append_vec_compute_1.
+      * now rewrite append_vec_compute_2, var_subst, append_vec_compute_2.
     + intros m n l f Hl Hf m' f_m' n' f_n'.
       rewrite Hl.
       do 2 rewrite subst_subst.
@@ -85,7 +85,7 @@ Proof.
       apply maponpaths.
       refine (_ @ Hl).
       apply maponpaths.
-      exact (extend_tuple_eq inflate_var (idpath _)).
+      exact (!append_vec_eq (λ i, !inflate_var i) (idpath _)).
     + intros ? ? ? ? Hl Hf.
       rewrite subst_subst.
       apply maponpaths.
@@ -106,7 +106,7 @@ Proof.
   refine (lambda_calculus_algebraic_theory ,, _ ,, _);
     simpl.
   - intros ? l.
-    exact (app (inflate l) (var (stnweq (inr tt)))).
+    exact (app (inflate l) (var lastelement)).
   - intro.
     exact abs.
 Defined.
@@ -116,16 +116,16 @@ Definition lambda_calculus_is_lambda_theory
 Proof.
   split;
     do 4 intro;
-    cbn -[stnweq];
+    cbn;
     unfold inflate.
   - rewrite subst_app.
     do 2 rewrite subst_subst.
     rewrite var_subst.
-    rewrite extend_tuple_inr.
+    rewrite append_vec_compute_2.
     apply (maponpaths (λ x, _ (_ x) _)).
     apply funextfun.
     intro.
-    now rewrite var_subst, extend_tuple_inl.
+    now rewrite var_subst, append_vec_compute_1.
   - now rewrite subst_abs.
 Qed.
 
@@ -139,7 +139,7 @@ Lemma lambda_calculus_has_β
   : has_β lambda_calculus_lambda_theory.
 Proof.
   unfold has_β, LambdaTheories.app, LambdaTheories.abs.
-  cbn -[stnweq].
+  cbn.
   intros n l.
   rewrite inflate_abs.
   rewrite beta_equality.
@@ -147,16 +147,15 @@ Proof.
   refine (_ @ subst_var _).
   apply maponpaths.
   apply funextfun.
-  intro i.
-  rewrite <- (homotweqinvweq stnweq i).
-  induction (invmap stnweq i) as [i' | i'].
-  - rewrite extend_tuple_inl.
+  refine (stn_sn_ind _ _).
+  - intro i.
+    rewrite append_vec_compute_1.
     do 2 rewrite inflate_var.
     rewrite var_subst.
-    now rewrite extend_tuple_inl.
-  - rewrite extend_tuple_inr.
+    now rewrite append_vec_compute_1.
+  - rewrite append_vec_compute_2.
     rewrite var_subst.
-    now rewrite extend_tuple_inr.
+    now rewrite append_vec_compute_2.
 Qed.
 
 End LambdaCalculus.

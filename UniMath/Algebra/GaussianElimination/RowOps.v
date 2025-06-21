@@ -7,7 +7,7 @@ Primary Author: Daniel @Skantz (November 2022)
 
 Require Import UniMath.Foundations.All.
 
-Require Import UniMath.Combinatorics.Matrices.
+Require Import UniMath.Combinatorics.FMatrices.
 
 Require Import UniMath.Algebra.Matrix.
 Require Import UniMath.Algebra.IteratedBinaryOperations.

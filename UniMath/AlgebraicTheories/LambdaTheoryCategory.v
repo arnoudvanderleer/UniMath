@@ -27,8 +27,8 @@ Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Colimits.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.FVectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryCategory.
@@ -273,16 +273,16 @@ Proof.
         intro u);
       [ refine (app_subst _ _ _ @ _);
         apply (maponpaths (subst (_ (pr1 f u))));
-        apply extend_tuple_eq;
+        refine (!append_vec_eq _ _);
         [ intro i;
-          now rewrite extend_tuple_inl
-        | now rewrite extend_tuple_inr ]
+          now rewrite append_vec_compute_1
+        | now rewrite append_vec_compute_2 ]
       | refine (!_ @ abs_subst _ _ _);
         apply (maponpaths (λ x, abs (subst (pr1 f u) x)));
-        apply extend_tuple_eq;
+        refine (!append_vec_eq _ _);
         [ intro i;
-          now rewrite extend_tuple_inl
-        | now rewrite extend_tuple_inr ] ]
+          now rewrite append_vec_compute_1
+        | now rewrite append_vec_compute_2 ] ]
     ).
 Defined.
 

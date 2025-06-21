@@ -28,7 +28,7 @@ Require Import UniMath.CategoryTheory.DisplayedCats.Total.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.
 

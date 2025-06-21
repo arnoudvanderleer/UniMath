@@ -24,8 +24,7 @@ Require Import UniMath.MoreFoundations.All.
 
 Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryMorphisms.
@@ -143,8 +142,8 @@ Section PuncturedTheory.
       : action (f • g1 : punctured_theory (S m)) a1
       = action (f • g2 : punctured_theory (S n)) a2.
     Proof.
-      refine (!_ @ maponpaths (λ x, action x a2) (subst_inflate_extend_tuple _ f _)).
-      refine (!_ @ maponpaths (λ x, action x a1) (subst_inflate_extend_tuple _ f _)).
+      refine (!_ @ maponpaths (λ x, action x a2) (subst_inflate_append_vec _ f _)).
+      refine (!_ @ maponpaths (λ x, action x a1) (subst_inflate_append_vec _ f _)).
       refine (subst_action _ (inflate f : punctured_theory 1) _ a1 @ !_).
       refine (subst_action _ (inflate f : punctured_theory 1) _ a2 @ !_).
       do 2 refine (maponpaths (λ x, action _ x) (!homotweqinvweq (weqvecfun _) _) @ !_).
@@ -202,7 +201,7 @@ Section PuncturedTheory.
           refine (_ @ subst_var _ _).
           apply maponpaths.
           now apply (invmaponpathsweq (invweq (weqvecfun _))).
-        + refine (!maponpaths (λ x, action x a) (subst_inflate_extend_tuple _ _ _) @ _).
+        + refine (!maponpaths (λ x, action x a) (subst_inflate_append_vec _ _ _) @ _).
           refine (subst_action _ (inflate f : punctured_theory 1) _ _ @ _).
           apply isaprop_inflated_constant_image.
         + refine (maponpaths (λ x, action x (weqvecfun 1 [(a0')])) (inflate_subst _ f g) @ _).

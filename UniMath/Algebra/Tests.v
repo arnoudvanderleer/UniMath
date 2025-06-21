@@ -10,7 +10,7 @@ Module Test_assoc.
 
   (* verify that our associativity matches that of the parser, without an extra "1" *)
 
-  Local Notation "[]" := Lists.nil (at level 0, format "[]").
+  Local Notation "[]" := PLists.nil (at level 0, format "[]").
   Local Infix "::" := cons.
 
   Section Test.

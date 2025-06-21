@@ -10,7 +10,8 @@ Written by: Anders Mörtberg, 2016 (inspired by a remark of Vladimir Voevodsky),
 
 Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
+Require Export UniMath.Combinatorics.FLists.
 
 (** * Lists over an arbitrary type *)
 Section lists.
@@ -42,6 +43,13 @@ Definition cons (x : A) (xs : list) : list :=
 
 Local Notation "[]" := nil (at level 0, format "[]").
 Local Infix "::" := cons.
+
+Definition weqListSequence : list ≃ Sequence A.
+Proof.
+  intros.
+  apply weqfibtototal; intro n.
+  apply weqvecfun.
+Defined.
 
 Lemma list_ind : ∏ (P : list -> UU),
      P nil

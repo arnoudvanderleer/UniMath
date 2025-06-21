@@ -2,7 +2,7 @@
 (** Gianluca Amato,  Marco Maggesi, Cosimo Perini Brogi 2019-2021 *)
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Local Open Scope stn.
 

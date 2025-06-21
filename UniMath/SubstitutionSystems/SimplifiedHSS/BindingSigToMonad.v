@@ -18,7 +18,7 @@ the file is identical to the homonymous file in the parent directory, except for
 *)
 
 Require Import UniMath.Foundations.PartD.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 Require Import UniMath.MoreFoundations.Tactics.
 

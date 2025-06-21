@@ -2,8 +2,8 @@
 (** Gianluca Amato,  Marco Maggesi, Cosimo Perini Brogi 2019-2021 *)
 
 Require Import UniMath.Foundations.NaturalNumbers.
-Require Import UniMath.Combinatorics.Vectors.
-Require Export UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PVectors.
+Require Export UniMath.Combinatorics.PLists.
 Require Export UniMath.Combinatorics.DecSet.
 Require Export UniMath.Combinatorics.Maybe.
 

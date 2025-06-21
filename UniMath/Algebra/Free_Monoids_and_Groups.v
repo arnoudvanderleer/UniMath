@@ -5,7 +5,7 @@ Require Import UniMath.MoreFoundations.Sets.
 Require Import UniMath.Algebra.Monoids.
 Require Import UniMath.Algebra.Groups.
 Require Import UniMath.Algebra.IteratedBinaryOperations.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.PLists.
 
 (** ** Contents
 - Free monoid on a set

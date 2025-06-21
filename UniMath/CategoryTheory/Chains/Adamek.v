@@ -44,7 +44,7 @@ Context {C : category} (InitC : Initial C).
 
 (* It is important that these are not packaged together as it is
    sometimes necessary to control how opaque HF is. See
-   [isalghom_pr1foldr] in Lists.v *)
+   [isalghom_pr1foldr] in PLists.v *)
 Context {F : functor C C} (HF : is_omega_cocont F).
 
 Let Fchain : chain C := initChain InitC F.

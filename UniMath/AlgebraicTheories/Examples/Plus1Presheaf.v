@@ -16,7 +16,8 @@ Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.Presheaves.
 Require Import UniMath.AlgebraicTheories.PresheafCategoryCore.
-Require Import UniMath.Combinatorics.Tuples.
+Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.FVectors.
 
 Local Open Scope algebraic_theories.
 
@@ -31,10 +32,10 @@ Proof.
   - exact (λ n, P (1 + n)).
   - intros m n s t.
     refine (op (T := T) (P := P) s _).
-    intro i.
-    induction (invmap stnweq i) as [i' | i'].
-    + refine (t i' • (λ j, var (stnweq (inl j)))).
-    + exact (var (stnweq (inr i'))).
+    apply append_vec.
+    + intro i.
+      refine (inflate (t i)).
+    + exact (var lastelement).
 Defined.
 
 Lemma plus_1_is_presheaf
@@ -47,26 +48,30 @@ Proof.
     refine (op_op P x _ _ @ _).
     apply (maponpaths (op (x : P _))).
     apply funextfun.
-    intro i.
-    induction (invmap stnweq i) as [i' | i'].
-    + refine (subst_subst T (f i') _ _ @ !_).
-      refine (subst_subst T (f i') g _ @ !_).
+    refine (stn_sn_ind _ _).
+    + intro i.
+      refine (maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ !_).
+      refine (append_vec_compute_1 _ _ _ @ !_).
+      refine (subst_subst T (f _) _ _ @ !_).
+      refine (subst_subst T (f _) g _ @ !_).
       apply maponpaths.
       apply funextfun.
       intro.
       refine (var_subst _ _ _ @ _).
-      exact (maponpaths _ (homotinvweqweq stnweq _)).
-    + refine (var_subst _ _ _ @ _).
-      exact (maponpaths _ (homotinvweqweq stnweq _)).
+      exact (append_vec_compute_1 _ _ _).
+    + refine (maponpaths_2 _ (append_vec_compute_2 _ _) _ @ !_).
+      refine (append_vec_compute_2 _ _ @ !_).
+      refine (var_subst _ _ _ @ _).
+      apply append_vec_compute_2.
   - intros n x.
     refine (_ @ op_var _ _).
     apply (maponpaths (op (x : P _))).
     apply funextfun.
-    intro i.
-    refine (_ @ maponpaths _ (homotweqinvweq stnweq i)).
-    induction (invmap stnweq i) as [i' | i'].
-    + apply var_subst.
-    + apply idpath.
+    refine (stn_sn_ind _ _).
+    + intro i.
+      refine (append_vec_compute_1 _ _ _ @ _).
+      apply var_subst.
+    + apply append_vec_compute_2.
 Qed.
 
 Definition plus_1_presheaf

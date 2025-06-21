@@ -4,10 +4,10 @@ Require Import UniMath.Algebra.GaussianElimination.RowOps.
 Require Import UniMath.Algebra.Matrix.
 
 Require Import UniMath.Combinatorics.Maybe.
-Require Import UniMath.Combinatorics.FiniteSequences.
-Require Import UniMath.Combinatorics.Matrices.
+Require Import UniMath.Combinatorics.FLists.
+Require Import UniMath.Combinatorics.FMatrices.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.PVectors.
 
 Require Import UniMath.Algebra.Archimedean.
 Require Import UniMath.Algebra.BinaryOperations.

@@ -3,7 +3,8 @@
 Require Export UniMath.Foundations.Sets.
 Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.MoreFoundations.Subtypes.
-Require Export UniMath.Combinatorics.FiniteSequences.
+Require Export UniMath.Combinatorics.FVectors.
+Require Export UniMath.Combinatorics.FLists.
 Require Export UniMath.Foundations.NaturalNumbers.
 
 Require Export UniMath.Tactics.EnsureStructuredProofs.
@@ -257,10 +258,10 @@ Proof.
         intros m Hm.
       induction (natlehchoice _ _ (natlthsntoleh _ _ Hm)) as [Hm' | ->].
       * generalize (pr2 Hx (m,,Hm')).
-        unfold dni_lastelement ; simpl.
-        assert (H : Hm = natlthtolths m n Hm' ).
-        { apply (pr2 (natlth m (S n))). }
-        now rewrite H.
+        refine (transportf (λ m, L m x) _).
+        apply stn_eq.
+        apply di_eq1.
+        apply stnlt.
       * assert (H : lastelement = (n,, Hm)).
         { now apply subtypePath_prop. }
         rewrite <- H.
@@ -282,7 +283,6 @@ Proof.
     apply maponpaths.
     apply funextfun ; intro m.
     simpl.
-    rewrite <- replace_dni_last.
     apply append_vec_compute_1.
   - reflexivity.
 Qed.

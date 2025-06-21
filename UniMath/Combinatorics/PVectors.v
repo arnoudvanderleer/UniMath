@@ -2,19 +2,11 @@
 (** Gianluca Amato, Matteo Calosci, Marco Maggesi, Cosimo Perini Brogi 2019-2024. *)
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Foundations.NaturalNumbers.
 
 Local Open Scope nat.
 Local Open Scope stn.
-
-(** ** Lemmata about standard finite sets. *)
-
-Definition stn_extens {n} (i j : ⟦ n ⟧) (p : stntonat _ i = stntonat _ j)
-  : i = j
-  := subtypePath' p (propproperty (j < n)).
-
-Definition fromstn0 (i : ⟦ 0 ⟧) {A : UU} : A
-  := fromempty (negnatlthn0 (pr1 i) (pr2 i)).
 
 (** ** Vectors. *)
 
@@ -90,7 +82,7 @@ Proof.
     induction j as [|k _].
     + cbn.
       apply maponpaths.
-      apply stn_extens.
+      apply stn_eq.
       apply idpath.
     + etrans.
       { apply meq. }
@@ -152,6 +144,8 @@ Proof.
       apply H.
 Defined.
 
+(** *** Weak equivalence with functions. *)
+
 Lemma make_vec_el {n} (v : vec A n) : make_vec (el v) = v.
 Proof.
   apply vec_extens.
@@ -160,12 +154,10 @@ Proof.
   reflexivity.
 Defined.
 
-(** *** Weak equivalence with functions. *)
-
 Definition isweqvecfun {n} : isweq (el:vec A n → ⟦ n ⟧ → A)
   := isweq_iso el make_vec make_vec_el el_make_vec_fun.
 
-Definition weqvecfun n : vec A n ≃ (⟦ n ⟧ -> A)
+Definition weqvecfun n : vec A n ≃ Vector A n
   := make_weq el isweqvecfun.
 
 Lemma isofhlevelvec {n} (is1 : isofhlevel n A) k

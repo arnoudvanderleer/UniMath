@@ -617,6 +617,9 @@ Proof.
   apply ( negnatlthn0 _ b ).
 Defined.
 
+Definition fromstn0 (i : ⟦ 0 ⟧) {A : UU} : A
+  := fromempty (negstn0 i).
+
 Definition weqstn0toempty : ⟦0⟧ ≃ empty.
 Proof.
   apply weqtoempty.

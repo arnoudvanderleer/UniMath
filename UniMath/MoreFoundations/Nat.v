@@ -1,15 +1,16 @@
-(**************************************************************************************************
+(**
 
   Natural numbers
 
   This file gives further basic results on the natural numbers extending those provided in [Foundations.NaturalNumbers]:
 
   - formulation of the recursion property as a unique existence statement for functions on ℕ [hNatRecursionUniq, hNatRecursion_weq]
+  - Two lemmas on the value of natlehchoice
   - the recursive definition of the path family over ℕ [nat_discern]
   - definition and properties of the distance function on ℕ [nat_dist]
   - miscellaneous arithmetic lemmas
   - bounded quantification over ℕ, including uniqueness/searchibility of (minimal) witnesses
- **************************************************************************************************)
+ *)
 
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.Tactics.
@@ -90,6 +91,32 @@ Section Uniqueness.
   Defined.
 
 End Uniqueness.
+
+(** * Two lemmas on the value of natlehchoice *)
+
+Lemma natlehchoice_lt
+  {i n : nat}
+  (H : i ≤ n)
+  (H' : i < n)
+  : natlehchoice _ _ H = inl H'.
+Proof.
+  induction (natlehchoice i n H) as [Hi | Hi].
+  - apply maponpaths.
+    apply propproperty.
+  - induction (isirreflnatlth _ (transportf (λ x, x < n) Hi H')).
+Qed.
+
+Lemma natlehchoice_eq
+  {i n : nat}
+  (H : i ≤ n)
+  (H' : i = n)
+  : natlehchoice _ _ H = inr H'.
+Proof.
+  induction (natlehchoice i n H) as [Hi | Hi].
+  - induction (isirreflnatlth _ (transportf (λ x, x < n) H' Hi)).
+  - apply maponpaths.
+    apply isasetnat.
+Qed.
 
 (** * Discernment family on ℕ
 The standard recursive definition of a type family equivalent to equality on ℕ — that is, a code-decode method characterisation of equality on ℕ *)
