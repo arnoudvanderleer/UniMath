@@ -32,7 +32,7 @@ Proof.
   - exact (λ n, P (1 + n)).
   - intros m n s t.
     refine (op (T := T) (P := P) s _).
-    apply append_vec.
+    apply snoc.
     + intro i.
       refine (inflate (t i)).
     + exact (var lastelement).
@@ -50,28 +50,28 @@ Proof.
     apply funextfun.
     refine (stn_sn_ind _ _).
     + intro i.
-      refine (maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ !_).
-      refine (append_vec_compute_1 _ _ _ @ !_).
+      refine (maponpaths_2 _ (init_snoc_i _ _ _) _ @ !_).
+      refine (init_snoc_i _ _ _ @ !_).
       refine (subst_subst T (f _) _ _ @ !_).
       refine (subst_subst T (f _) g _ @ !_).
       apply maponpaths.
       apply funextfun.
       intro.
       refine (var_subst _ _ _ @ _).
-      exact (append_vec_compute_1 _ _ _).
-    + refine (maponpaths_2 _ (append_vec_compute_2 _ _) _ @ !_).
-      refine (append_vec_compute_2 _ _ @ !_).
+      exact (init_snoc_i _ _ _).
+    + refine (maponpaths_2 _ (last_snoc _ _) _ @ !_).
+      refine (last_snoc _ _ @ !_).
       refine (var_subst _ _ _ @ _).
-      apply append_vec_compute_2.
+      apply last_snoc.
   - intros n x.
     refine (_ @ op_var _ _).
     apply (maponpaths (op (x : P _))).
     apply funextfun.
     refine (stn_sn_ind _ _).
     + intro i.
-      refine (append_vec_compute_1 _ _ _ @ _).
+      refine (init_snoc_i _ _ _ @ _).
       apply var_subst.
-    + apply append_vec_compute_2.
+    + apply last_snoc.
 Qed.
 
 Definition plus_1_presheaf

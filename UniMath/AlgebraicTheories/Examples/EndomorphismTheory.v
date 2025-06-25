@@ -147,16 +147,16 @@ Section EndomorphismTheory.
         refine (assoc' _ _ _ @ _).
         refine (maponpaths _ (pow_commutes _ _ _ _) @ !_).
         refine (pow_commutes _ _ _ _ @ _).
-        refine (append_vec_compute_1 _ _ _ @ _).
+        refine (init_snoc_i _ _ _ @ _).
         apply (maponpaths (λ x, x · _)).
         apply ProductArrow_eq.
         intro j.
         refine (pow_commutes _ _ _ _ @ _).
-        exact (append_vec_compute_1 _ _ j).
+        exact (init_snoc_i _ _ j).
       + refine (bp_commutes_2 _ _ _ _ @ _).
         refine (id_right _ @ !_).
         refine (bp_commutes_2 _ _ _ _ @ _).
-        now do 2 refine (append_vec_compute_2 _ _ @ _).
+        now do 2 refine (last_snoc _ _ @ _).
     - intros m n f g.
       refine (_ @ assoc' _ _ _).
       refine (_ @ maponpaths (λ x, x · _) (φ_adj_natural_precomp (pr2 (is_exponentiable_to_is_exponentiable' _ _ E)) _ _ _ _ _)).
@@ -167,21 +167,21 @@ Section EndomorphismTheory.
       revert i.
       refine (stn_sn_ind _ _).
       + intro i.
-        refine (maponpaths (λ x, _ · x) (append_vec_compute_1 _ _ _) @ _).
+        refine (maponpaths (λ x, _ · x) (init_snoc_i _ _ _) @ _).
         refine (assoc _ _ _ @ _).
         refine (maponpaths (λ x, x · _) (bp_commutes_1 _ _ _ _) @ _).
         refine (assoc' _ _ _ @ _).
         refine (maponpaths (λ x, _ · x) (pow_commutes _ _ _ _) @ !_).
-        refine (append_vec_compute_1 _ _ _ @ _).
+        refine (init_snoc_i _ _ _ @ _).
         apply (maponpaths (λ x, x · _)).
         apply ProductArrow_eq.
         intro j.
         refine (pow_commutes _ _ _ _ @ _).
-        refine (append_vec_compute_1 _ _ _).
-      + refine (maponpaths (λ x, _ · x) (append_vec_compute_2 _ _) @ _).
+        refine (init_snoc_i _ _ _).
+      + refine (maponpaths (λ x, _ · x) (last_snoc _ _) @ _).
         refine (bp_commutes_2 _ _ _ _ @ _).
         refine (id_right _ @ !_).
-        now do 2 refine (append_vec_compute_2 _ _ @ _).
+        now do 2 refine (last_snoc _ _ @ _).
   Qed.
 
   Definition endomorphism_lambda_theory
@@ -300,8 +300,8 @@ Section Morphism.
     - revert i.
       refine (stn_sn_ind _ _).
       + intro i.
-        refine (maponpaths (λ x, # F x) (append_vec_compute_1 _ _ _) @ !_).
-        refine (maponpaths (λ x, _ · x · _) (append_vec_compute_1 _ _ _) @ !_).
+        refine (maponpaths (λ x, # F x) (init_snoc_i _ _ _) @ !_).
+        refine (maponpaths (λ x, _ · x · _) (init_snoc_i _ _ _) @ !_).
         refine (_ @ maponpaths (λ x, x · _) (assoc' _ _ _)).
         refine (_ @ maponpaths (λ x, x · _ · _) (assoc _ _ _)).
         refine (_ @ !maponpaths (λ x, _ · x · _ · _) (BinProductOfArrowsPr1 _ _ _ _ _)).
@@ -311,8 +311,8 @@ Section Morphism.
         refine (maponpaths _ (IHn _) @ _).
         refine (assoc _ _ _ @ _).
         exact (maponpaths (λ x, x · _) (assoc _ _ _)).
-      + refine (maponpaths (λ x, # F x) (append_vec_compute_2 _ _) @ !_).
-        refine (maponpaths (λ x, _ · x · _) (append_vec_compute_2 _ _) @ !_).
+      + refine (maponpaths (λ x, # F x) (last_snoc _ _) @ !_).
+        refine (maponpaths (λ x, _ · x · _) (last_snoc _ _) @ !_).
         refine (_ @ maponpaths (λ x, x · _) (assoc _ _ _)).
         refine (_ @ !maponpaths (λ x, _ x · _) (BinProductOfArrowsPr2 _ _ _ _ _)).
         refine (_ @ maponpaths (λ x, x · _) (assoc' _ _ _)).

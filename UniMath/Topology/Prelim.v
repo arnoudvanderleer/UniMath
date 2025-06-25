@@ -62,10 +62,10 @@ Proof.
     + now apply IHn.
 Qed.
 
-(** ** More about Sequence *)
+(** ** More about List *)
 
-Definition singletonSequence {X} (A : X) : Sequence X := (1 ,, λ _, A).
-Definition pairSequence {X} (A B : X) : Sequence X.
+Definition singletonList {X} (A : X) : List X := (1 ,, λ _, A).
+Definition pairList {X} (A B : X) : List X.
 Proof.
   exists 2.
   intros m.
@@ -167,7 +167,7 @@ Defined.
 
 (** finite intersection *)
 
-Definition finite_intersection {X : UU} (P : Sequence (X → hProp)) : X → hProp.
+Definition finite_intersection {X : UU} (P : List (X → hProp)) : X → hProp.
 Proof.
   intros x.
   simple refine (make_hProp _ _).
@@ -192,7 +192,7 @@ Qed.
 
 Lemma finite_intersection_1 {X : UU} :
   ∏ (A : X → hProp),
-    finite_intersection (singletonSequence A) = A.
+    finite_intersection (singletonList A) = A.
 Proof.
   intros A.
   apply funextfun ; intros x.
@@ -206,7 +206,7 @@ Qed.
 
 Lemma finite_intersection_and {X : UU} :
   ∏ A B : X → hProp,
-    finite_intersection (pairSequence A B)
+    finite_intersection (pairList A B)
     = (λ x : X, A x ∧ B x).
 Proof.
   intros A B.
@@ -229,11 +229,11 @@ Proof.
 Qed.
 
 Lemma finite_intersection_case {X : UU} :
-  ∏ (L : Sequence (X → hProp)),
+  ∏ (L : List (X → hProp)),
   finite_intersection L =
   sumofmaps (λ _ _, htrue)
-            (λ (AB : (X → hProp) × Sequence (X → hProp)) (x : X), pr1 AB x ∧ finite_intersection (pr2 AB) x)
-            (disassembleSequence L).
+            (λ (AB : (X → hProp) × List (X → hProp)) (x : X), pr1 AB x ∧ finite_intersection (pr2 AB) x)
+            (disassembleList L).
 Proof.
   intros L.
   apply funextfun ; intros x.
@@ -269,13 +269,13 @@ Proof.
 Qed.
 
 Lemma finite_intersection_append {X : UU} :
-  ∏ (A : X → hProp) (L : Sequence (X → hProp)),
+  ∏ (A : X → hProp) (L : List (X → hProp)),
     finite_intersection (append L A) = (λ x : X, A x ∧ finite_intersection L x).
 Proof.
   intros A L.
   rewrite finite_intersection_case.
   simpl.
-  rewrite append_vec_compute_2.
+  rewrite last_snoc.
   apply funextfun ; intro x.
   apply maponpaths.
   apply map_on_two_paths.
@@ -283,13 +283,13 @@ Proof.
     apply maponpaths.
     apply funextfun ; intro m.
     simpl.
-    apply append_vec_compute_1.
+    apply init_snoc_i.
   - reflexivity.
 Qed.
 
 Lemma finite_intersection_hProp {X : UU} :
   ∏ (P : (X → hProp) → hProp),
-    (∏ (L : Sequence (X → hProp)), (∏ n, P (L n)) → P (finite_intersection L))
+    (∏ (L : List (X → hProp)), (∏ n, P (L n)) → P (finite_intersection L))
     <-> (P (λ _, htrue) × (∏ A B, P A → P B → P (λ x : X, A x ∧ B x))).
 Proof.
   intros P.
@@ -309,7 +309,7 @@ Proof.
         intros n Hn.
       now induction n as [ | n _] ; simpl.
   - intros Hp.
-    apply (Sequence_rect (P := λ L : Sequence (X → hProp),
+    apply (Sequence_rect (P := λ L : List (X → hProp),
                                      (∏ n : stn (length L), P (L n)) → P (finite_intersection L))).
     + intros _.
       rewrite finite_intersection_htrue.
@@ -317,10 +317,10 @@ Proof.
     + intros L A IHl Hl.
       rewrite finite_intersection_append.
       apply (pr2 Hp).
-      * rewrite <- (append_vec_compute_2 L A).
+      * rewrite <- (last_snoc L A).
         now apply Hl.
       * apply IHl.
         intros n.
-        rewrite <- (append_vec_compute_1 L A).
+        rewrite <- (init_snoc_i L A).
         apply Hl.
 Qed.

@@ -13,6 +13,7 @@ Require Export UniMath.Foundations.NaturalNumbers.
 Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.MoreFoundations.DecidablePropositions.
 Require Import UniMath.MoreFoundations.NegativePropositions.
+Require Import UniMath.MoreFoundations.Nat.
 
 (** ** Standard finite sets [ stn ]. *)
 
@@ -203,7 +204,7 @@ Qed.
 
 Local Lemma dualelement_lt (i n : nat) (H : n > 0) : n - 1 - i < n.
 Proof.
-  rewrite natminusminus.
+  rewrite NaturalNumbers.natminusminus.
   apply (natminuslthn _ _ H).
   apply idpath.
 Qed.
@@ -447,6 +448,51 @@ Proof.
   intros.
   exact ( isdecincltoisincl _  ( isdecincldni n i ) ).
 Defined.
+
+Section StnSnInduction.
+
+  Context {X : UU}.
+  Context {n : nat}.
+  Context {A : stn (S n) → UU}.
+  Context (Hx : ∏ i, A (dni lastelement i)).
+  Context (Hlast : A lastelement).
+
+  Definition stn_sn_ind
+    : ∏ i, A i.
+  Proof.
+    intro i.
+    induction (natlehchoice i n (stnlt i)) as [Hi | Hi].
+    - refine (transportf A _ (Hx (make_stn _ _ Hi))).
+      apply stn_eq.
+      exact (di_eq1 Hi).
+    - refine (transportf A _ Hlast).
+      apply stn_eq.
+      exact (!Hi).
+  Defined.
+
+  Lemma stn_sn_ind_dni
+    (i : stn n)
+    : stn_sn_ind (dni lastelement i) = Hx i.
+  Proof.
+    refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ (transportb (λ x, x < n) (di_eq1 (stnlt i)) (stnlt i))) @ _).
+    simple refine (
+      maponpaths (λ e, transportf _ e _) _ @
+      !functtransportf (dni lastelement) _ _ _ @
+      transport_section Hx _).
+    - apply isasetstn.
+    - apply stn_eq.
+      exact (di_eq1 (stnlt i)).
+  Qed.
+
+  Lemma stn_sn_ind_last
+    : stn_sn_ind lastelement = Hlast.
+  Proof.
+    refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath n)) @ _).
+    refine (maponpaths (λ e, transportf _ e _) (_ : _ = idpath _)).
+    apply isasetstn.
+  Qed.
+
+End StnSnInduction.
 
 (** ** The order-preserving functions [ sni n i : stn (S n) -> stn n ] that take the value [i] twice. *)
 
@@ -722,6 +768,20 @@ Proof.
   - simpl. apply maponpaths. apply subtypePath_prop. simpl.
     induction (natplusr0 n). apply idpath.
   - simpl. apply fromempty. induction (! natplusr0 n).
+    exact (natgehtonegnatlth _ _ J (stnlt i)).
+Defined.
+
+Lemma weqfromcoprodofstn_invmap_l0 (n : nat) (i : ⟦0+n⟧ ) :
+  weqfromcoprodofstn_invmap 0 n i = ii2 i.
+Proof.
+  intros.
+  unfold weqfromcoprodofstn_invmap.
+  simpl.
+  induction (natlthorgeh i n) as [I|J].
+  - apply maponpaths.
+    apply subtypePath_prop.
+    exact (natminuseqn i).
+  - apply fromempty.
     exact (natgehtonegnatlth _ _ J (stnlt i)).
 Defined.
 
@@ -1760,41 +1820,6 @@ Ltac inductive_reflexivity i b :=
   induction i as [|i];
   [ try apply isinjstntonat ; apply idpath |
     contradicts (negnatlthn0 i) b || inductive_reflexivity i b ].
-
-(** concatenation and flattening of functions *)
-
-Definition concatenate' {X:UU} {m n:nat} (f : ⟦m⟧ -> X) (g : ⟦n⟧ -> X) : ⟦m+n⟧ -> X.
-Proof.
-  intros i.
-  (* we are careful to use weqfromcoprodofstn_invmap both here and in weqstnsum_invmap *)
-  induction (weqfromcoprodofstn_invmap _ _ i) as [j | k].
-  + exact (f j).
-  + exact (g k).
-Defined.
-
-Definition concatenate'_r0 {X:UU} {m:nat} (f : ⟦m⟧ -> X) (g : ⟦0⟧ -> X) :
-  concatenate' f g = transportb (λ n, ⟦n⟧ -> X) (natplusr0 m) f.
-Proof.
-  intros. apply funextfun; intro i. unfold concatenate'.
-  rewrite weqfromcoprodofstn_invmap_r0; simpl. clear g.
-  apply transportb_fun'.
-Defined.
-
-Definition concatenate'_r0' {X:UU} {m:nat} (f : ⟦m⟧ -> X) (g : ⟦0⟧ -> X) (i : ⟦m+0⟧ ) :
-  concatenate' f g i = f (transportf stn (natplusr0 m) i).
-Proof.
-  intros.
-  unfold concatenate'.
-  rewrite weqfromcoprodofstn_invmap_r0.
-  apply idpath.
-Defined.
-
-Definition flatten' {X:UU} {n:nat} {m: ⟦n⟧ -> nat} :
-  (∏ (i: ⟦n⟧ ), ⟦m i⟧ -> X) -> ( ⟦stnsum m⟧ -> X).
-Proof.
-  intros g.
-  exact (uncurry g ∘ invmap (weqstnsum1 m)).
-Defined.
 
 Definition stn_predicate {n : nat} (P : ⟦n⟧ -> UU)
            (k : nat) (h h' : k < n) :

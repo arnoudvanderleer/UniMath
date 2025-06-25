@@ -44,7 +44,7 @@ Definition cons (x : A) (xs : list) : list :=
 Local Notation "[]" := nil (at level 0, format "[]").
 Local Infix "::" := cons.
 
-Definition weqListSequence : list ≃ Sequence A.
+Definition weqListList : list ≃ List A.
 Proof.
   intros.
   apply weqfibtototal; intro n.

@@ -29,7 +29,7 @@ Module Test_assoc.
          iterop_seq_mon(3,,f) = f(●O) * f(●1%nat) * f(●2).
   Proof. reflexivity. Defined.
 
-  Goal ∏ (M:monoid) (f:stn 3 → Sequence M),
+  Goal ∏ (M:monoid) (f:stn 3 → list M),
          iterop_seq_seq_mon(3,,f) =
                 iterop_seq_mon (f(●0))
               * iterop_seq_mon (f(●1%nat))

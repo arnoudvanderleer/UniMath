@@ -35,10 +35,10 @@ Definition matrix_inverse_or_non_invertible_stmt
 Definition back_sub_stmt
   { n : nat } {F : fld}
   (mat : Matrix F n n)
-  (vec : Vector F n)
+  (vec : vector F n)
   (ut : @is_upper_triangular F _ _ mat)
   (df : @diagonal_all_nonzero F _ mat)
-  := ∑ v : (Vector F n),
+  := ∑ v : (vector F n),
     (@matrix_mult F _ _ mat _ (col_vec v)) = (col_vec vec).
 
 
@@ -53,7 +53,7 @@ Section BackSub.
   (** output: a solution [x]_[row] to [mat ** x = b]_[row] if one exists
      - given mat upper triangular, non-zero diagonal. Later applied inductively in [back_sub]. *)
   Definition back_sub_step { n : nat } ( row : (⟦ n ⟧)%stn )
-    (mat : Matrix F n n) (x : Vector F n) (b : Vector F n) : Vector F n.
+    (mat : Matrix F n n) (x : vector F n) (b : vector F n) : vector F n.
   Proof.
     intros i.
     destruct (nat_eq_or_neq row i).
@@ -66,7 +66,7 @@ Section BackSub.
   (** procedure gives [x_i] s.t. [(mat ** x)_i = b_i], given previous assumptions *)
   Lemma back_sub_step_inv0 { n : nat }
     (row : ⟦ n ⟧%stn) (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     (p: @is_upper_triangular F n n mat)
     (p' : (mat row row != 0)%ring)
     : (mat ** (col_vec (back_sub_step row mat x b))) row = (col_vec b) row.
@@ -120,7 +120,7 @@ Section BackSub.
   Lemma back_sub_step_inv1
     { n : nat } (row : ⟦ n ⟧%stn)
     (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     : ∏ i : ⟦ n ⟧%stn, i ≠ row ->
       (col_vec (back_sub_step row mat x b) i = (col_vec x) i).
   Proof.
@@ -137,7 +137,7 @@ Section BackSub.
     { n : nat }
     (row : ⟦ n ⟧%stn)
     (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     (is_ut: @is_upper_triangular F n n mat)
     : ∏ i : ⟦ n ⟧%stn, i ≥ row
     -> (mat i i != 0)%ring
@@ -170,10 +170,10 @@ Section BackSub.
   Definition back_sub_internal
     { n : nat }
     (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     (sep : ⟦ S n ⟧%stn)
     (row : ⟦ S n ⟧%stn)
-    : Vector F n.
+    : vector F n.
   Proof.
     destruct sep as [sep p].
     induction sep as [| m IH]. {exact x. }
@@ -186,7 +186,7 @@ Section BackSub.
   Lemma back_sub_internal_inv0
     { n : nat }
     (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     (ut : @is_upper_triangular F _ _ mat)
     (sep : ⟦ S n ⟧%stn)
     (row : ⟦ S n ⟧%stn)
@@ -213,7 +213,7 @@ Section BackSub.
   Lemma back_sub_internal_inv1
     { n : nat }
     (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     (ut : @is_upper_triangular F _ _ mat)
     (sep : ⟦ S n ⟧%stn)
     (row : ⟦ S n ⟧%stn)
@@ -230,7 +230,7 @@ Section BackSub.
   Lemma back_sub_internal_inv2
     { n : nat }
     (mat : Matrix F n n)
-    (x : Vector F n) (b : Vector F n)
+    (x : vector F n) (b : vector F n)
     (ut : @is_upper_triangular F _ _ mat)
     (sep : ⟦ S n ⟧%stn)
     (row : ⟦ S n ⟧%stn)
@@ -270,12 +270,12 @@ Section BackSub.
   Definition back_sub
     {n : nat}
     (mat : Matrix F n n)
-    (vec : Vector F n)
+    (vec : vector F n)
   := back_sub_internal mat vec vec (n,, natgthsnn _) (n,, natgthsnn _).
 
   Lemma back_sub_inv0
     { n : nat }
-    (mat : Matrix F n n) (b : Vector F n)
+    (mat : Matrix F n n) (b : vector F n)
     (ut : @is_upper_triangular F _ _ mat)
     (df : @diagonal_all_nonzero F _ mat)
     : back_sub_stmt mat b ut df.
@@ -319,14 +319,14 @@ Section BackSubZero.
   Defined.
 
   Local Definition flip_fld_bin_vec
-  {n : nat} (v : Vector F n) := λ i : (stn n), flip_fld_bin (v i).
+  {n : nat} (v : vector F n) := λ i : (stn n), flip_fld_bin (v i).
 
   (* Below, we find the first zero value in a vector [v] by looking for the leading element
      in the transformed vector. Perhaps not a pretty solution, maybe we instead want to generalize
      the notion of leading entry. *)
 
   Local Definition vector_all_nonzero_compute_internal
-  {n : nat} (v : Vector F n)
+  {n : nat} (v : vector F n)
   : coprod (∏ j : (stn n), (v j) != 0%ring)
           (∑ i : (stn n), ((v i) = 0%ring)
         × (forall j : stn n, (j < (pr1 i) -> (v j) != 0%ring))).
@@ -357,7 +357,7 @@ Section BackSubZero.
   Defined.
 
   Local Definition vector_all_nonzero_compute
-  {n : nat} (v : Vector F n)
+  {n : nat} (v : vector F n)
   : coprod (∏ j : (stn n), (v j) != 0%ring)
            (∑ i : (stn n), (v i)  = 0%ring).
   Proof.
@@ -393,7 +393,7 @@ Section BackSubZero.
         rewrite ut; try reflexivity.
         now rewrite <- eq0_1.
     }
-    assert (contr_exists :  ∑ x : (Vector F n), (∑ i' : stn n,
+    assert (contr_exists :  ∑ x : (vector F n), (∑ i' : stn n,
       (x i' != 0) × (mat ** (col_vec x)) = (@col_vec F _ (const_vec 0)))).
     2: { assert (eqz : (mat ** (@col_vec F _ (const_vec 0)))
           = (@col_vec F _ (const_vec 0))).

@@ -273,16 +273,16 @@ Proof.
         intro u);
       [ refine (app_subst _ _ _ @ _);
         apply (maponpaths (subst (_ (pr1 f u))));
-        refine (!append_vec_eq _ _);
+        refine (!snoc_eq _ _);
         [ intro i;
-          now rewrite append_vec_compute_1
-        | now rewrite append_vec_compute_2 ]
+          now rewrite init_snoc_i
+        | now rewrite last_snoc ]
       | refine (!_ @ abs_subst _ _ _);
         apply (maponpaths (λ x, abs (subst (pr1 f u) x)));
-        refine (!append_vec_eq _ _);
+        refine (!snoc_eq _ _);
         [ intro i;
-          now rewrite append_vec_compute_1
-        | now rewrite append_vec_compute_2 ] ]
+          now rewrite init_snoc_i
+        | now rewrite last_snoc ] ]
     ).
 Defined.
 

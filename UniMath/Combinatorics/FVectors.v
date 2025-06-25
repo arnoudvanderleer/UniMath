@@ -2,264 +2,473 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-(* Require Export UniMath.Combinatorics.FiniteSets. *)
 
 (** ** Vectors *)
 
-(** A [Vector] of length n with values in X is an ordered n-tuple of elements of X,
+(** A [vector] of length n with values in X is an ordered n-tuple of elements of X,
     encoded here as a function ⟦n⟧ → X. *)
-Definition Vector (X : UU) (n : nat) : UU := stn n -> X.
+Definition vector (X : UU) (n : nat) : UU := stn n → X.
 
 (** hlevel of vectors *)
 Lemma vector_hlevel (X : UU) (n : nat) {m : nat} (ism : isofhlevel m X) :
-  isofhlevel m (Vector X n).
+  isofhlevel m (vector X n).
 Proof.
-  apply impred; auto.
+  now apply impredfun.
 Defined.
 
+Section Accessors.
+
+  Context {X : UU}.
+  Context {n : nat}.
+  Context (xs : vector X (S n)).
+
+  Definition last : X := xs lastelement.
+  Definition init : vector X n := xs ∘ dni lastelement.
+
+  Definition head : X := xs firstelement.
+  Definition tail : vector X n := xs ∘ dni firstelement.
+
+End Accessors.
+
 (** Constant vector *)
-Definition const_vec {X : UU} {n : nat} (x : X) : Vector X n := λ _, x.
+Definition const_vec {X : UU} {n : nat} (x : X) : vector X n := λ _, x.
 
 (** The unique empty vector *)
-Definition iscontr_vector_0 X : iscontr (Vector X 0).
+Definition iscontr_vector_0 X : iscontr (vector X 0).
 Proof.
-  intros. apply (@iscontrweqb _ (empty -> X)).
+  intros. apply (@iscontrweqb _ (∅ → X)).
   - apply invweq. apply weqbfun. apply weqstn0toempty.
   - apply iscontrfunfromempty.
 Defined.
 
-Definition empty_vec {X : UU} : Vector X 0 := iscontrpr1 (iscontr_vector_0 X).
+Definition nil {X : UU} : vector X 0 := iscontrpr1 (iscontr_vector_0 X).
 
 (** Every type is equivalent to vectors of length 1 on that type. *)
-Lemma weq_vector_1 {X : UU} : X ≃ Vector X 1.
+Lemma weq_vector_1 {X : UU} : X ≃ vector X 1.
   intermediate_weq (unit → X).
   - apply invweq, weqfunfromunit.
   - apply weqbfun.
     exact weqstn1tounit.
 Defined.
 
-Section Append.
+Section Snoc.
 
-  Context {X : UU} {n : nat} (vec : Vector X n) (x : X).
+  Context {X : UU} {n : nat} (xs : vector X n) (x : X).
 
-  Definition append_vec : Vector X (S n).
+  Definition snoc : vector X (S n).
   Proof.
     intro i.
     induction (natlehchoice i n (stnlt i)) as [Hi | Hi].
-    - refine (vec (make_stn _ _ Hi)).
+    - refine (xs (make_stn _ _ Hi)).
     - exact x.
   Defined.
 
-  Definition append_vec_compute_1 i : append_vec (dni lastelement i) = vec i.
+  Lemma init_snoc_i i : init snoc i = xs i.
   Proof.
     refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ (transportb (λ x, x < n) (di_eq1 (stnlt i)) (stnlt i))) @ _).
-    apply (maponpaths vec).
+    apply (maponpaths xs).
     apply stn_eq.
     exact (di_eq1 (stnlt i)).
   Qed.
 
-  Definition append_vec_compute_2 : append_vec lastelement = x.
+  Lemma init_snoc :
+    init snoc = xs.
+  Proof.
+    intros.
+    apply funextsec.
+    exact init_snoc_i.
+  Qed.
+
+  Lemma last_snoc : last snoc = x.
   Proof.
     exact (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath n))).
   Qed.
 
-  Definition stn_sn_ind
-    {A : stn (S n) → UU}
-    (Hx : ∏ i, A (dni lastelement i))
-    (Hlast : A lastelement)
-    : ∏ i, A i.
-  Proof.
-    intro i.
-    induction (natlehchoice i n (stnlt i)) as [Hi | Hi].
-    - refine (transportf A _ (Hx (make_stn _ _ Hi))).
-      apply stn_eq.
-      exact (di_eq1 Hi).
-    - refine (transportf A _ Hlast).
-      apply stn_eq.
-      exact (!Hi).
-  Defined.
-
-  Lemma stn_sn_ind_dni
-    {A : stn (S n) → UU}
-    (Hx : ∏ i, A (dni lastelement i))
-    (Hlast : A lastelement)
-    (i : stn n)
-    : stn_sn_ind Hx Hlast (dni lastelement i) = Hx i.
-  Proof.
-    refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ (transportb (λ x, x < n) (di_eq1 (stnlt i)) (stnlt i))) @ _).
-    simple refine (
-      maponpaths (λ e, transportf _ e _) _ @
-      !functtransportf (dni lastelement) _ _ _ @
-      transport_section Hx _).
-    - apply isasetstn.
-    - apply stn_eq.
-      exact (di_eq1 (stnlt i)).
-  Qed.
-
-  Lemma stn_sn_ind_last
-    {A : stn (S n) → UU}
-    (Hx : ∏ i, A (dni lastelement i))
-    (Hlast : A lastelement)
-    : stn_sn_ind Hx Hlast lastelement = Hlast.
-  Proof.
-    refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath n)) @ _).
-    refine (maponpaths (λ e, transportf _ e _) (_ : _ = idpath _)).
-    apply isasetstn.
-  Qed.
-
-  Lemma append_vec_eq
-    {g : stn (S n) → X}
-    (Hf : ∏ i, g (dni lastelement i) = vec i)
-    (Hlast : g lastelement = x)
-    : g = append_vec.
+  Lemma snoc_eq
+    {ys : vector X (S n)}
+    (Hinit : ∏ i, init ys i = xs i)
+    (Hlast : last ys = x)
+    : ys = snoc.
   Proof.
     apply funextfun.
     refine (stn_sn_ind _ _).
     - intro i.
-      refine (_ @ !append_vec_compute_1 _).
-      apply Hf.
-    - refine (_ @ !append_vec_compute_2).
+      refine (_ @ !init_snoc_i _).
+      apply Hinit.
+    - refine (_ @ !last_snoc).
       apply Hlast.
   Qed.
 
-  Definition append_vec_dep
-    {A : X → UU}
-    (af : ∏ i, A (vec i))
-    (alast : A x)
-    : ∏ (i : stn (S n)), A (append_vec i).
+  Definition snoc_dep
+    {P : X → UU}
+    (p_init : ∏ i, P (xs i))
+    (p_last : P x)
+    : ∏ (i : stn (S n)), P (snoc i).
   Proof.
     intro i.
-    unfold append_vec.
+    unfold snoc.
     induction (natlehchoice i n (stnlt i)).
-    - apply af.
-    - apply alast.
+    - apply p_init.
+    - apply p_last.
   Defined.
 
-End Append.
+End Snoc.
 
-Arguments append_vec_eq {X n vec x g} Hf Hlast.
-Arguments append_vec_dep {X n vec x A} af alast.
+Arguments snoc_eq {X n xs x ys} Hinit Hlast.
+Arguments snoc_dep {X n xs x P} p_init p_last.
 
-Lemma drop_and_append_vec {X n} (x : Vector X (S n)) :
-  append_vec (x ∘ dni lastelement) (x lastelement) = x.
+Lemma snoc_init_last
+  {X : UU}
+  {n : nat}
+  (xs : vector X (S n))
+  : snoc (init xs) (last xs) = xs.
 Proof.
   intros.
   apply funextfun.
   refine (stn_sn_ind _ _).
-  + exact (append_vec_compute_1 _ _).
-  + exact (append_vec_compute_2 _ _).
+  + exact (init_snoc_i _ _).
+  + exact (last_snoc _ _).
 Defined.
 
-Lemma append_and_drop_vec {X n} (xs : Vector X n) (x : X) :
-  append_vec xs x ∘ dni lastelement = xs.
-Proof.
-  intros.
-  apply funextsec.
-  exact (append_vec_compute_1 _ _).
-Qed.
-
-(** An induction principle for vectors: If a statement is true for the empty
-    vector, and if it is true for vectors of length n it is also true for those
-    of length S n, then it is true for all vectors.
+(**
+  An induction principle for vectors: If we have P nil and if we get P (snoc xs x) from P xs, then
+  we have P xs for all vectors xs.
  *)
-Definition Vector_rect' {X : UU} {P : ∏ n, Vector X n -> UU}
-  (p0 : P 0 empty_vec)
-  (ind : ∏ (n : nat) (vec : Vector X (S n)),
-        P n (vec ∘ dni lastelement) -> P (S n) vec)
-  {n : nat} (vec : Vector X n) : P n vec.
+
+Section Recursion.
+
+  Context {X : UU}.
+  Context {P : nat → UU}.
+  Context (p_nil : P 0).
+  Context (p_snoc : ∏ n, P n → X → P (S n)).
+
+  Definition vector_rect
+    (n : nat) (xs : vector X n) : P n.
+  Proof.
+    induction n as [|n IH].
+    - exact p_nil.
+    - exact (p_snoc n (IH (init xs)) (last xs)).
+  Defined.
+
+  Lemma vector_rect_nil
+    : vector_rect _ nil = p_nil.
+  Proof.
+    reflexivity.
+  Qed.
+
+  Lemma vector_rect_snoc
+    (x : X) {n : nat} (xs : vector X n)
+    : vector_rect _ (snoc xs x) = p_snoc n (vector_rect _ xs) x.
+  Proof.
+    refine (two_arg_paths _ _).
+    - apply maponpaths.
+      apply funextfun.
+      intro i.
+      apply init_snoc_i.
+    - apply last_snoc.
+  Qed.
+
+End Recursion.
+
+Section Induction.
+
+  Context {X : UU}.
+  Context {P : ∏ n, vector X n → UU}.
+  Context (p_nil : P 0 nil).
+  Context (p_snoc : ∏ n xs, P n xs → ∏ (x : X), P (S n) (snoc xs x)).
+
+  Definition vector_ind
+    (n : nat) (xs : vector X n) : P n xs.
+  Proof.
+    induction n as [|n IH].
+    - refine (transportf (P 0) _ p_nil).
+      exact (!iscontr_uniqueness (iscontr_vector_0 _) _).
+    - apply (transportf (P _) (snoc_init_last xs)).
+      apply p_snoc.
+      apply IH.
+  Defined.
+
+  Lemma vector_ind_nil
+    : vector_ind _ nil = p_nil.
+  Proof.
+    refine (maponpaths (λ e, transportf _ e _) (_ : _ = idpath _)).
+    do 2 apply isapropifcontr.
+    apply iscontr_vector_0.
+  Qed.
+
+  (* The current proof needs X to be an hSet, because it uses the fact that vector X n is a set *)
+  Lemma vector_ind_snoc
+    (HX : isaset X)
+    (x : X)
+    {n : nat}
+    (xs : vector X n)
+    : vector_ind _ (snoc xs x) = p_snoc n xs (vector_ind _ xs) x.
+  Proof.
+    refine (_ @ transport_section (λ (xs : vector X n), p_snoc n xs (vector_ind _ xs) x) (init_snoc xs x)).
+    refine (_ @ !functtransportf (λ xs, snoc xs x) _ _ _).
+    apply transportf_transpose_right.
+    refine (_ @ transport_section (λ (a : X), p_snoc n (init (snoc xs x)) (vector_ind _ (init (snoc xs x))) a) (last_snoc xs x)).
+    refine (_ @ !functtransportf (λ x, snoc _ x) _ _ _).
+    refine (transport_f_f _ _ _ _ @ _).
+    refine (maponpaths (λ e, transportf _ e _) _).
+    refine (proofirrelevance _ ((_ : isaset _) _ _) _ _).
+    apply (vector_hlevel _ _ (m := 2)).
+    exact HX.
+  Qed.
+
+End Induction.
+
+Definition map
+  {X Y : UU} {n : nat} (f : X → Y) (xs : vector X n)
+  : vector Y n
+  := f ∘ xs.
+
+Definition reindex
+  {X : UU} {m n : nat} (xs : vector X n) (f : vector (stn n) m)
+  : vector X m
+  := xs ∘ f.
+
+Section Equality.
+
+  Context {X : UU}.
+  Context {m n : nat}.
+  Context {xs : vector X m}.
+  Context {ys : vector X n}.
+  Context (e_len : m = n).
+
+  Definition vector_stn_proofirrelevance
+    {l : nat}
+    {zs : vector X l}
+    {i j : stn l}
+    (H : stntonat _ i = stntonat _ j)
+    : zs i = zs j.
+  Proof.
+    apply maponpaths.
+    apply isinjstntonat.
+    exact H.
+  Defined.
+
+  Lemma vector_eq
+    (H : ∏ i, xs i = ys (transportf stn e_len i))
+    : transportf (vector X) e_len xs = ys.
+  Proof.
+    induction e_len.
+    now apply funextfun.
+  Qed.
+
+  (** The following two lemmas are the key lemmas that allow to prove (transportational) equality of
+  sequences whose lengths are not definitionally equal. In particular, these lemmas can be used in
+  the proofs of such results as associativity of concatenation of sequences and the right unity
+  axiom for the empty sequence. **)
+
+  Lemma vector_eq'
+    (e_el : ∏ i ltxs ltys, xs (make_stn _ i ltxs) = ys (make_stn _ i ltys))
+    : transportf (vector X) e_len xs = ys.
+  Proof.
+    apply vector_eq.
+    intro i.
+    refine (_ @ !maponpaths _ (transport_stn _ _)).
+    apply e_el.
+  Qed.
+
+  (** The following lemma requires in the assumption [ e_el ] only one comparison [ i < length g ]
+  and one comparison [ i < length g' ] for each i instead of all such comparisons as in the
+  original version [ seq_key_eq_lemma ] . **)
+
+  Lemma vector_eq''
+    (e_el : ∏ i, ∑ ltxs ltys, xs (make_stn _ i ltxs) = ys (make_stn _ i ltys))
+    : transportf (vector X) e_len xs = ys.
+  Proof.
+    apply vector_eq'.
+    intros i ltg ltg'.
+    refine (_ @ pr22 (e_el i) @ _);
+      now apply vector_stn_proofirrelevance.
+  Qed.
+
+End Equality.
+
+Section Concatenate.
+
+  Context {X : UU}.
+
+  Definition concatenate
+    {m n : nat}
+    (xs : vector X m)
+    (ys : vector X n)
+    : vector X (m + n).
+  Proof.
+    intro i.
+    (* we are careful to use weqfromcoprodofstn_invmap both here and in weqstnsum_invmap *)
+    induction (invmap (weqfromcoprodofstn _ _) i) as [j | k].
+    + exact (xs j).
+    + exact (ys k).
+  Defined.
+
+  Section Lemmas.
+
+    Context {m n : nat}.
+    Context (xs : vector X m).
+    Context (ys : vector X (S n)).
+
+    Definition concatenate_0r'
+      (i : stn (m + 0))
+      : concatenate xs nil i = xs (transportf stn (natplusr0 m) i).
+    Proof.
+      exact (maponpaths (coprod_rect _ _ _) (weqfromcoprodofstn_invmap_r0 _ _)).
+    Qed.
+
+    Definition concatenate_0r
+      : concatenate xs nil = transportb (vector X) (natplusr0 _) xs.
+    Proof.
+      apply funextfun.
+      intro i.
+      refine (_ @ transportb_fun' _ _ _).
+      exact (concatenate_0r' i).
+    Defined.
+
+    Definition concatenate_0l'
+      (i : stn m)
+      : concatenate nil xs i = xs i.
+    Proof.
+      exact (maponpaths (coprod_rect _ _ _) (weqfromcoprodofstn_invmap_l0 _ _)).
+    Defined.
+
+    Definition concatenate_0l
+      : concatenate nil xs = xs.
+    Proof.
+      apply funextfun.
+      exact concatenate_0l'.
+    Defined.
+
+    Lemma init_concatenate
+      : init (transportf (vector X) (natplusnsm _ _) (concatenate xs ys))
+      = concatenate xs (init ys).
+    Proof.
+      apply funextfun.
+      intro i.
+      refine (!maponpaths (λ x, transportf (vector X) x _ _) (pathsinv0inv0 _) @ _).
+      refine (!transportb_fun' _ _ _ @ _).
+      refine (!maponpaths (λ x, coprod_rect _ xs ys (_ (_ (_ x)))) (homotweqinvweq (weqfromcoprodofstn _ _) i) @ _).
+      unfold concatenate.
+      induction (invmap (weqfromcoprodofstn m n) i) as [i' | i'];
+      [ refine (maponpaths _ (_ : _ = inl i'))
+      | refine (maponpaths _ (_ : _ = inr (dni lastelement i'))) ];
+        apply (switch_weq (weqfromcoprodofstn _ _));
+        refine (transport_stn _ _ @ _);
+        apply subtypePath_prop;
+        now rewrite !replace_dni_last.
+    Qed.
+
+    Lemma last_concatenate
+      : last (transportf (vector X) (natplusnsm _ _) (concatenate xs ys))
+      = last ys.
+    Proof.
+      refine (!maponpaths (λ e, transportf (vector X) e _ _) (pathsinv0inv0 _) @ _).
+      refine (!transportb_fun' _ _ _ @ _).
+      refine (maponpaths (coprod_rect _ _ _) (_ : _ = inr lastelement)).
+      apply (switch_weq (weqfromcoprodofstn _ _)).
+      refine (transport_stn _ _ @ _).
+      now apply subtypePath_prop.
+    Qed.
+
+    Definition concatenate_step
+      : transportf (vector X) (natplusnsm _ _) (concatenate xs ys) = snoc (concatenate xs (init ys)) (last ys).
+    Proof.
+      refine (!snoc_init_last _ @ _).
+      apply two_arg_paths.
+      - apply init_concatenate.
+      - apply last_concatenate.
+    Qed.
+
+  End Lemmas.
+
+End Concatenate.
+
+Definition flatten
+  {X : UU}
+  {n : nat}
+  {ms : vector nat n}
+  (xs : ∏ (i : stn n), vector X (ms i))
+  : vector X (stnsum ms).
+Proof.
+  exact (uncurry xs ∘ invmap (weqstnsum1 ms)).
+Defined.
+
+Definition flatten_step
+  {X : UU}
+  {n : nat}
+  (ms : vector nat (S n))
+  (xs : ∏ (i : stn (S n)), vector X (ms i))
+  : flatten xs = concatenate (flatten (xs ∘ dni lastelement)) (xs lastelement).
 Proof.
   intros.
-  induction n as [|n IH].
-  - refine (transportf (P 0) _ p0).
-    apply proofirrelevancecontr, iscontr_vector_0.
-  - apply ind.
-    apply IH.
+  apply funextfun; intro i.
+  unfold flatten.
+  unfold funcomp.
+  rewrite 2 weqstnsum1_eq'.
+  unfold StandardFiniteSets.weqstnsum_invmap at 1.
+  change (weqfromcoprodofstn_invmap ?a ?b) with (invmap (weqfromcoprodofstn a b)).
+  unfold concatenate.
+  unfold nat_rect, coprod_rect, funcomp.
+  change (invmap (weqfromcoprodofstn (stnsum (λ r : stn n, ms (dni lastelement r))) ?a))
+  with (invmap (weqfromcoprodofstn (stnsum (ms ∘ dni lastelement)) a)) at 1 2.
+  induction (invmap (weqfromcoprodofstn _ _) _) as [B|C].
+  - reflexivity.
+  - now induction C.            (* not needed with primitive projections *)
 Defined.
 
-Lemma Vector_rect_empty' {X : UU} {P : ∏ n, Vector X n -> UU}
-  (p0 : P 0 empty_vec)
-  (ind : ∏ (n : nat) (vec : Vector X (S n)),
-        P n (vec ∘ dni lastelement) -> P (S n) vec)
-  : Vector_rect' p0 ind empty_vec = p0.
-Proof.
-  refine (maponpaths (λ e, transportf (P 0) e p0) (_ : _ = idpath _)).
-  do 2 apply isapropifcontr.
-  apply iscontr_vector_0.
-Qed.
+Section Fold.
 
-Lemma Vector_rect_append' {X : UU} {P : ∏ n, Vector X n -> UU}
-  (p0 : P 0 empty_vec)
-  (ind : ∏ (n : nat) (vec : Vector X (S n)),
-        P n (vec ∘ dni lastelement) -> P (S n) vec)
-  (x : X) {n : nat} (l : Vector X n)
-  : Vector_rect' p0 ind (append_vec l x) = ind n (append_vec l x) (Vector_rect' p0 ind (append_vec l x ∘ dni lastelement)).
-Proof.
-  reflexivity.
-Qed.
+  Context {X : UU} {Y : UU}.
 
-Definition Vector_rect {X : UU} {P : ∏ n, Vector X n -> UU}
-  (p0 : P 0 empty_vec)
-  (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
-        P n vec -> P (S n) (append_vec vec x))
-  {n : nat} (vec : Vector X n) : P n vec.
-Proof.
-  refine (Vector_rect' p0 _ vec).
-  clear n vec.
-  intros n vec Hn.
-  exact (transportf (P _) (drop_and_append_vec vec) (ind n (vec ∘ dni lastelement) (vec lastelement) Hn)).
-Defined.
+  Section Left.
 
-Lemma Vector_rect_empty {X : UU} {P : ∏ n, Vector X n -> UU}
-  (p0 : P 0 empty_vec)
-  (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
-        P n vec -> P (S n) (append_vec vec x))
-  : Vector_rect p0 ind empty_vec = p0.
-Proof.
-  apply Vector_rect_empty'.
-Qed.
+    Context (f : Y → X → Y) (y : Y).
 
-(* The current proof needs X to be an hSet, because it uses the fact that Vector X n is a set *)
-Lemma Vector_rect_append {X : UU} (HX : isaset X) {P : ∏ n, Vector X n -> UU}
-  (p0 : P 0 empty_vec)
-  (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
-        P n vec -> P (S n) (append_vec vec x))
-  (x : X) {n : nat} (l : Vector X n)
-  : Vector_rect p0 ind (append_vec l x) = ind n l x (Vector_rect p0 ind l).
-Proof.
-  refine (_ @ transport_section (λ (l : Vector X n), ind n l x (Vector_rect p0 ind l)) (append_and_drop_vec l x)).
-  refine (_ @ !functtransportf (λ l, append_vec l x) _ _ _).
-  apply transportf_transpose_right.
-  refine (_ @ transport_section (λ (a : X), ind n (append_vec l x ∘ dni lastelement) a (Vector_rect p0 ind (append_vec l x ∘ dni lastelement))) (append_vec_compute_2 l x)).
-  refine (_ @ !functtransportf (λ x, append_vec _ x) _ _ _).
-  refine (transport_f_f _ _ _ _ @ _).
-  refine (maponpaths (λ x, transportf _ x _) _).
-  refine (proofirrelevance _ ((_ : isaset _) _ _) _ _).
-  apply funspace_isaset.
-  exact HX.
-Qed.
+    Definition foldl {n : nat} : vector X n → Y
+      := vector_rect y (λ n, f) n.
 
-Section Lemmas.
+    Definition foldl_nil
+      : foldl nil = y
+      := vector_rect_nil _ _.
 
-  Context {X : UU} {n : nat}.
+    Definition foldl_snoc
+      {n : nat}
+      (xs : vector X n)
+      (x : X)
+      : foldl (snoc xs x) = f (foldl xs) x
+      := vector_rect_snoc _ _ _ _.
 
-  Definition vectorEquality {m : nat} (f : Vector X n) (g : Vector X m) (p : n = m) :
-    (∏ i, f i = g (transportf stn p i))
-    -> transportf (Vector X) p f = g.
-  Proof.
-    intro.
-    induction p.
-    apply funextfun.
-    assumption.
-  Defined.
+  End Left.
 
-  Definition tail (vecsn : Vector X (S n)) : Vector X n :=
-    vecsn ∘ dni (0,, natgthsn0 n).
+  Section Right.
 
-  (** It doesn't matter what the proofs are in the stn inputs. *)
-  Definition vector_stn_proofirrelevance {vec : Vector X n}
-            {i j : stn n} : (stntonat _ i = stntonat _ j) -> vec i = vec j.
-  Proof.
-    intro.
-    apply maponpaths, isinjstntonat; assumption.
-  Defined.
-End Lemmas.
+    Context (f : X → Y → Y).
+
+    Definition foldr
+      (y : Y)
+      {n : nat}
+      (xs : vector X n)
+      : Y
+      := vector_rect (P := λ n, Y → Y) (λ acc, acc) (λ _ f_init x acc, f_init (f x acc)) n xs y.
+
+    Lemma foldr_nil
+      (y : Y)
+      : foldr y nil = y.
+    Proof.
+      exact (eqtohomot (vector_rect_nil _ _) y).
+    Qed.
+
+    Lemma foldr_snoc
+      (y : Y)
+      {n : nat}
+      (xs : vector X n)
+      (x : X)
+      : foldr y (snoc xs x) = foldr (f x y) xs.
+    Proof.
+      exact (eqtohomot (vector_rect_snoc _ _ _ _) y).
+    Qed.
+
+  End Right.
+
+End Fold.

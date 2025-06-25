@@ -173,7 +173,7 @@ Section LambdaTheoryCategory.
     (f : T (S m))
     (g : stn m → T n)
     : T (S n)
-    := f • (append_vec (λ i, (g i) • (λ i, var (dni lastelement i))) (var lastelement)).
+    := f • (snoc (λ i, (g i) • (λ i, var (dni lastelement i))) (var lastelement)).
 
   Local Definition app_subst_ax
     (L : lambda_theory_data_cat)

@@ -23,7 +23,7 @@ Section BinaryOperations.
   Definition iterop_list : list X → X :=
     foldr1 op unel.
 
-  Definition iterop_fun {n} (x:Vector X n) : X.
+  Definition iterop_fun {n} (x:vector X n) : X.
   Proof.
     intros.
     induction n as [|n _].
@@ -33,7 +33,7 @@ Section BinaryOperations.
       { exact (op (I (x ∘ dni lastelement)) (x lastelement)). }}
   Defined.
 
-  Definition iterop_seq : Sequence X → X.
+  Definition iterop_seq : list X → X.
   Proof.
     intros x.
     exact (iterop_fun x).
@@ -53,7 +53,7 @@ Section BinaryOperations.
     exact (iterop_fun (λ i, iterop_fun (x i))).
   Defined.
 
-  Definition iterop_seq_seq : Sequence (Sequence X) → X.
+  Definition iterop_seq_seq : list \(List X) → X.
   Proof.
     intros x.
     exact (iterop_fun_fun (λ i j, x i j)).
@@ -65,7 +65,7 @@ Section BinaryOperations.
     ∏ n (m:stn n → nat) (x : ∏ i (j:stn (m i)), X), iterop_fun (StandardFiniteSets.flatten' x) = iterop_fun_fun x.
 
   Definition isAssociative_seq :=
-    ∏ (x : Sequence (Sequence X)), iterop_seq (FLists.flatten x) = iterop_seq_seq x.
+    ∏ (x : list \(List X)), iterop_seq (FLists.flatten x) = iterop_seq_seq x.
 
   Local Open Scope stn.
 
@@ -81,7 +81,7 @@ Section BinaryOperations.
   Lemma assoc_seq_to_fun : isAssociative_seq → isAssociative_fun.
   Proof.
     intros assoc n m x.
-    exact (assoc (functionToSequence (λ i, functionToSequence (x i)))).
+    exact (assoc (make_list (λ i, make_list (x i)))).
   Defined.
 
   Definition iterop_list_step (runax : isrunit op unel) (x:X) (xs:list X) :
@@ -95,13 +95,13 @@ Section BinaryOperations.
   Defined.
 
   Definition iterop_fun_step' (lunax : islunit op unel) {m} (xs:stn m → X) (x:X) :
-    iterop_fun (append_vec xs x) = op (iterop_fun xs) x.
+    iterop_fun (snoc xs x) = op (iterop_fun xs) x.
   Proof.
     unfold iterop_fun at 1.
     simpl.
     induction m as [|m _].
-    - simpl. rewrite append_vec_compute_2. apply pathsinv0. apply lunax.
-    - simpl. rewrite append_vec_compute_2.
+    - simpl. rewrite last_snoc. apply pathsinv0. apply lunax.
+    - simpl. rewrite last_snoc.
       apply (maponpaths (λ y, op y x)). apply maponpaths.
       apply append_and_drop_vec.
   Defined.
@@ -118,14 +118,14 @@ Section BinaryOperations.
   Defined.
 
   Definition iterop_fun_append (lunax : islunit op unel) {m} (x:stn m → X) (y:X) :
-    iterop_fun (append_vec x y) = op (iterop_fun x) y.
+    iterop_fun (snoc x y) = op (iterop_fun x) y.
   Proof.
     rewrite (iterop_fun_step lunax).
-    rewrite append_vec_compute_2.
+    rewrite last_snoc.
     apply (maponpaths (λ x, op (iterop_fun x) y)).
     apply funextfun; intro i.
     simpl.
-    rewrite append_vec_compute_1.
+    rewrite init_snoc_i.
     reflexivity.
   Defined.
 
@@ -147,9 +147,9 @@ Section Monoids.
 
   Definition iterop_list_mon : list M → M := iterop_list uu oo.
 
-  Definition iterop_seq_mon : Sequence M → M := iterop_seq uu oo.
+  Definition iterop_seq_mon : list M → M := iterop_seq uu oo.
 
-  Definition iterop_seq_seq_mon : Sequence (Sequence M) → M := iterop_seq_seq uu oo.
+  Definition iterop_seq_seq_mon : list \(List M) → M := iterop_seq_seq uu oo.
 
   Definition iterop_list_list_mon : list (list M) → M := iterop_list_list uu oo.
 
@@ -206,7 +206,7 @@ Section Monoids.
   Qed.
 
   Lemma iterop_seq_mon_len1 (x : stn 1 → M) :
-    iterop_seq_mon (functionToSequence x) = x lastelement.
+    iterop_seq_mon (make_list x) = x lastelement.
   Proof.
     reflexivity.
   Defined.
@@ -235,19 +235,19 @@ Section Monoids.
     reflexivity.
   Defined.
 
-  Local Lemma iterop_seq_mon_append (x:Sequence M) (m:M) :
+  Local Lemma iterop_seq_mon_append (x: list M) (m:M) :
     iterop_seq_mon (append x m) = iterop_seq_mon x * m.
   Proof.
      revert x m.
      intros [n x] ?. unfold append. rewrite iterop_seq_mon_step.
-     rewrite append_vec_compute_2.
+     rewrite last_snoc.
      apply (maponpaths (λ a, a * m)).
      apply (maponpaths (λ x, iterop_seq_mon (n,,x))).
      apply funextfun; intros [i b]; simpl.
-     now rewrite append_vec_compute_1.
+     now rewrite init_snoc_i.
   Defined.
 
-  Local Lemma iterop_seq_seq_mon_step {n} (x:stn (S n) → Sequence M) :
+  Local Lemma iterop_seq_seq_mon_step {n} (x:stn (S n) → list M) :
     iterop_seq_seq_mon (S n,,x) = iterop_seq_seq_mon (n,,x ∘ dni lastelement) * iterop_seq_mon (x lastelement).
   Proof.
     intros.
@@ -321,7 +321,7 @@ Proof.
   unfold isAssociative_seq; intros. induction x as [n x].
   induction n as [|n IHn].
   { reflexivity. }
-  change (flatten _) with (flatten ((n,,x): NonemptySequence _)).
+  change (flatten _) with (flatten ((n,,x): NonemptyList _)).
   rewrite flattenStep.
   change (lastValue _) with (x lastelement).
   unfold iterop_seq_seq. simpl.
@@ -370,7 +370,7 @@ Proof.
   Local Open Scope transport.
   set (f := nil □ j □ S O □ n-j : stn 3 → nat).
   assert (B : stnsum f = S n).
-  { unfold stnsum, f; simpl. unfold append_vec; simpl. rewrite natplusassoc.
+  { unfold stnsum, f; simpl. unfold snoc; simpl. rewrite natplusassoc.
     rewrite (natpluscomm 1). rewrite <- natplusassoc.
     rewrite natpluscomm. apply (maponpaths S). rewrite natpluscomm. now apply minusplusnmm. }
   set (r := weqfibtototal _ _ (λ k, eqweqmap (maponpaths (λ n, k < n : UU) B) ) :
@@ -394,14 +394,14 @@ Proof.
   change (f s0) with j; change (f s1) with (S O); change (f s2) with (n-j).
   set (f' := nil □ j □ n-j : stn 2 → nat).
   assert (B' : stnsum f' = n).
-  { unfold stnsum, f'; simpl. repeat unfold append_vec; simpl.
+  { unfold stnsum, f'; simpl. repeat unfold snoc; simpl.
     rewrite natpluscomm. now apply minusplusnmm. }
   set (r' := weqfibtototal _ _ (λ k, eqweqmap (maponpaths (λ n, k < n : UU) B') ) :
               stn (stnsum f') ≃ stn n).
   set (x'' := x ∘ dni (j,, jlt) ∘ r').
   intermediate_path (iterop_seq_mon (stnsum f',, x'') * x (j,, jlt)).
   { assert (L := iterop_seq_mon_len1 (λ j0 : stn 1, x' ((weqstnsum1 f) (s1,, j0)))).
-    unfold functionToSequence in L.
+    unfold make_list in L.
     rewrite L. rewrite assocax. refine (transportf (λ k, _*k=_) (commax _ _ _) _).
     rewrite <- assocax.
     apply two_arg_paths.
@@ -532,18 +532,18 @@ Section NatCard.
 
 End NatCard.
 
-Definition MultipleOperation (X:UU) : UU := UnorderedSequence X → X.
+Definition MultipleOperation (X:UU) : UU := unordered_list X → X.
 
 Section Mult.
 
   Context {X:UU} (op : MultipleOperation X).
 
-  Definition composeMultipleOperation : UnorderedSequence (UnorderedSequence X) → X.
+  Definition composeMultipleOperation : unordered_list (unordered_list X) → X.
   Proof.
-    intros s. exact (op (composeUnorderedSequence op s)).
+    intros s. exact (op (composeunordered_list op s)).
   Defined.
 
-  Definition isAssociativeMultipleOperation := ∏ x, op (flattenUnorderedSequence x) = composeMultipleOperation x.
+  Definition isAssociativeMultipleOperation := ∏ x, op (flattenunordered_list x) = composeMultipleOperation x.
 
 End Mult.
 
@@ -586,7 +586,7 @@ Proof.
   exact (iterop_unoseq_mon (M:=ringmultabmonoid R)).
 Defined.
 
-Definition iterop_unoseq_unoseq_mon {M:abmonoid} : UnorderedSequence (UnorderedSequence M) → M.
+Definition iterop_unoseq_unoseq_mon {M:abmonoid} : unordered_list (unordered_list M) → M.
 Proof.
   intros s. exact (composeMultipleOperation iterop_unoseq_mon s).
 Defined.

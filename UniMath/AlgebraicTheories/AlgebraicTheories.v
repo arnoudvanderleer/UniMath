@@ -144,7 +144,7 @@ Definition subst_var
 
 Definition lift_constant {T : algebraic_theory_data} (n : nat) (f : (T 0 : hSet))
   : (T n : hSet)
-  := f • empty_vec.
+  := f • nil.
 
 Definition inflate {T : algebraic_theory_data} {n : nat} (f : T n) : T (S n)
   := f • (λ i, var (dni lastelement i)).
@@ -168,12 +168,12 @@ Proof.
   apply var_subst.
 Qed.
 
-Lemma subst_inflate_append_vec
+Lemma subst_inflate_snoc
   (T : algebraic_theory)
   {m : nat}
   (f : T 0)
   (g : stn 0 → T m)
-  : inflate f • append_vec g (lift_constant _ f) = f • g.
+  : inflate f • snoc g (lift_constant _ f) = f • g.
 Proof.
   refine (subst_inflate _ f _ @ _).
   apply maponpaths.

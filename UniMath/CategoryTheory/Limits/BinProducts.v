@@ -1551,7 +1551,7 @@ Section ProductsFromBinProducts.
     : C ⟦ sn_power_object, c ⟧.
   Proof.
     revert i.
-    apply append_vec.
+    apply snoc.
     - intro i.
       exact (
         BinProductPr1 _ _ ·
@@ -1582,11 +1582,11 @@ Section ProductsFromBinProducts.
       revert i.
       refine (stn_sn_ind _ _).
       - intro i.
-        refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
+        refine (maponpaths _ (init_snoc_i _ _ _) @ _).
         refine (assoc _ _ _ @ _).
         refine (maponpaths (λ x, x · _) (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
         apply (ProductPrCommutes _ _ _ P).
-      - refine (maponpaths _ (append_vec_compute_2 _ _) @ _).
+      - refine (maponpaths _ (last_snoc _ _) @ _).
         apply (BinProductPr2Commutes _ _ _ (BP P c)).
     Qed.
 

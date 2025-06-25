@@ -7,7 +7,7 @@ Vectors and matrices defined in March 2018 by Langston Barrett (@siddharthist).
 
   - Vectors
   - Matrices
-  - Sequences
+  - Lists
     - Definitions
     - Lemmas
 
@@ -16,346 +16,431 @@ Vectors and matrices defined in March 2018 by Langston Barrett (@siddharthist).
 Require Export UniMath.Combinatorics.FiniteSets.
 Require Import UniMath.Combinatorics.FVectors.
 
-Require Import UniMath.MoreFoundations.PartA.
-Require Import UniMath.MoreFoundations.Tactics.
-Require Import UniMath.MoreFoundations.Propositions.
-Require Import UniMath.MoreFoundations.Nat.
+Require Import UniMath.MoreFoundations.All.
 
 Local Open Scope transport.
 
 
-(** ** Sequences *)
+(** ** Lists *)
 
 (** *** Definitions *)
 
-(** A [Sequence] is a [Vector] of any length. *)
-Definition Sequence (X : UU) := ∑ n, Vector X n.
+(** A [list] is a [vector] of any length. *)
+Definition list (X : UU) : UU := ∑ n, vector X n.
 
-Definition NonemptySequence (X:UU) := ∑ n, stn (S n) -> X.
+Definition length {X : UU} (xs : list X) : nat := pr1 xs.
 
-Definition UnorderedSequence (X:UU) := ∑ I:FiniteSet, I -> X.
+Definition list_to_function {X : UU} (xs : list X) : stn (length xs) → X := pr2 xs.
 
-Definition length {X} : Sequence X -> nat := pr1.
+Coercion list_to_function : list >-> Funclass.
 
-Definition sequenceToFunction {X} (x:Sequence X) := pr2 x : stn (length x) -> X.
+Definition make_list {X : UU} {n : nat} (f : stn n → X) : list X := (n ,, f).
 
-Coercion sequenceToFunction : Sequence >-> Funclass.
-
-Definition unorderedSequenceToFunction {X} (x:UnorderedSequence X) := pr2 x : pr1 (pr1 x) -> X.
-
-Coercion unorderedSequenceToFunction : UnorderedSequence >-> Funclass.
-
-Definition sequenceToUnorderedSequence {X} : Sequence X -> UnorderedSequence X.
+Lemma list_hlevel (X : UU) {m : nat} (ism : isofhlevel (S (S m)) X)
+  : isofhlevel (S (S m)) (list X).
 Proof.
-  intros x.
+  apply isofhleveltotal2.
+  - clear ism.
+    induction m.
+    + exact isasetnat.
+    + apply hlevelntosn.
+      exact IHm.
+  - intro n.
+    exact (vector_hlevel _ _ ism).
+Qed.
+
+
+Definition nonempty_list (X : UU) : UU := ∑ n, vector X (S n).
+
+Definition length' {X : UU} (x : nonempty_list X) : nat := S (pr1 x).
+
+Definition nonempty_list_to_function {X : UU} (x : nonempty_list X) : stn (length' x) → X := pr2 x.
+
+Coercion nonempty_list_to_function : nonempty_list >-> Funclass.
+
+Coercion nonempty_list_to_list {X : UU} (x : nonempty_list X) : list X := make_list x.
+
+Definition make_nonempty_list {X : UU} {n : nat} (xs : vector X (S n)) : nonempty_list X := (n ,, xs).
+
+Definition nonempty_list_weq
+  (X : UU)
+  : (∑ (xs : list X), length xs != 0) ≃ nonempty_list X.
+Proof.
+  use weq_iso.
+  - intro xs.
+    induction xs as [xs Hxs].
+    induction xs as [n xs].
+    induction n as [| n IHn].
+    + exact (fromempty (Hxs (idpath 0))).
+    + exact (make_nonempty_list xs).
+  - intro xs.
+    exists xs.
+    exact (negpathssx0 _).
+  - abstract (
+      intro xs;
+      induction xs as [xs Hxs];
+      induction xs as [n xs];
+      apply (subtypePath (λ _, isapropneg _));
+      induction n as [|n IHn];
+      [ exact (fromempty (Hxs (idpath 0)))
+      | reflexivity ]
+    ).
+  - reflexivity.
+Defined.
+
+
+Definition unordered_list (X : UU) : UU := ∑ (I : FiniteSet), I → X.
+
+Definition unordered_list_to_function {X : UU} (x : unordered_list X) : pr1 (pr1 x) → X := pr2 x.
+
+Coercion unordered_list_to_function : unordered_list >-> Funclass.
+
+Definition list_to_unordered_list {X : UU} (x : list X) : unordered_list X.
+Proof.
   exists (standardFiniteSet (length x)).
   exact x.
 Defined.
 
-Coercion sequenceToUnorderedSequence : Sequence >-> UnorderedSequence.
+Coercion list_to_unordered_list : list >-> unordered_list.
 
-Definition length'{X} : NonemptySequence X -> nat := λ x, S(pr1 x).
+Definition make_unordered_list {X : UU} {I : FiniteSet} (f : I → X) : unordered_list X := (I ,, f).
 
-Definition functionToSequence {X n} (f:stn n -> X) : Sequence X
-  := (n,,f).
 
-Definition functionToUnorderedSequence {X} {I : FiniteSet} (f:I -> X) : UnorderedSequence X := (I,,f).
+Section Accessors.
 
-Definition NonemptySequenceToFunction {X} (x:NonemptySequence X) := pr2 x : stn (length' x) -> X.
+  Context {X : UU}.
+  Context (xs : list X).
+  Context (Hxs : length xs != 0).
 
-Coercion NonemptySequenceToFunction : NonemptySequence >-> Funclass.
+  Let xs' : nonempty_list X := nonempty_list_weq X (xs ,, Hxs).
 
-Definition NonemptySequenceToSequence {X} (x:NonemptySequence X) := functionToSequence (NonemptySequenceToFunction x) : Sequence X.
+  Definition last : X := last xs'.
+  Definition init : list X := make_list (init xs').
 
-Coercion NonemptySequenceToSequence : NonemptySequence >-> Sequence.
+  Definition head : X := head xs'.
+  Definition tail : list X := make_list (tail xs').
+
+End Accessors.
+
+Definition const_list {X : UU} (n : nat) (x : X) : list X := make_list (const_vec (n := n) x).
+
+Section NilSnoc.
+
+  Context {X : UU}.
+
+  Definition nil : list X := make_list nil.
+
+  Definition nil_length (x : list X) : length x = 0 <-> x = nil.
+  Proof.
+    split.
+    - intro e.
+      induction x as [n x].
+      induction (!e : 0 = n).
+      apply pair_path_in2.
+      apply uniqueness.
+    - intro h.
+      exact (maponpaths _ h).
+  Defined.
+
+  Definition snoc (xs : list X) (x : X) : list X := make_list (snoc xs x).
+
+  Lemma length_snoc (xs : list X) (x : X)
+    : length (snoc xs x) = S (length xs).
+  Proof.
+    reflexivity.
+  Defined.
+
+  Lemma init_snoc (xs : list X) (x : X)
+    : init (snoc xs x) (negpathssx0 _) = xs.
+  Proof.
+    apply pair_path_in2, init_snoc.
+  Qed.
+
+  Lemma last_snoc (xs : list X) (x : X)
+    : last (snoc xs x) (negpathssx0 _) = x.
+  Proof.
+    apply last_snoc.
+  Qed.
+
+  Lemma snoc_init_last (xs : list X) (Hxs : length xs != 0)
+    : snoc (init xs Hxs) (last xs Hxs) = xs.
+  Proof.
+    refine (_ @ base_paths _ _ (homotinvweqweq (nonempty_list_weq X) (xs ,, Hxs))).
+    apply pair_path_in2, snoc_init_last.
+  Qed.
+
+End NilSnoc.
+
+Local Notation "s □ x" := (snoc s x) (at level 64, left associativity).
+
+Section Recursion.
+
+  Context {X : UU}.
+  Context {P : UU}.
+  Context (p_nil : P).
+  Context (p_snoc : P → X → P).
+
+  Definition list_rect
+    (xs : list X)
+    : P
+    := vector_rect (P := λ n, P) p_nil (λ n Hx x, p_snoc Hx x) _ xs.
+
+  Definition list_rect_nil
+    : list_rect nil = p_nil
+    := vector_rect_nil _ _.
+
+  Definition list_rect_snoc
+    (xs : list X)
+    (x : X)
+    : list_rect (snoc xs x) = p_snoc (list_rect xs) x
+    := vector_rect_snoc p_nil (λ n, p_snoc) x xs.
+
+End Recursion.
+
+Section Induction.
+
+  Context {X : UU}.
+  Context {P : list X →UU}.
+  Context (p_nil : P nil).
+  Context (p_snoc : ∏ (xs : list X), P xs → ∏ (x : X), P (snoc xs x)).
+
+  Definition list_ind
+    (xs : list X)
+    : P xs
+    := vector_ind (P := λ n xs, P (make_list xs)) p_nil (λ n xs Hx x, p_snoc (make_list xs) Hx x) _ xs.
+
+  Definition list_ind_nil
+    : list_ind nil = p_nil
+    := vector_ind_nil _ _.
+
+  Definition list_ind_snoc
+    (HX : isaset X)
+    (xs : list X)
+    (x : X)
+    : list_ind (snoc xs x) = p_snoc xs (list_ind xs) x
+    := vector_ind_snoc _ _ HX x xs.
+
+End Induction.
 
 (** *** Lemmas *)
 
-Definition composeSequence {X Y} (f:X->Y) : Sequence X -> Sequence Y := λ x, functionToSequence (f ∘ x).
+Definition map {X Y} (f : X → Y) (xs : list X) : list Y := make_list (map f xs).
 
-Definition composeSequence' {X m n} (f:stn n -> X) (g:stn m -> stn n) : Sequence X
-  := functionToSequence (f ∘ g).
+Definition map_unordered_list {X Y} (f : X → Y) (xs : unordered_list X) : unordered_list Y
+  := make_unordered_list (f ∘ xs).
 
-Definition composeUnorderedSequence {X Y} (f:X->Y) : UnorderedSequence X -> UnorderedSequence Y
-  := λ x, functionToUnorderedSequence(f ∘ x).
+Definition reindex {X} (xs : list X) (f : list (stn (length xs))) : list X
+  := make_list (reindex xs f).
 
-Definition transport_stn m n i (b:i<m) (p:m=n) :
-  transportf stn p (i,,b) = (i,,transportf (λ m,i<m) p b).
-Proof. intros. induction p. reflexivity. Defined.
+Section Equality.
 
-Definition sequenceEquality2 {X} (f g:Sequence X) (p:length f=length g) :
-  (∏ i, f i = g (transportf stn p i)) -> f = g.
-Proof.
-  intros e. induction f as [m f]. induction g as [n g]. simpl in p.
-  apply (total2_paths2_f p). now apply vectorEquality.
-Defined.
+  Context {X : UU}.
+  Context {xs ys : list X}.
+  Context (e_len : length xs = length ys).
 
-(** The following two lemmas are the key lemmas that allow to prove (transportational) equality of
- sequences whose lengths are not definitionally equal. In particular, these lemmas can be used in
-the proofs of such results as associativity of concatenation of sequences and the right unity
-axiom for the empty sequence. **)
+  Definition list_eq
+    (e_el : ∏ i, xs i = ys (transportf stn e_len i))
+    : xs = ys
+    := total2_paths_f e_len (vector_eq e_len e_el).
 
-Definition seq_key_eq_lemma {X :UU}( g g' : Sequence X)(e_len : length g = length g')
-           (e_el : forall ( i : nat )(ltg : i < length g )(ltg' : i < length g' ),
-               g (i ,, ltg) = g' (i ,, ltg')) : g=g'.
-Proof.
-  intros.
-  induction g as [m g]; induction g' as [m' g']. simpl in e_len, e_el.
-  intermediate_path (m' ,, transportf (λ i, stn i -> X) e_len g).
-  - apply transportf_eq.
-  - apply maponpaths.
-    intermediate_path (g ∘ transportb stn e_len).
-    + apply transportf_fun.
-    + apply funextfun. intro x. induction x as [ i b ].
-      simple refine (_ @ e_el _ _ _).
-      * simpl.
-        apply maponpaths.
-        apply transport_stn.
-Defined.
+  Definition list_eq'
+    (e_el : ∏ i ltxs ltys, xs (make_stn _ i ltxs) = ys (make_stn _ i ltys))
+    : xs = ys
+    := total2_paths_f e_len (vector_eq' e_len e_el).
 
-(** The following lemma requires in the assumption [ e_el ] only one comparison [ i < length g ]
- and one comparison [ i < length g' ] for each i instead of all such comparisons as in the
- original version [ seq_key_eq_lemma ] . **)
+  Definition list_eq''
+    (e_el : ∏ i, ∑ ltxs ltys, xs (make_stn _ i ltxs) = ys (make_stn _ i ltys))
+    : xs = ys
+    := total2_paths_f e_len (vector_eq'' e_len e_el).
 
-Definition seq_key_eq_lemma' {X :UU} (g g' : Sequence X) :
-  length g = length g' ->
-  (∏ i, ∑ ltg : i < length g, ∑ ltg' : i < length g',
-                                        g (i ,, ltg) = g' (i ,, ltg')) ->
-  g=g'.
-Proof.
-  intros k r.
-  apply seq_key_eq_lemma.
-  * assumption.
-  * intros.
-    induction (r i) as [ p [ q e ]].
-    simple refine (_ @ e @ _).
-    - now apply maponpaths, isinjstntonat.
-    - now apply maponpaths, isinjstntonat.
-Defined.
+End Equality.
 
-Notation fromstn0 := empty_vec.
+Section ListAssembly.
 
-Definition nil {X} : Sequence X.
-Proof. intros. exact (0,, empty_vec). Defined.
+  Context {X : UU}.
 
-Definition append {X} : Sequence X -> X -> Sequence X.
-Proof. intros x y. exact (S (length x),, append_vec (pr2 x) y).
-Defined.
+  Definition disassemble_list : list X → unit ⨿ (list X × X).
+  Proof.
+    intros xs.
+    induction xs as [n xs].
+    induction n as [| n].
+    - exact (ii1 tt).
+    - exact (ii2 (make_list (FVectors.init xs) ,, FVectors.last xs)).
+  Defined.
 
-Definition drop_and_append {X n} (x : stn (S n) -> X) :
-  append (n,,x ∘ dni lastelement) (x lastelement) = (S n,, x).
-Proof.
-  intros. apply pair_path_in2. apply drop_and_append_vec.
-Defined.
+  Definition assemble_list : unit ⨿ (list X × X) → list X.
+  Proof.
+    intros co.
+    induction co as [t | p].
+    - exact nil.
+    - exact (snoc (pr1 p) (pr2 p)).
+  Defined.
 
-Local Notation "s □ x" := (append s x) (at level 64, left associativity).
+  Theorem list_assembly : list X ≃ unit ⨿ (list X × X).
+  Proof.
+    apply (weq_iso disassemble_list assemble_list).
+    - abstract (
+        intro xs;
+        induction xs as [n xs];
+        induction n as [| n];
+        [ apply pair_path_in2;
+          exact (!uniqueness _ _)
+        | exact (snoc_init_last (make_list xs) (negpathssx0 n)) ]
+      ).
+    - abstract (
+        intro co;
+        induction co as [t | p];
+        [ now induction t
+        | induction p as [int lst];
+          apply (maponpaths ii2);
+          apply pathsdirprod;
+          [ apply init_snoc
+          | apply last_snoc ] ]
+      ).
+  Defined.
 
-Definition nil_unique {X} (x : stn 0 -> X) : nil = (0,,x).
-Proof.
-  intros. unfold nil. apply maponpaths. apply isapropifcontr. apply iscontr_vector_0.
-Defined.
+End ListAssembly.
 
-(*  *)
+Section Concatenate.
 
-Definition nil_length {X} (x : Sequence X) : length x = 0 <-> x = nil.
-Proof.
-  intros. split.
-  - intro e. induction x as [n x]. simpl in e.
-    induction (!e). apply pathsinv0. apply nil_unique.
-  - intro h. induction (!h). reflexivity.
-Defined.
+  Context {X : UU}.
 
-Definition drop {X} (x:Sequence X) : length x != 0 -> Sequence X.
-Proof.
-  revert x. intros [n x] h.
-  induction n as [|n].
-  - simpl in h. contradicts h (idpath 0).
-  - exact (n,,x ∘ dni lastelement).
-Defined.
+  Definition concatenate (xs ys : list X) : list X
+    := make_list (concatenate xs ys).
 
-Definition drop' {X} (x:Sequence X) : x != nil -> Sequence X.
-Proof. intros h. exact (drop x (pr2 (logeqnegs (nil_length x)) h)). Defined.
-
-Lemma append_and_drop_fun {X} (x : Sequence X) (y : X) :
-  drop (append x y) (negpathssx0 _) = x.
-Proof.
-  apply pair_path_in2.
-  apply append_and_drop_vec.
-Qed.
-
-Definition drop_and_append' {X n} (x : stn (S n) -> X) :
-  append (drop (S n,,x) (negpathssx0 _)) (x lastelement) = (S n,, x).
-Proof.
-  intros. simpl. apply pair_path_in2. apply drop_and_append_vec.
-Defined.
-
-Definition disassembleSequence {X} : Sequence X -> coprod unit (X × Sequence X).
-Proof.
-  intros x.
-  induction x as [n x].
-  induction n as [|n].
-  - exact (ii1 tt).
-  - exact (ii2(x lastelement,,(n,,x ∘ dni lastelement))).
-Defined.
-
-Definition assembleSequence {X} : coprod unit (X × Sequence X) -> Sequence X.
-Proof.
-  intros co.
-  induction co as [t|p].
-  - exact nil.
-  - exact (append (pr2 p) (pr1 p)).
-Defined.
-
-Lemma assembleSequence_ii2 {X} (p : X × Sequence X) :
-  assembleSequence (ii2 p) = append (pr2 p) (pr1 p).
-Proof. reflexivity. Defined.
-
-Theorem SequenceAssembly {X} : Sequence X ≃ unit ⨿ (X × Sequence X).
-Proof.
-  apply (weq_iso disassembleSequence assembleSequence).
-  - intros.
-    induction x as [n x].
-    induction n as [|n].
-    + apply nil_unique.
-    + apply drop_and_append'.
-  - intro co.
-    induction co as [t|p]; [now induction t |].
-    induction p as [x y].
-    induction y as [n y].
-    apply (maponpaths (@inr unit (X × Sequence X))).
-    refine (two_arg_paths (f := λ a b, a ,, _ ,, b) _ _).
-    + apply append_vec_compute_2.
-    + apply funextfun.
-      intro i.
-      apply append_vec_compute_1.
-Defined.
-
-
-Definition Sequence_rect {X} {P : Sequence X ->UU}
-           (p0 : P nil)
-           (ind : ∏ (x : Sequence X) (y : X), P x -> P (append x y))
-           (x : Sequence X) : P x.
-Proof.
-  exact (Vector_rect (P := λ n v, P (n ,, v)) p0 (λ n xs x' Hx, ind (n ,, xs) x' Hx) x).
-Defined.
-
-Lemma Sequence_rect_compute_nil {X} {P : Sequence X ->UU} (p0 : P nil)
-      (ind : ∏ (s : Sequence X) (x : X), P s -> P (append s x)) :
-  Sequence_rect p0 ind nil = p0.
-Proof.
-  exact (Vector_rect_empty _ _).
-Qed.
-
-Lemma Sequence_rect_compute_cons
-      {X : UU} (HX : isaset X) {P : Sequence X ->UU} (p0 : P nil)
-      (ind : ∏ (s : Sequence X) (x : X), P s -> P (append s x))
-      (p := Sequence_rect p0 ind) (x:X) (l:Sequence X) :
-  p (append l x) = ind l x (p l).
-Proof.
-  exact (Vector_rect_append HX _ _ x l).
-Qed.
-
-Lemma append_length {X} (x:Sequence X) (y:X) :
-  length (append x y) = S (length x).
-Proof. intros. reflexivity. Defined.
-
-Definition concatenate {X : UU} : binop (Sequence X)
-  := λ x y, functionToSequence (concatenate' x y).
-
-Definition concatenate_length {X} (x y:Sequence X) :
-  length (concatenate x y) = length x + length y.
-Proof. intros. reflexivity. Defined.
-
-Definition concatenate_0 {X} (s t:Sequence X) : length t = 0 -> concatenate s t = s.
-Proof.
-  induction s as [m s]. induction t as [n t].
-  intro e; simpl in e. induction (!e).
-  simple refine (sequenceEquality2 _ _ _ _).
-  - simpl. apply natplusr0.
-  - intro i; simpl in i. simpl.
-    unfold concatenate'.
-    rewrite weqfromcoprodofstn_invmap_r0.
-    simpl.
+  Lemma concatenate_length
+    (xs ys : list X)
+    : length (concatenate xs ys) = length xs + length ys.
+  Proof.
     reflexivity.
-Defined.
+  Qed.
 
-Definition concatenateStep {X : UU} (x : Sequence X) {n : nat} (y : stn (S n) -> X) :
-  concatenate x (S n,,y) = append (concatenate x (n,,y ∘ dni lastelement)) (y lastelement).
-Proof.
-  revert x n y. induction x as [m l]. intros n y.
-  use seq_key_eq_lemma.
-  - cbn. apply natplusnsm.
-  - intros i r s.
-    unfold concatenate, concatenate', weqfromcoprodofstn_invmap; cbn.
-    unfold append_vec; cbn.
-    induction (natlthorgeh i m) as [H | H].
-    + refine (!maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _)).
-      apply (natlthlehtrans _ m).
-      * exact H.
-      * apply natlehnplusnm.
-    + rewrite replace_dni_last.
-      induction (natlehchoice i (m + n) s) as [I|J].
-      * apply (maponpaths y), subtypePath_prop. reflexivity.
-      * apply (maponpaths y), subtypePath_prop. simpl.
-        induction (!J). rewrite natpluscomm. apply plusminusnmm.
-Qed.
+  Lemma concatenate_0r
+    (xs ys : list X)
+    (H : length ys = 0)
+    : concatenate xs ys = xs.
+  Proof.
+    induction (!pr1 (nil_length _) H).
+    refine (list_eq (natplusr0 _ : length (concatenate xs nil) = _) _).
+    intro i.
+    refine (_ @ !transportb_fun' _ _ _).
+    refine (eqtohomot _ i).
+    apply concatenate_0r.
+  Qed.
 
-Definition flatten {X : UU} : Sequence (Sequence X) -> Sequence X.
-Proof.
-  intros x. exists (stnsum (length ∘ x)). exact (flatten' (sequenceToFunction ∘ x)).
-Defined.
+  Definition concatenate_0l
+    (xs ys : list X)
+    (H : length xs = 0)
+    : concatenate xs ys = ys.
+  Proof.
+    induction (!pr1 (nil_length _) H).
+    apply (list_eq (idpath _ : length (concatenate nil ys) = length ys)).
+    apply eqtohomot.
+    apply concatenate_0l.
+  Qed.
 
-Definition flattenUnorderedSequence {X : UU} : UnorderedSequence (UnorderedSequence X) -> UnorderedSequence X.
+  Lemma init_concatenate
+    (xs ys : list X)
+    (Hy : length ys != 0)
+    : init (concatenate xs ys) (Hy ∘ plusmn0n0 _ _ : length (concatenate xs ys) != 0) = concatenate xs (init ys Hy).
+  Proof.
+    induction xs as [m xs].
+    induction ys as [n ys].
+    induction n as [| n IHn].
+    - exact (fromempty (Hy (idpath 0))).
+    - induction m as [| m IHm].
+      + apply pair_path_in2.
+        refine (init_concatenate xs ys).
+      + use list_eq.
+        * apply natplusnsm.
+        * intro i.
+          simpl.
+          unfold FVectors.concatenate, FVectors.init, invmap.
+          simpl.
+          unfold weqfromcoprodofstn_invmap.
+          pose (Hi := maponpaths (stntonat _) (transport_stn _ _) : stntonat _ (transportf stn (natplusnsm m n) i) = i).
+          rewrite !replace_dni_last.
+          set (q1 := natlthorgeh _ _).
+          set (q2 := natlthorgeh _ _).
+          induction q1 as [q1 | q1], q2 as [q2 | q2].
+          -- apply (vector_stn_proofirrelevance (zs := xs)).
+            exact (!Hi).
+          -- apply fromempty.
+            exact (isirreflnatgth _ (transportf (λ x, x > dni_lastelement i) Hi (natgehgthtrans _ _ _ q2 q1))).
+          -- apply fromempty.
+            exact (isirreflnatgth _ (transportf (λ x, dni_lastelement i > x) Hi (natgehgthtrans _ _ _ q1 q2))).
+          -- apply (maponpaths ys).
+            apply subtypePath_prop.
+            refine (maponpaths_2 _ _ _).
+            exact (!Hi).
+  Qed.
+
+  Lemma last_concatenate
+    (xs ys : list X)
+    (Hy : length ys != 0)
+    : last (concatenate xs ys) (Hy ∘ plusmn0n0 _ _ : length (concatenate xs ys) != 0) = last ys Hy.
+  Proof.
+    induction xs as [m xs].
+    induction ys as [n ys].
+    induction n as [| n IHn].
+    - exact (fromempty (Hy (idpath 0))).
+    - induction m as [| m IHm].
+      + refine (_ @ last_concatenate xs ys).
+        now apply (vector_stn_proofirrelevance (zs := ys)).
+      + refine (maponpaths (coprod_rect _ _ _) (_ : _ = inr lastelement)).
+        apply (switch_weq (weqfromcoprodofstn _ _)).
+        apply subtypePath_prop.
+        apply natplusnsm.
+  Qed.
+
+  Definition concatenate_step
+    (xs ys : list X)
+    (Hy : length ys != 0)
+    : concatenate xs ys = snoc (concatenate xs (init ys Hy)) (last ys Hy).
+  Proof.
+    refine (!maponpaths (λ t, concatenate xs (pr1 t)) (homotinvweqweq (nonempty_list_weq X) (ys ,, Hy)) @ _).
+    use total2_paths_f.
+    - apply natplusnsm.
+    - apply FVectors.concatenate_step.
+  Defined.
+
+End Concatenate.
+
+Definition flatten {X : UU} (x : list (list X))
+  : list X
+  := make_list (flatten (list_to_function ∘ x)).
+
+Definition flatten_unordered_list {X : UU} : unordered_list (unordered_list X) → unordered_list X.
 Proof.
   intros x.
   use tpair.
   - exact ((∑ i, pr1 (x i))%finset).
-  - intros ij. exact (x (pr1 ij) (pr2 ij)). (* could also have used (uncurry (unorderedSequenceToFunction x)) here *)
+  - intros ij. exact (x (pr1 ij) (pr2 ij)). (* could also have used (uncurry (unorderedListToFunction x)) here *)
 Defined.
 
-Definition flattenStep' {X n}
-           (m : stn (S n) → nat)
-           (x : ∏ i : stn (S n), stn (m i) → X)
-           (m' := m ∘ dni lastelement)
-           (x' := x ∘ dni lastelement) :
-  flatten' x = concatenate' (flatten' x') (x lastelement).
-Proof.
-  intros.
-  apply funextfun; intro i.
-  unfold flatten'.
-  unfold funcomp.
-  rewrite 2 weqstnsum1_eq'.
-  unfold StandardFiniteSets.weqstnsum_invmap at 1.
-  unfold concatenate'.
-  unfold nat_rect, coprod_rect, funcomp.
-  change (weqfromcoprodofstn_invmap (stnsum (λ r : stn n, m (dni lastelement r))))
-  with (weqfromcoprodofstn_invmap (stnsum m')) at 1 2.
-  induction (weqfromcoprodofstn_invmap (stnsum m')) as [B|C].
-  - reflexivity.
-  - now induction C.            (* not needed with primitive projections *)
-Defined.
-
-Definition flattenStep {X} (x: NonemptySequence (Sequence X)) :
-  flatten x = concatenate (flatten (composeSequence' x (dni lastelement))) (lastValue x).
+Definition flatten_step
+  {X : UU}
+  (xs : nonempty_list (list X))
+  : flatten xs = concatenate (flatten (reindex xs (make_list (dni lastelement)))) (last xs (negpathssx0 _)).
 Proof.
   intros.
   apply pair_path_in2.
-  set (xlens := λ i, length(x i)).
-  set (xvals := λ i, λ j:stn (xlens i), x i j).
-  exact (flattenStep' xlens xvals).
+  exact (flatten_step _ (λ i j, xs i j)).
 Defined.
+
+(* Work from here *)
 
 (* partitions *)
 
-Definition partition' {X n} (f:stn n -> nat) (x:stn (stnsum f) -> X) : stn n -> Sequence X.
+Definition partition' {X n} (f:stn n → nat) (x:stn (stnsum f) → X) : stn n → list X.
 Proof. intros i. exists (f i). intro j. exact (x(inverse_lexicalEnumeration f (i,,j))).
 Defined.
 
-Definition partition {X n} (f:stn n -> nat) (x:stn (stnsum f) -> X) : Sequence (Sequence X).
+Definition partition {X n} (f:stn n → nat) (x:stn (stnsum f) → X) : list (list X).
 Proof. intros. exists n. exact (partition' f x).
 Defined.
 
-Definition flatten_partition {X n} (f:stn n -> nat) (x:stn (stnsum f) -> X) :
+Definition flatten_partition {X n} (f:stn n → nat) (x:stn (stnsum f) → X) :
   flatten (partition f x) ~ x.
 Proof.
   intros. intro i.
@@ -365,12 +450,12 @@ Defined.
 
 (* associativity of "concatenate" *)
 
-Definition isassoc_concatenate {X : UU} (x y z : Sequence X) :
+Definition isassoc_concatenate {X : UU} (x y z : list X) :
   concatenate (concatenate x y) z = concatenate x (concatenate y z).
 Proof.
-  use seq_key_eq_lemma.
+  use list_eq'.
   - cbn. apply natplusassoc.
-  - intros i ltg ltg'. cbn. unfold concatenate'. unfold weqfromcoprodofstn_invmap. unfold coprod_rect. cbn.
+  - intros i ltg ltg'. cbn. unfold FVectors.concatenate. unfold invmap. simpl. unfold weqfromcoprodofstn_invmap. unfold coprod_rect. cbn.
     induction (natlthorgeh i (length x + length y)) as [H | H].
     + induction (natlthorgeh (make_stn (length x + length y) i H) (length x)) as [H1 | H1].
       * induction (natlthorgeh i (length x)) as [H2 | H2].
@@ -419,10 +504,10 @@ Qed.
 
 (** Reverse *)
 
-Definition reverse {X : UU} (x : Sequence X) : Sequence X :=
-  functionToSequence (fun i : (stn (length x)) => x (dualelement i)).
+Definition reverse {X : UU} (x : list X) : list X :=
+  make_list (fun i : (stn (length x)) => x (dualelement i)).
 
-Lemma reversereverse {X : UU} (x : Sequence X) : reverse (reverse x) = x.
+Lemma reversereverse {X : UU} (x : list X) : reverse (reverse x) = x.
 Proof.
   induction x as [n x].
   apply pair_path_in2.
@@ -433,7 +518,7 @@ Proof.
   + cbn. apply maponpaths. apply isinjstntonat. apply minusminusmmn. apply natgthtogehm1. apply stnlt.
 Qed.
 
-Lemma reverse_index {X : UU} (x : Sequence X) (i : stn (length x)) :
+Lemma reverse_index {X : UU} (x : list X) (i : stn (length x)) :
   (reverse x) (dualelement i) = x i.
 Proof.
   cbn. unfold dualelement, coprod_rect.
@@ -443,7 +528,7 @@ Proof.
   - apply maponpaths. apply isinjstntonat. cbn. apply (minusminusmmn _ _ e).
 Qed.
 
-Lemma reverse_index' {X : UU} (x : Sequence X) (i : stn (length x)) :
+Lemma reverse_index' {X : UU} (x : list X) (i : stn (length x)) :
   (reverse x) i = x (dualelement i).
 Proof.
   cbn. unfold dualelement, coprod_rect.

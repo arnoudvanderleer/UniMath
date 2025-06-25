@@ -23,12 +23,12 @@ Require Import UniMath.Algebra.GaussianElimination.Auxiliary.
 
 Section Arbitrary_Vectors.
 (** * Vectors in arbitrary types *)
-  Lemma vector_fmap {X Y : UU} (f : X -> Y) {n} : Vector X n -> Vector Y n.
+  Lemma vector_fmap {X Y : UU} (f : X -> Y) {n} : vector X n -> vector Y n.
   Proof.
     intros ? ?; auto.
   Defined.
 
-  Lemma iscontr_nil_vector {X : UU} : iscontr (Vector X 0).
+  Lemma iscontr_nil_vector {X : UU} : iscontr (vector X 0).
   Proof.
     apply iscontrfunfromempty2. apply fromstn0.
   Defined.
@@ -39,7 +39,7 @@ Section Arbitrary_Vectors.
     intros eq; apply (invmaponpathsweq (@weq_vector_1 X)  _ _ eq).
   Defined.
 
-  Lemma const_vec_eq  {X : UU} {n : nat} (v : Vector X n) (e : X) (i : ⟦ n ⟧%stn)
+  Lemma const_vec_eq  {X : UU} {n : nat} (v : vector X n) (e : X) (i : ⟦ n ⟧%stn)
     : v = const_vec e -> v i = e.
   Proof.
     intros eq. rewrite eq. reflexivity.
@@ -55,35 +55,35 @@ End Arbitrary_Vectors.
 Local Notation "v1 *pw v2" := ((pointwise _ op2) v1 v2) (at level 40, left associativity).
 Local Notation "v1 +pw v2" := ((pointwise _ op1) v1 v2) (at level 50, left associativity).
 
-Section Basic_Vector_Algebra.
+Section Basic_vector_Algebra.
 
   Context { R : rig }.
 
-  Definition scalar_lmult_vec (s : R) {n} (vec: Vector R n)
+  Definition scalar_lmult_vec (s : R) {n} (vec: vector R n)
     := vector_fmap (fun x => s * x)%rig vec.
 
-  Definition scalar_rmult_vec {n} (vec: Vector R n) (s : R)
+  Definition scalar_rmult_vec {n} (vec: vector R n) (s : R)
     := vector_fmap (fun x => x * s)%rig vec.
 
-  Lemma pointwise_rdistr_vector { n : nat } (v1 v2 v3 : Vector R n)
+  Lemma pointwise_rdistr_vector { n : nat } (v1 v2 v3 : vector R n)
     : (v1 +pw v2) *pw v3 = (v1 *pw v3) +pw (v2 *pw v3).
   Proof.
     use (pointwise_rdistr (rigrdistr R)).
   Defined.
 
-  Lemma pointwise_assoc2_vector { n : nat } (v1 v2 v3 : Vector R n)
+  Lemma pointwise_assoc2_vector { n : nat } (v1 v2 v3 : vector R n)
     : (v1 *pw v2) *pw v3 = v1 *pw (v2 *pw v3).
   Proof.
     use (pointwise_assoc (rigassoc2 R)).
   Defined.
 
-  Lemma pointwise_comm2_vector {CR: commrig} { n : nat } (v1 v2 : Vector CR n)
+  Lemma pointwise_comm2_vector {CR: commrig} { n : nat } (v1 v2 : vector CR n)
     : v1 *pw v2 = v2 *pw v1.
   Proof.
     use (pointwise_comm (rigcomm2 CR)).
   Defined.
 
-  Definition stdb_vector { n : nat } (i : ⟦ n ⟧%stn) : Vector R n.
+  Definition stdb_vector { n : nat } (i : ⟦ n ⟧%stn) : vector R n.
   Proof.
     intros j.
     induction (stn_eq_or_neq i j).
@@ -104,13 +104,13 @@ Section Basic_Vector_Algebra.
     now rewrite (stn_eq_or_neq_right i_neq_j).
   Defined.
 
-End Basic_Vector_Algebra.
+End Basic_vector_Algebra.
 
 (** * Total sums of vectors *)
 
 Local Notation  Σ := (iterop_fun 0%rig op1).
 
-Section Vector_Sums.
+Section vector_Sums.
 
   Context { R : rig }.
 
@@ -118,7 +118,7 @@ Section Vector_Sums.
 
   For now they are given here for rigs; many use only the additive structure, so could be generalised to commutative monoids (or arbitrary monoids). Lemmas involving the least structure are given first. *)
 
-  Lemma vecsum_empty (v1 : Vector R 0) : Σ v1 = 0%rig.
+  Lemma vecsum_empty (v1 : vector R 0) : Σ v1 = 0%rig.
   Proof.
     reflexivity.
   Defined.
@@ -154,7 +154,7 @@ Section Vector_Sums.
     apply IH.
   Defined.
 
-  Lemma vecsum_eq_zero {n} (v : Vector R n) (v_0 : v ~ const_vec 0%rig)
+  Lemma vecsum_eq_zero {n} (v : vector R n) (v_0 : v ~ const_vec 0%rig)
     : Σ v = 0%rig.
   Proof.
     etrans. { apply vecsum_eq, v_0. }
@@ -295,7 +295,7 @@ Section Vector_Sums.
 
   (** From here on, we are really using the ring structure *)
   Lemma vecsum_ldistr :
-    ∏ (n : nat) (vec : Vector R n) (s : R),
+    ∏ (n : nat) (vec : vector R n) (s : R),
     op2 s (Σ vec) =  Σ (scalar_lmult_vec s vec).
   Proof.
     intros. induction n as [| n IH].
@@ -305,7 +305,7 @@ Section Vector_Sums.
   Defined.
 
   Lemma vecsum_rdistr:
-    ∏ (n : nat) (vec : Vector R n) (s : R),
+    ∏ (n : nat) (vec : vector R n) (s : R),
     op2 (Σ vec) s =  Σ (scalar_rmult_vec vec s).
   Proof.
     intros. induction n as [| n IH].
@@ -314,14 +314,14 @@ Section Vector_Sums.
       rewrite rigrdistr. apply maponpaths_2, IH.
   Defined.
 
-  Lemma vecsum_scalar_lmult {m} (s : R) (v w : Vector R m)
+  Lemma vecsum_scalar_lmult {m} (s : R) (v w : vector R m)
     : Σ (scalar_lmult_vec s v *pw w) = (s * Σ (v *pw w))%rig.
   Proof.
     etrans. 2: { apply pathsinv0, vecsum_ldistr. }
     apply vecsum_eq. intro i. apply rigassoc2.
   Defined.
 
-End Vector_Sums.
+End vector_Sums.
 
 Section Pulse_Functions.
   (** * Pulse functions
@@ -383,7 +383,7 @@ Section Pulse_Functions.
     apply rigmult0x.
   Defined.
 
-  Lemma sum_stdb_vector_pointwise_prod { n : nat } (v : Vector R n) (i : ⟦ n ⟧%stn)
+  Lemma sum_stdb_vector_pointwise_prod { n : nat } (v : vector R n) (i : ⟦ n ⟧%stn)
     : Σ (stdb_vector i *pw v) = (v i).
   Proof.
     etrans.
@@ -396,7 +396,7 @@ Section Pulse_Functions.
     apply riglunax2.
   Defined.
 
-  Lemma pointwise_prod_stdb_vector {n : nat} (v : Vector R n) (i : ⟦ n ⟧%stn)
+  Lemma pointwise_prod_stdb_vector {n : nat} (v : vector R n) (i : ⟦ n ⟧%stn)
     : v *pw (stdb_vector i) = scalar_lmult_vec (v i) (stdb_vector i).
   Proof.
     apply funextfun. intros j.

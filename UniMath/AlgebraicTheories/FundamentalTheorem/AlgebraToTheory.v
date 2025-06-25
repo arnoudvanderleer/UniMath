@@ -206,7 +206,7 @@ Section AlgebraToTheory.
       rewrite (compose_abs _ Lβ).
       rewrite (abs_compose _ Lβ).
       rewrite (var_subst L).
-      now rewrite append_vec_compute_2.
+      now rewrite last_snoc.
     Qed.
 
     Lemma is_unit_I1
@@ -299,9 +299,9 @@ Section AlgebraToTheory.
       refine (_ @ !maponpaths (λ x, (abs (_ ∘ x))) (subst_inflate _ _ _)).
       refine (_ @ !maponpaths (λ x, (abs ((x ∘ _) ∘ _))) (subst_inflate _ _ _)).
       refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (var_subst _ _ _)).
-      refine (_ @ !maponpaths (λ x, (abs ((_ ∘ (x • _)) ∘ _))) (append_vec_compute_2 _ _)).
+      refine (_ @ !maponpaths (λ x, (abs ((_ ∘ (x • _)) ∘ _))) (last_snoc _ _)).
       refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (var_subst _ _ _)).
-      refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (append_vec_compute_2 _ _)).
+      refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (last_snoc _ _)).
       refine (_ @ !maponpaths (λ x, (abs (x ∘ _ ∘ x))) (subst_U_term _ _)).
       refine (_ @ !maponpaths (λ x, (abs (x ∘ _))) (U_compose L Lβ _)).
       exact (!maponpaths (λ x, (abs x)) (compose_U L Lβ _)).
@@ -588,25 +588,25 @@ Section AlgebraToTheory.
       refine (maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (subst_inflate _ _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (var_subst _ _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨(app x _), _⟩))) (var_subst _ _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨(app _ (x • _)), _⟩))) (append_vec_compute_2 _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨(app _ (x • _)), _⟩))) (last_snoc _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (var_subst _ _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨_, (app _ (x • _))⟩))) (append_vec_compute_2 _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨(app (x • _) _), _⟩))) (append_vec_compute_1 _ _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨_, (app _ (x • _))⟩))) (last_snoc _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨(app (x • _) _), _⟩))) (init_snoc_i _ _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (var_subst _ _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨_, (app (x • _) _)⟩))) (append_vec_compute_1 _ _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨_, (app (x • _) _)⟩))) (init_snoc_i _ _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (var_subst _ _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨(app x _), _⟩))) (var_subst _ _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (append_vec_compute_2 _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (last_snoc _ _) @ _).
       refine (maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (var_subst _ _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (append_vec_compute_2 _ _) @ _).
-      refine (maponpaths (λ x, (abs (⟨(app x _), _⟩))) (append_vec_compute_1 _ _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (last_snoc _ _) @ _).
+      refine (maponpaths (λ x, (abs (⟨(app x _), _⟩))) (init_snoc_i _ _ _) @ _).
       refine (_ @ !var_subst _ _ _).
       refine (_ @ !subst_pair_arrow _ _ _ _).
       refine (_ @ !maponpaths (λ x, (pair_arrow x _)) (var_subst _ _ _)).
       refine (_ @ !maponpaths (λ x, (pair_arrow _ x)) (var_subst _ _ _)).
       refine (_ @ !maponpaths (λ x, (abs (⟨(app x _), _⟩))) (inflate_var _ _)).
       refine (_ @ !maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (inflate_var _ _)).
-      exact (maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (append_vec_compute_1 _ _ _)).
+      exact (maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (init_snoc_i _ _ _)).
     Qed.
 
     Lemma is_z_iso_functional_2_exponential_object
@@ -659,7 +659,7 @@ Section AlgebraToTheory.
         refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs x)))))) (subst_compose _ _ _ _) @ _).
         refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs (x ∘ _))))))) (subst_compose _ _ _ _) @ _).
         refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs ((_ ∘ x) ∘ _))))))) (var_subst _ _ _) @ _).
-        refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs ((_ ∘ x) ∘ _))))))) (append_vec_compute_2 _ _) @ _).
+        refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs ((_ ∘ x) ∘ _))))))) (last_snoc _ _) @ _).
         refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs ((_ ∘ (app x _)) ∘ _))))))) (inflate_var _ _) @ _).
         refine (maponpaths (λ x, (curry (uncurry (curry (uncurry (abs (x ∘ _ ∘ x))))))) (subst_U_term _ _) @ _).
         refine (maponpaths (λ x, (curry (uncurry x))) (curry_uncurry _ Lβ _) @ _).
@@ -674,7 +674,7 @@ Section AlgebraToTheory.
         refine (_ @ !maponpaths (λ x, (abs x)) (subst_compose _ _ _ _)).
         refine (_ @ !maponpaths (λ x, (abs (x ∘ _))) (subst_compose _ _ _ _)).
         refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (var_subst _ _ _)).
-        refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (append_vec_compute_2 _ _)).
+        refine (_ @ !maponpaths (λ x, (abs ((_ ∘ x) ∘ _))) (last_snoc _ _)).
         refine (_ @ !maponpaths (λ x, (abs ((_ ∘ (app x _)) ∘ _))) (inflate_var _ _)).
         refine (_ @ !maponpaths (λ x, (abs (x ∘ _ ∘ x))) (subst_U_term _ _)).
         apply (curry_uncurry _ Lβ).
@@ -713,7 +713,7 @@ Section AlgebraToTheory.
           refine (_ @ !maponpaths (λ x, (x ∘ _)) (subst_U_term _ _));
           refine (_ @ !abs_compose _ Lβ _ _);
           refine (_ @ !maponpaths (λ x, (abs x)) (var_subst _ _ _));
-          refine (_ @ !maponpaths (λ x, (abs x)) (append_vec_compute_2 _ _)).
+          refine (_ @ !maponpaths (λ x, (abs x)) (last_snoc _ _)).
         + refine (maponpaths (λ x, (x ∘ _)) (subst_π1 _ _) @ _).
           apply (π1_pair_arrow _ Lβ).
         + refine (maponpaths (λ x, (x ∘ _)) (subst_π2 _ _) @ _).

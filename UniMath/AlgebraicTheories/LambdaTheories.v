@@ -57,7 +57,7 @@ Definition extended_composition
   (f : T (S m))
   (g : stn m → T n)
   : T (S n)
-  := f • (append_vec (λ i, inflate (g i)) (var lastelement)).
+  := f • (snoc (λ i, inflate (g i)) (var lastelement)).
 
 Definition app_subst_ax
   (L : lambda_theory_data)
@@ -185,15 +185,15 @@ Qed.
 (** * 4. Lemmas on the interaction of abs with subst *)
 
 Definition subst_abs (L : lambda_theory) {m n : nat} (f : L (S m)) (g : stn m → L n)
-  : subst (abs f) g = abs (subst f (append_vec (λ i, inflate (g i)) (var lastelement)))
+  : subst (abs f) g = abs (subst f (snoc (λ i, inflate (g i)) (var lastelement)))
   := !abs_subst _ _ _.
 
 Definition inflate_abs (L : lambda_theory) {n : nat} (f : L (S n))
-  : inflate (abs f) = abs (subst f (append_vec (λ i, var (dni lastelement (dni lastelement i))) (var lastelement))).
+  : inflate (abs f) = abs (subst f (snoc (λ i, var (dni lastelement (dni lastelement i))) (var lastelement))).
 Proof.
   unfold inflate.
   rewrite subst_abs.
-  apply (maponpaths (λ x, abs (f • append_vec x _))).
+  apply (maponpaths (λ x, abs (f • snoc x _))).
   apply funextfun.
   intro i.
   apply inflate_var.
@@ -202,7 +202,7 @@ Qed.
 (** * 5. The definition and properties of app and beta_equality *)
 
 Definition app {L : lambda_theory_data} {n : nat} (f g : L n) : L n
-  := appx f • append_vec var g.
+  := appx f • snoc var g.
 
 Lemma appx_to_app
   {L : lambda_theory}
@@ -218,13 +218,13 @@ Proof.
   apply funextfun.
   refine (stn_sn_ind _ _).
   - intro i.
-    refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ _).
+    refine (maponpaths (λ x, x • _) (init_snoc_i _ _ _) @ _).
     refine (subst_inflate _ _ _ @ _).
     refine (var_subst _ _ _ @ _).
-    apply append_vec_compute_1.
-  - refine (maponpaths (λ x, x • _) (append_vec_compute_2 _ _) @ _).
+    apply init_snoc_i.
+  - refine (maponpaths (λ x, x • _) (last_snoc _ _) @ _).
     refine (var_subst _ _ _ @ _).
-    apply append_vec_compute_2.
+    apply last_snoc.
 Qed.
 
 Lemma subst_app (L : lambda_theory) {m n : nat} (f g : L m) (h : stn m → L n)
@@ -238,17 +238,17 @@ Proof.
   apply funextfun.
   refine (stn_sn_ind _ _).
   - intro i.
-    do 2 refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ !_).
+    do 2 refine (maponpaths (λ x, x • _) (init_snoc_i _ _ _) @ !_).
     rewrite var_subst.
     rewrite subst_inflate.
     refine (!subst_var _ _ @ _).
     apply maponpaths.
     apply funextfun.
     intro j.
-    now rewrite append_vec_compute_1.
-  - do 2 refine (maponpaths (λ x, x • _) (append_vec_compute_2 _ _) @ !_).
+    now rewrite init_snoc_i.
+  - do 2 refine (maponpaths (λ x, x • _) (last_snoc _ _) @ !_).
     rewrite var_subst.
-    now rewrite append_vec_compute_2.
+    now rewrite last_snoc.
 Qed.
 
 Definition inflate_app (L : lambda_theory) {n : nat} (f g : L n)
@@ -256,7 +256,7 @@ Definition inflate_app (L : lambda_theory) {n : nat} (f g : L n)
   := subst_app L _ _ _.
 
 Definition beta_equality (L : lambda_theory) (H : has_β L) {n : nat} (f : L (S n)) (g : L n)
-  : app (abs f) g = subst f (append_vec var g).
+  : app (abs f) g = subst f (snoc var g).
 Proof.
   unfold app, abs.
   now rewrite H.
@@ -298,7 +298,7 @@ Section AppAbs.
     {s : (L (S n) : hSet)}
     {t : (L n : hSet)}
     (H2 : extended_composition (app' L) (λ _ : (⟦ 1 ⟧)%stn, t) = s)
-    : abs s = app' L • append_vec (λ _ : (⟦ 1 ⟧)%stn, lift_constant n (one L)) t.
+    : abs s = app' L • snoc (λ _ : (⟦ 1 ⟧)%stn, lift_constant n (one L)) t.
   Proof.
     refine (!maponpaths _ H2 @ _).
     refine (abs_subst _ _ _ @ _).
@@ -306,13 +306,13 @@ Section AppAbs.
     refine (maponpaths (λ x, x • _) (app_from_app' (one L)) @ _).
     refine (subst_subst _ (app' L) _ _ @ _).
     apply maponpaths.
-    apply append_vec_eq.
+    apply snoc_eq.
     - intro i'.
-      refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ _).
+      refine (maponpaths (λ x, x • _) (init_snoc_i _ _ _) @ _).
       refine (subst_subst _ (one L) _ _ @ _).
       apply (maponpaths (subst _)).
       apply (uniqueness (iscontr_vector_0 _)).
-    - refine (maponpaths (λ x, x • _) (append_vec_compute_2 _ _) @ _).
+    - refine (maponpaths (λ x, x • _) (last_snoc _ _) @ _).
       apply var_subst.
   Qed.
 
@@ -321,7 +321,7 @@ Section AppAbs.
     (s : (L (S n) : hSet))
     (t : (L n : hSet))
     : abs s = t
-    ≃ (app' L • append_vec (λ _, lift_constant _ (one L)) t = t)
+    ≃ (app' L • snoc (λ _, lift_constant _ (one L)) t = t)
       × (extended_composition (app' L) (λ _, t) = s).
   Proof.
     use (logeqweq

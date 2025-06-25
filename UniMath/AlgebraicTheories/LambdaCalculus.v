@@ -42,11 +42,11 @@ Definition lambda_calculus_data : UU := ∑
     subst _ _ (app _ l l') f = app _ (subst _ _ l f) (subst _ _ l' f))
   (subst_abs : ∏ m n l (f : stn m → L n),
     subst _ _ (abs _ l) f
-    = abs _ (subst _ _ l (append_vec (λ i, inflate _ (f i)) (var _ lastelement))))
+    = abs _ (subst _ _ l (snoc (λ i, inflate _ (f i)) (var _ lastelement))))
   (subst_subst : ∏ l m n t (g : stn l → L m) (f : stn m → L n),
     subst _ _ (subst _ _ t g) f = subst _ _ t (λ i, subst _ _ (g i) f))
   (beta : ∏ n (f : L (S n)) g,
-    app _ (abs _ f) g = subst _ _ f (append_vec (var _) g)),
+    app _ (abs _ f) g = subst _ _ f (snoc (var _) g)),
   (∏
     (A : ∏ n l,
       hSet)
@@ -75,7 +75,7 @@ Definition lambda_calculus_data : UU := ∑
       (f_subst _ _ _ _ (f_abs _ _ al) af)
       (f_abs _ _ (f_subst _ _ _ _
         al
-        (append_vec_dep (A := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ lastelement)))))
+        (snoc_dep (A := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ lastelement)))))
     (f_subst_subst : ∏ l m n t a g ag f af,
       PathOver
       (Y := A n)
@@ -87,7 +87,7 @@ Definition lambda_calculus_data : UU := ∑
         (Y := A n)
         (beta n f g)
         (f_app _ _ _ (f_abs _ _ af) ag)
-        (f_subst _ _ _ _ af (append_vec_dep (A := A n) (f_var _) ag)))
+        (f_subst _ _ _ _ af (snoc_dep (A := A n) (f_var _) ag)))
     , (∏ n l, A n l)
   ).
 
@@ -115,13 +115,13 @@ Definition subst_app {L : lambda_calculus_data} {m n} l l' (f : stn m → L n)
   : subst (app l l') f = app (subst l f) (subst l' f)
   := pr1 (pr222 (pr222 L)) m n l l' f.
 Definition subst_abs {L : lambda_calculus_data} {m n} l (f : stn m → L n)
-  : subst (abs l) f = abs (subst l (append_vec (λ i, inflate (f i)) (var lastelement)))
+  : subst (abs l) f = abs (subst l (snoc (λ i, inflate (f i)) (var lastelement)))
   := pr12 (pr222 (pr222 L)) m n l f.
 Definition subst_subst {L : lambda_calculus_data} {l m n} t (g : stn l → L m) (f : stn m → L n)
   : subst (subst t g) f = subst t (λ i, subst (g i) f)
   := pr122 (pr222 (pr222 L)) l m n t g f.
 Definition beta_equality {L : lambda_calculus_data} {n} (f : L (S n)) g
-  : app (abs f) g = subst f (append_vec var g)
+  : app (abs f) g = subst f (snoc var g)
   := pr1 (pr222 (pr222 (pr222 L))) n f g.
 
 Definition lambda_calculus_ind
@@ -154,7 +154,7 @@ Definition lambda_calculus_ind
         (f_subst _ _ _ _ (f_abs m _ al) af)
         (f_abs _ _ (f_subst _ _ _ _
           al
-          (append_vec_dep (A := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ lastelement))))) ×
+          (snoc_dep (A := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ lastelement))))) ×
     (∏ l m n t a g ag f af,
       PathOver
         (Y := A n)
@@ -166,7 +166,7 @@ Definition lambda_calculus_ind
         (Y := A n)
         (beta_equality f g)
         (f_app _ _ _ (f_abs _ _ af) ag)
-        (f_subst _ _ _ _ af (append_vec_dep (A := A n) (f_var _) ag)))
+        (f_subst _ _ _ _ af (snoc_dep (A := A n) (f_var _) ag)))
   )
   : (∏ n l, A n l)
   := pr2 (pr222 (pr222 (pr222 L)))
@@ -198,11 +198,11 @@ Definition lambda_calculus_rect
       (f_subst m n (f_app _ al al') af) = (f_app _ (f_subst _ _ al af) (f_subst _ _ al' af))) ×
     (∏ m n al af,
       (f_subst m n (f_abs m al) af)
-      = (f_abs _ (f_subst _ _ al (append_vec (λ i, f_inflate _ (af i)) (f_var _ lastelement))))) ×
+      = (f_abs _ (f_subst _ _ al (snoc (λ i, f_inflate _ (af i)) (f_var _ lastelement))))) ×
     (∏ l m n a ag af,
       (f_subst m n (f_subst l m a ag) af) = (f_subst _ _ a (λ i, f_subst _ _ (ag i) af))) ×
     (∏ n af ag,
-      (f_app n (f_abs _ af) ag) = (f_subst _ _ af (append_vec (f_var _) ag)))
+      (f_app n (f_abs _ af) ag) = (f_subst _ _ af (snoc (f_var _) ag)))
   )
   : (∏ n, L n → A n).
 Proof.
@@ -269,7 +269,7 @@ Definition inflate_app {L : lambda_calculus_data} {n} (l l' : L n)
 
 Definition inflate_abs {L : lambda_calculus_data} {n} (l : L (S n))
   : inflate (abs l)
-  = abs (subst l (append_vec (λ i, inflate (inflate (var i))) (var lastelement))).
+  = abs (subst l (snoc (λ i, inflate (inflate (var i))) (var lastelement))).
 Proof.
   unfold inflate.
   refine (subst_abs l _ @ _).
@@ -403,7 +403,7 @@ Proof.
     apply maponpaths.
     refine (_ @ H).
     apply maponpaths.
-    refine (!append_vec_eq _ _).
+    refine (!snoc_eq _ _).
     + intro.
       refine (!inflate_var _).
     + reflexivity.

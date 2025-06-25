@@ -49,15 +49,15 @@ Section Tests_1.
 
   (* End duplicated definitions. *)
 
-  Let v1 := (append_vec empty_vec 2).
-  Let v2 := (append_vec empty_vec 3).
+  Let v1 := (snoc nil 2).
+  Let v2 := (snoc nil 3).
 
   Let eval1 := Eval compute in firstValue (@pointwise nat _ mul v1 v2).
 
   Local Lemma eq1 : eval1 = 6. Proof. apply idpath. Defined.
 
-  Let v3 := (append_vec (append_vec empty_vec 2) 3).
-  Let v4 := (append_vec (append_vec empty_vec 3) 4).
+  Let v3 := (snoc (snoc nil 2) 3).
+  Let v4 := (snoc (snoc nil 3) 4).
 
   Let eval2 := Eval compute in firstValue (@pointwise nat _ mul v1 v2).
 
@@ -70,10 +70,10 @@ Section Tests_1.
   Let e1 := (@nattorig natcommrig' 2).
   Let e2 := (@nattorig natcommrig' 3).
 
-  Let v5 := (append_vec (append_vec empty_vec e1) e1).
-  Let v6 := (append_vec (append_vec empty_vec e2) e2).
+  Let v5 := (snoc (snoc nil e1) e1).
+  Let v6 := (snoc (snoc nil e2) e2).
 
-  Let m1 := append_vec (row_vec v5) v6.
+  Let m1 := snoc (row_vec v5) v6.
 
   (* dot product of [2, 2], [3, 3] *)
   Let eval4 :=
@@ -133,8 +133,8 @@ Section Tests_2.
     (* Very slow *)
     (* Eval cbn in (1 + 1 + 1 + 1 + 1)%hz. *)
 
-    Let v3 := (append_vec empty_vec (1 + 1)%hz).
-    Let v4 := (append_vec empty_vec (1 + 1)%hq).
+    Let v3 := (snoc nil (1 + 1)%hz).
+    Let v4 := (snoc nil (1 + 1)%hq).
 
     (* Let eval6 := Eval cbn in (op2 (1 + 1) (1 + 1))%hz. *)
     (* rigtoringop2int natcommrig (make_dirprod 2 0) (make_dirprod 2 0)) *)
@@ -147,7 +147,7 @@ Section Tests_2.
     (* Eval cbn in
         firstValue (firstValue (@matrix_mult hz _ _ (row_vec v3) _ (col_vec v3))). *)
 
-    (* Let v9 := (append_vec (append_vec empty_vec (@rigunel1 hq)) (@rigunel2 hq)). *)
+    (* Let v9 := (snoc (snoc nil (@rigunel1 hq)) (@rigunel2 hq)). *)
 
     (* Slow, not computing. Neither is the dual. *)
     (* Let eval9 := Eval native_compute in leading_entry_compute _ v9. *)

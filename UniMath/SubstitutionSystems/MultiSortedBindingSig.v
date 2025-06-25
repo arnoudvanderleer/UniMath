@@ -67,7 +67,7 @@ Section MultiSortedSigFromBindingSig.
   Proof.
     intro n.
     refine (_,, uni).
-    exact (functionToList n (fun _ => uni)).
+    exact (make_list n (fun _ => uni)).
   Defined.
 
   Definition arFromBindingSig : I → list (list sort × sort) × sort.

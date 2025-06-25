@@ -199,13 +199,13 @@ Ltac2 Set rewrites as rewrites0 := fun () =>
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
   ((fun () => match! goal with
-  | [ |- append_vec ?a ?b (_ (inl ?c)) = _] => refine '(append_vec_compute_1 $a $b $c)
-  end), "append_vec_compute_1 _ _ _") :: rewrites0 ().
+  | [ |- snoc ?a ?b (_ (inl ?c)) = _] => refine '(init_snoc_i $a $b $c)
+  end), "init_snoc_i _ _ _") :: rewrites0 ().
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
   ((fun () => match! goal with
-  | [ |- append_vec ?a ?b (_ (inr _)) = _] => refine '(append_vec_compute_2 $a $b)
-  end), "append_vec_compute_2 _ _") :: rewrites0 ().
+  | [ |- snoc ?a ?b (_ (inr _)) = _] => refine '(last_snoc $a $b)
+  end), "last_snoc _ _") :: rewrites0 ().
 
 (** * 2. Compose *)
 
@@ -251,7 +251,7 @@ Proof.
   refine '(maponpaths (λ x, (abs (app _ x))) (subst_app _ _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (app x _)))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (app _ x)))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (app _ x)))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (app _ x)))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (app x _))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ (app x _)))) (inflate_subst _ _ _)).
   refine '(
@@ -260,7 +260,7 @@ Proof.
   );
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -304,10 +304,10 @@ Proof.
     refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ (app x _))) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ (app _ x))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app x _)) (append_vec_compute_1 _ _ _) @ _).
+    refine '(maponpaths (λ x, (app x _)) (init_snoc_i _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ (app x _))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ (app _ x))) (append_vec_compute_2 _ _) @ _).
-    exact (maponpaths (λ x, (app _ (app x _))) (append_vec_compute_1 _ _ _)).
+    refine '(maponpaths (λ x, (app _ (app _ x))) (last_snoc _ _) @ _).
+    exact (maponpaths (λ x, (app _ (app x _))) (init_snoc_i _ _ _)).
   - refine '(subst_app L (var _) _ _ @ _).
     refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (subst_app _ _ _ _) @ _).
@@ -332,12 +332,12 @@ Proof.
   apply funextfun.
   refine '(stn_sn_ind _ _).
   - intro i.
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_1.
-  - refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+    apply init_snoc_i.
+  - refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_2.
+    apply last_snoc.
 Qed.
 
 Lemma abs_compose
@@ -350,7 +350,7 @@ Lemma abs_compose
   = abs
     (subst
       a
-      (append_vec
+      (snoc
         (λ i, var (dni lastelement i))
         (app
           (inflate b)
@@ -360,14 +360,14 @@ Proof.
   refine '(maponpaths (λ x, (abs x)) (beta_equality _ Lβ _ _) @ _).
   refine '(maponpaths (λ x, (abs x)) (subst_subst _ _ _ _) @ _).
   refine '(maponpaths (λ x, _ (_ • x)) (!_)).
-  refine '(!append_vec_eq _ _).
+  refine '(!snoc_eq _ _).
   - intro i.
-    refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+    refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_1.
-  - refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+    apply init_snoc_i.
+  - refine '(maponpaths (λ x, (x • _)) (last_snoc _ _) @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_2.
+    apply last_snoc.
 Qed.
 
 Lemma compose_assoc
@@ -398,16 +398,16 @@ Proof.
     refine '(maponpaths (λ x, (abs (app _ (app x _)))) (var_subst _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app _ (app _ (app x _))))) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app _ (app _ (app _ x))))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app _ (app (x • _) _)))) (append_vec_compute_1 _ _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app _ (app (x • _) _)))) (init_snoc_i _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app _ (app _ (app x _))))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app _ (app _ (app _ (x • _)))))) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app _ (app _ (app _ (x • _)))))) (last_snoc _ _) @ _).
     refine '(maponpaths (λ x, (abs (app _ (app x _)))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app _ (app _ (app (x • _) _))))) (append_vec_compute_1 _ _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app _ (app _ (app (x • _) _))))) (init_snoc_i _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app _ (app _ (app _ x))))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app _ (app x _)))) (append_vec_compute_1 _ _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app _ (app x _)))) (init_snoc_i _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app _ (app _ (app x _))))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app _ (app _ (app _ x))))) (append_vec_compute_2 _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app _ (app _ (app x _))))) (append_vec_compute_1 _ _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app _ (app _ (app _ x))))) (last_snoc _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app _ (app _ (app x _))))) (init_snoc_i _ _ _) @ _).
     refine '(_ @ !maponpaths (λ x, (abs (app x _))) (inflate_abs _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app _ (app x _)))) (inflate_var _ _)).
     refine '(_ @ !maponpaths (λ x, (abs x)) (beta_equality _ Lβ _ _)).
@@ -418,16 +418,16 @@ Proof.
     refine '(_ @ !maponpaths (λ x, (abs (app x _))) (var_subst _ _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app _ (app x _)))) (subst_inflate _ _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ x)))) (var_subst _ _ _)).
-    refine '(_ @ !maponpaths (λ x, (abs (app (x • _) _))) (append_vec_compute_1 _ _ _)).
+    refine '(_ @ !maponpaths (λ x, (abs (app (x • _) _))) (init_snoc_i _ _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app _ (app x _)))) (var_subst _ _ _)).
-    refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ (x • _))))) (append_vec_compute_2 _ _)).
+    refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ (x • _))))) (last_snoc _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app x _))) (var_subst _ _ _)).
-    refine '(_ @ !maponpaths (λ x, (abs (app _ (app (x • _) _)))) (append_vec_compute_1 _ _ _)).
+    refine '(_ @ !maponpaths (λ x, (abs (app _ (app (x • _) _)))) (init_snoc_i _ _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ x)))) (var_subst _ _ _)).
-    refine '(_ @ !maponpaths (λ x, (abs (app x _))) (append_vec_compute_1 _ _ _)).
+    refine '(_ @ !maponpaths (λ x, (abs (app x _))) (init_snoc_i _ _ _)).
     refine '(_ @ !maponpaths (λ x, (abs (app _ (app x _)))) (var_subst _ _ _)).
-    refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ x)))) (append_vec_compute_2 _ _)).
-    exact (!maponpaths (λ x, (abs (app _ (app x _)))) (append_vec_compute_1 _ _ _)).
+    refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ x)))) (last_snoc _ _)).
+    exact (!maponpaths (λ x, (abs (app _ (app x _)))) (init_snoc_i _ _ _)).
   - refine '(subst_compose _ (_ ∘ _) _ _ @ _).
     refine '(maponpaths (λ x, (x ∘ _)) (subst_compose _ _ _ _) @ _).
     refine '(maponpaths (λ x, (_ ∘ x)) (var_subst _ _ _) @ _).
@@ -511,7 +511,7 @@ Proof.
   refine '(maponpaths (λ x, (abs (app _ x))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app (app x _) _))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app (app _ x) _))) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app (app x _) _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app (app x _) _))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (app (app _ x) _))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ x))) (inflate_subst _ _ _)).
   refine '(
@@ -520,7 +520,7 @@ Proof.
   );
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -583,14 +583,14 @@ Proof.
   refine '(maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (⟨(app x _), _⟩))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (inflate_subst _ _ _)).
   refine '(maponpaths (λ x, abs (⟨ app (_ • x) _ , _ ⟩)) _ @ maponpaths (λ x, abs (⟨ _ , app (_ • x) _ ⟩)) _);
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -625,14 +625,14 @@ Proof.
   refine '(maponpaths (λ x, (⟨(app _ x), _⟩)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (⟨_, (app x _)⟩)) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (⟨_, (app _ x)⟩)) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (⟨(app _ x), _⟩)) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (⟨_, (app _ x)⟩)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (⟨(app _ x), _⟩)) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (⟨_, (app _ x)⟩)) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (⟨ app x c , _ ⟩)) _ @ maponpaths (λ x, (⟨ _ , app x c ⟩)) _);
     refine '(_ @ subst_var _ (_ c));
     apply maponpaths;
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Lemma pair_arrow_compose
@@ -650,8 +650,8 @@ Proof.
   refine '(maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (⟨(app _ x), _⟩))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (⟨_, (app _ x)⟩))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (⟨(app x _), _⟩))) (inflate_compose _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (⟨_, (app x _)⟩))) (inflate_compose _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (⟨x, _⟩))) (app_compose _ Lβ _ _ _)).
@@ -659,7 +659,7 @@ Proof.
   refine '(maponpaths (λ x, abs (⟨ app (_ • x) _ , _ ⟩)) _ @ maponpaths (λ x, abs (⟨ _ , app (_ • x) _ ⟩)) _);
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 (** * 5. Pair projections *)
@@ -685,11 +685,11 @@ Proof.
   refine '(maponpaths (λ x, (abs x)) (subst_app _ _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app x _))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ x))) (subst_abs _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app x _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app x _))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (abs x)))) (subst_abs _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (abs (abs x))))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (abs (abs x))))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (abs (abs (inflate x)))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (abs (abs x))))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (abs (abs (inflate x)))))) (last_snoc _ _) @ _).
   exact (maponpaths (λ x, (abs (app _ (abs (abs x))))) (inflate_var _ _)).
 Qed.
 
@@ -720,7 +720,7 @@ Proof.
   refine '(subst_app _ _ _ _ @ _).
   refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_abs _ _ _) @ _).
-  refine '(maponpaths (λ x, (app x _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app x _)) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (app _ (abs x))) (subst_abs _ _ _) @ _).
   refine '(beta_equality _ Lβ _ _ @ _).
   refine '(subst_app _ _ _ _ @ _).
@@ -728,28 +728,28 @@ Proof.
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app x _) _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app _ x) _)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app (app x _) _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app (app x _) _)) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (beta_equality _ Lβ _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (subst_abs _ _ _) @ _).
   refine '(beta_equality _ Lβ _ _ @ _).
-  refine '(subst_subst _ (_ • _) _ (append_vec _ _) @ _).
+  refine '(subst_subst _ (_ • _) _ (snoc _ _) @ _).
   refine '(subst_subst _ (var _) _ _ @ _).
   refine '(var_subst _ _ _ @ _).
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
   refine '(subst_inflate _ _ _ @ _).
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (last_snoc _ _) @ _).
   refine '(var_subst _ _ _ @ _).
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
   refine '(subst_inflate _ _ _ @ _).
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (last_snoc _ _) @ _).
   refine '(subst_subst _ a _ _ @ _).
   refine '(_ @ subst_var _ a).
   apply maponpaths.
   apply funextfun.
   intro i.
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
   refine '(var_subst _ _ _ @ _).
-  exact (append_vec_compute_1 _ _ _).
+  exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -791,12 +791,12 @@ Proof.
   apply funextfun.
   refine '(stn_sn_ind _ _).
   - intro j.
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_1.
-  - refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+    apply init_snoc_i.
+  - refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_2.
+    apply last_snoc.
 Qed.
 
 Lemma π1_pair_arrow_alt
@@ -838,10 +838,10 @@ Proof.
   refine '(maponpaths (λ x, (abs x)) (subst_app _ _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app x _))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ x))) (subst_abs _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app x _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app x _))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (abs x)))) (subst_abs _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (abs (abs x))))) (var_subst _ _ _) @ _).
-  exact (maponpaths (λ x, (abs (app _ (abs (abs x))))) (append_vec_compute_2 _ _)).
+  exact (maponpaths (λ x, (abs (app _ (abs (abs x))))) (last_snoc _ _)).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -871,7 +871,7 @@ Proof.
   refine '(subst_app _ _ _ _ @ _).
   refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_abs _ _ _) @ _).
-  refine '(maponpaths (λ x, (app x _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app x _)) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (app _ (abs x))) (subst_abs _ _ _) @ _).
   refine '(beta_equality _ Lβ _ _ @ _).
   refine '(subst_app _ _ _ _ @ _).
@@ -879,23 +879,23 @@ Proof.
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app x _) _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app _ x) _)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app (app x _) _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app (app x _) _)) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (beta_equality _ Lβ _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (subst_abs _ _ _) @ _).
   refine '(beta_equality _ Lβ _ _ @ _).
-  refine '(subst_subst _ (_ • _) _ (append_vec _ _) @ _).
+  refine '(subst_subst _ (_ • _) _ (snoc _ _) @ _).
   refine '(subst_subst _ (var _) _ _ @ _).
   refine '(var_subst _ _ _ @ _).
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (last_snoc _ _) @ _).
   refine '(var_subst _ _ _ @ _).
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (last_snoc _ _) @ _).
   refine '(var_subst _ _ _ @ _).
-  refine '(append_vec_compute_2 _ _ @ _).
+  refine '(last_snoc _ _ @ _).
   refine '(_ @ subst_var _ b).
   apply maponpaths.
   apply funextfun.
   intro i.
-  exact (append_vec_compute_1 _ _ _).
+  exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -974,13 +974,13 @@ Proof.
   refine '(maponpaths (λ x, (abs (app _ x))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app (app x _) _))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app (app _ x) _))) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app (app x _) _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app (app x _) _))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (app (app _ x) _))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ x))) (inflate_subst _ _ _)).
   refine '(maponpaths (λ x, (abs (app (app _ (_ • x)) _))) _ @ maponpaths (λ x, (abs (app _ (_ • x)))) _);
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -1013,13 +1013,13 @@ Proof.
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app x _) _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app _ x) _)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app (app x _) _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app (app x _) _)) (last_snoc _ _) @ _).
   refine '(_ @ maponpaths (λ x, (app (app _ x) _)) (subst_var _ _)).
   refine '(_ @ maponpaths (λ x, (app _ x)) (subst_var _ _)).
   refine '(maponpaths (λ x, (app (app _ (_ • x)) _)) _ @ maponpaths (λ x, (app _ (_ • x))) _);
     apply funextfun;
     intro i;
-    apply append_vec_compute_1.
+    apply init_snoc_i.
 Qed.
 
 (** * 7. Union injections *)
@@ -1046,12 +1046,12 @@ Proof.
   refine '(maponpaths (λ x, (abs (abs (abs x)))) (subst_app _ _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app _ x))))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app _ x))))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app (inflate x) _))))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate x)))))) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app _ x))))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app (inflate x) _))))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate x)))))) (init_snoc_i _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (inflate_var _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate (inflate x))))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate (inflate x))))))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate x)))))) (inflate_var _ _) @ _).
   exact (maponpaths (λ x, (abs (abs (abs (app _ x))))) (inflate_var _ _)).
 Qed.
@@ -1089,27 +1089,27 @@ Proof.
   refine '(subst_app _ _ _ _ @ _).
   refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (app (x • _) _)) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (app (x • _) _)) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (x • _))) (init_snoc_i _ _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app ((x • _) • _) _)) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (app _ ((x • _) • _))) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (app ((x • _) • _) _)) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (app _ ((x • _) • _))) (init_snoc_i _ _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (subst_subst _ _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_subst _ _ _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app (x • _) _)) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app (x • _) _)) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (x • _))) (last_snoc _ _) @ _).
   refine '(_ @ maponpaths (λ x, app x _) (subst_var _ _)).
   refine '(_ @ maponpaths (λ x, app _ x) (subst_var _ _)).
   refine '(maponpaths (λ x, app (_ • x) _) _ @ maponpaths (λ x, app _ (_ • x)) _);
     apply funextfun;
     intro i.
-  - apply append_vec_compute_1.
-  - refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+  - apply init_snoc_i.
+  - refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
     refine '(var_subst _ _ _ @ _).
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Lemma union_arrow_ι1
@@ -1132,12 +1132,12 @@ Proof.
   apply funextfun.
   refine '(stn_sn_ind _ _).
   - intro i.
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_1.
-  - refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+    apply init_snoc_i.
+  - refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_2.
+    apply last_snoc.
 Qed.
 
 
@@ -1163,10 +1163,10 @@ Proof.
   refine '(maponpaths (λ x, (abs (abs (abs x)))) (subst_app _ _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app _ x))))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app _ x))))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate x)))))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate (inflate x))))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app x _))))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app _ x))))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate x)))))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate (inflate x))))))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (abs (app _ (inflate x)))))) (inflate_var _ _) @ _).
   exact (maponpaths (λ x, (abs (abs (abs (app _ x))))) (inflate_var _ _)).
 Qed.
@@ -1204,22 +1204,22 @@ Proof.
   refine '(subst_app _ _ _ _ @ _).
   refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (app (x • _) _)) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (app (x • _) _)) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (x • _))) (init_snoc_i _ _ _) @ _).
   refine '(maponpaths (λ x, (app x _)) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app x _)) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (app _ ((x • _) • _))) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (app x _)) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (app _ ((x • _) • _))) (init_snoc_i _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_subst _ _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (subst_inflate _ _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (x • _))) (last_snoc _ _) @ _).
   refine '(_ @ maponpaths (λ x, app _ x) (subst_var _ _)).
   refine '(maponpaths (λ x, app _ (_ • x)) _).
   apply funextfun.
   intro i.
-  refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
   refine '(var_subst _ _ _ @ _).
-  exact (append_vec_compute_1 _ _ _).
+  exact (init_snoc_i _ _ _).
 Qed.
 
 Lemma union_arrow_ι2
@@ -1242,12 +1242,12 @@ Proof.
   apply funextfun.
   refine '(stn_sn_ind _ _).
   - intro i.
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_1.
-  - refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+    apply init_snoc_i.
+  - refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    apply append_vec_compute_2.
+    apply last_snoc.
 Qed.
 
 (** * 8. Evaluation of a curried function *)
@@ -1299,16 +1299,16 @@ Proof.
   refine '(maponpaths (λ x, (abs (app _ (app (app _ x) _)))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (app _ (app x _))))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (app _ (app _ x))))) (subst_app _ _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (app (app _ x) _)))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (app (app _ x) _)))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (app _ (app _ (app x _)))))) (subst_π2 _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (app _ (app _ (app _ x)))))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (app _ (app _ (app _ x)))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (app _ (app _ (app _ x)))))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (app x _))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ (app _ (app x _))))) (inflate_subst _ _ _)).
   refine '(maponpaths (λ x, abs (app (_ • x) _)) _ @ maponpaths (λ x, abs (app _ (app _ (app (_ • x) _)))) _);
     apply funextfun;
     intro i;
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -1356,21 +1356,21 @@ Proof.
   refine '(maponpaths (λ x, (app _ (app (app _ x) _))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ (app _ (app x _)))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ (app _ (app _ x)))) (subst_app _ _ _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (app (app _ x) _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (app (app _ x) _))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (app _ (app _ (app _ (app x _))))) (subst_π2 _ _) @ _).
   refine '(maponpaths (λ x, (app _ (app _ (app _ (app _ x))))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (app _ (app _ (app _ x))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (app _ (app _ (app _ x))))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, app x _) _ @ maponpaths (λ x, app _ (app _ (app x _))) _).
   - refine '(_ @ subst_var L a).
     apply maponpaths.
     apply funextfun.
     intro i.
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
   - refine '(_ @ subst_var L b).
     apply maponpaths.
     apply funextfun.
     intro i.
-    exact (append_vec_compute_1 _ _ _).
+    exact (init_snoc_i _ _ _).
 Qed.
 
 Lemma app_ev_pair
@@ -1454,17 +1454,17 @@ Proof.
   refine '(maponpaths (λ x, (abs (abs (app x _)))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app _ (⟨x, _⟩))))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app _ (⟨_, x⟩))))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (app _ (⟨x, _⟩))))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (app _ (⟨_, x⟩))))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (app _ (⟨(inflate x), _⟩))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (app _ (⟨x, _⟩))))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (app _ (⟨_, x⟩))))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (app _ (⟨(inflate x), _⟩))))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app _ (⟨x, _⟩))))) (inflate_var _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (abs (app (inflate x) _)))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (abs (app x _)))) (inflate_subst _ _ _)).
   apply (maponpaths (λ x, abs (abs (app (a • x) _)))).
   apply funextfun.
   intro i.
-  refine '(append_vec_compute_1 _ _ _ @ _).
-  exact (maponpaths (λ x, (inflate x)) (append_vec_compute_1 _ _ _)).
+  refine '(init_snoc_i _ _ _ @ _).
+  exact (maponpaths (λ x, (inflate x)) (init_snoc_i _ _ _)).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -1504,14 +1504,14 @@ Proof.
   refine '(maponpaths (λ x, (abs (app x _))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (⟨x, _⟩)))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (⟨_, x⟩)))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (⟨x, _⟩)))) (append_vec_compute_1 _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (⟨_, x⟩)))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (⟨(inflate x), _⟩)))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (⟨x, _⟩)))) (init_snoc_i _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (⟨_, x⟩)))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (⟨(inflate x), _⟩)))) (last_snoc _ _) @ _).
   apply (maponpaths (λ x, abs (app (a • x) _))).
   apply funextfun.
   intro i.
-  refine '(append_vec_compute_1 _ _ _ @ _).
-  refine '(maponpaths (λ x, (inflate x)) (append_vec_compute_1 _ _ _) @ _).
+  refine '(init_snoc_i _ _ _ @ _).
+  refine '(maponpaths (λ x, (inflate x)) (init_snoc_i _ _ _) @ _).
   exact (inflate_var _ _).
 Qed.
 
@@ -1542,16 +1542,16 @@ Proof.
   apply funextfun.
   refine '(stn_sn_ind _ _).
   - intro i.
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
-    refine '(var_subst _ _ (append_vec _ _) @ _).
-    apply append_vec_compute_1.
-  - refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
+    refine '(var_subst _ _ (snoc _ _) @ _).
+    apply init_snoc_i.
+  - refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
-    refine '(var_subst _ _ (append_vec _ _) @ _).
-    apply append_vec_compute_2.
+    refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
+    refine '(var_subst _ _ (snoc _ _) @ _).
+    apply last_snoc.
 Qed.
 
 (** * 10. Uncurry *)
@@ -1595,13 +1595,13 @@ Proof.
   refine '(maponpaths (λ x, (abs (app _ (app _ x)))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app (app _ (app x _)) _))) (subst_π1 _ _) @ _).
   refine '(maponpaths (λ x, (abs (app (app _ (app _ x)) _))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (app _ x)))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app (app _ (app _ x)) _))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (app _ x)))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app (app _ (app _ x)) _))) (last_snoc _ _) @ _).
   refine '(_ @ !maponpaths (λ x, (abs (app (app x _) _))) (inflate_subst _ _ _)).
   refine '(maponpaths (λ x, (abs (app (app (_ • x) _) _))) _).
   apply funextfun.
   intro i.
-  exact (append_vec_compute_1 _ _ _).
+  exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -1643,13 +1643,13 @@ Proof.
   refine '(maponpaths (λ x, (app _ (app _ x))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (app (app _ (app x _)) _)) (subst_π1 _ _) @ _).
   refine '(maponpaths (λ x, (app (app _ (app _ x)) _)) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (app _ (app _ x))) (append_vec_compute_2 _ _) @ _).
-  refine '(maponpaths (λ x, (app (app _ (app _ x)) _)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app _ (app _ x))) (last_snoc _ _) @ _).
+  refine '(maponpaths (λ x, (app (app _ (app _ x)) _)) (last_snoc _ _) @ _).
   refine '(_ @ maponpaths (λ x, (app (app x _) _)) (subst_var _ _)).
   refine '(maponpaths (λ x, (app (app (_ • x) _) _)) _).
   apply funextfun.
   intro i.
-  exact (append_vec_compute_1 _ _ _).
+  exact (init_snoc_i _ _ _).
 Qed.
 
 Lemma app_uncurry_pair
@@ -1742,11 +1742,11 @@ Proof.
   refine '(maponpaths (λ x, (abs (abs (app (app x _) _)))) (subst_abs _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app (app _ (app x _)) _)))) (subst_π1 _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app (app _ (app _ x)) _)))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (app _ (app _ (x • _)))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (app _ (app _ (x • _)))))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app x _)))) (beta_equality _ Lβ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app _ (app _ x))))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app x _)))) (subst_subst _ _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (abs (app _ (app _ (x • _)))))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (abs (app _ (app _ (x • _)))))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app x _)))) (subst_abs _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs (app _ (app _ x))))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (abs x))) (beta_equality _ Lβ _ _) @ _).
@@ -1756,45 +1756,45 @@ Proof.
   apply funextfun.
   refine '(stn_sn_ind _ _).
   - intro i.
-    refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+    refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
     refine '(subst_inflate _ _ _ @ _).
-    refine '(subst_subst _ (append_vec _ _ _) _ _ @ _).
+    refine '(subst_subst _ (snoc _ _ _) _ _ @ _).
     revert i.
     refine '(stn_sn_ind _ _).
     + intro i.
-      refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+      refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
       refine '(subst_inflate _ _ _ @ _).
-      refine '(subst_subst _ (append_vec _ _ _) _ _ @ _).
-      refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+      refine '(subst_subst _ (snoc _ _ _) _ _ @ _).
+      refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
       refine '(var_subst _ _ _ @ _).
-      refine '(maponpaths (λ x, ((x • _) • _)) (append_vec_compute_1 _ _ _) @ _).
+      refine '(maponpaths (λ x, ((x • _) • _)) (init_snoc_i _ _ _) @ _).
       refine '(subst_subst _ (var _) _ _ @ _).
       refine '(var_subst _ _ _ @ _).
-      refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+      refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
       refine '(var_subst _ _ _ @ _).
-      refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+      refine '(maponpaths (λ x, (x • _)) (init_snoc_i _ _ _) @ _).
       refine '(var_subst _ _ _ @ _).
-      apply append_vec_compute_1.
-    + refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+      apply init_snoc_i.
+    + refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
       refine '(var_subst _ _ _ @ _).
-      refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+      refine '(maponpaths (λ x, (x • _)) (last_snoc _ _) @ _).
       refine '(subst_app _ _ _ _ @ _).
       refine '(maponpaths (λ x, (app x _)) (subst_π1 _ _) @ _).
       refine '(maponpaths (λ x, (app _ x)) (subst_subst _ _ _ _) @ _).
-      refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_2 _ _) @ _).
+      refine '(maponpaths (λ x, (app _ (x • _))) (last_snoc _ _) @ _).
       refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-      refine '(maponpaths (λ x, (app _ ((x • _) • _))) (append_vec_compute_2 _ _) @ _).
+      refine '(maponpaths (λ x, (app _ ((x • _) • _))) (last_snoc _ _) @ _).
       refine '(maponpaths (λ x, (app _ x)) (subst_subst _ _ _ _) @ _).
       refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-      refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_2 _ _) @ _).
+      refine '(maponpaths (λ x, (app _ (x • _))) (last_snoc _ _) @ _).
       refine '(maponpaths (λ x, (app _ x)) (subst_pair _ _ _ _) @ _).
       refine '(π1_pair _ Lβ _ _ @ _).
       refine '(var_subst _ _ _ @ _).
-      apply append_vec_compute_1.
-  - refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+      apply init_snoc_i.
+  - refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
     refine '(var_subst _ _ _ @ _).
-    refine '(append_vec_compute_2 _ _ @ _).
-    refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 _ _) @ _).
+    refine '(last_snoc _ _ @ _).
+    refine '(maponpaths (λ x, (app _ x)) (last_snoc _ _) @ _).
     apply (π2_pair _ Lβ).
 Qed.
 
@@ -1815,17 +1815,17 @@ Proof.
   refine '(maponpaths (λ x, (abs (app _ (⟨x, _⟩)))) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (⟨_, x⟩)))) (var_subst _ _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (⟨x, _⟩)))) (subst_app _ _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (⟨_, x⟩)))) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (⟨_, x⟩)))) (last_snoc _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (⟨(app x _), _⟩)))) (subst_π1 _ _) @ _).
   refine '(maponpaths (λ x, (abs (app _ (⟨(app _ x), _⟩)))) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (abs (app _ (⟨(app _ x), _⟩)))) (append_vec_compute_1 _ _ _) @ _).
+  refine '(maponpaths (λ x, (abs (app _ (⟨(app _ x), _⟩)))) (init_snoc_i _ _ _) @ _).
   refine '(_ @ !compose_abs _ Lβ _ _).
   refine '(_ @ !maponpaths (λ x, (abs (app _ (⟨(app x _), _⟩)))) (inflate_π1 _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ (⟨_, (app x _)⟩)))) (inflate_π2 _)).
   apply   (maponpaths (λ x, (abs (app (a • x) _)))).
   apply funextfun.
   intro i.
-  apply append_vec_compute_1.
+  apply init_snoc_i.
 Qed.
 
 (** * 11. N-tuple *)
@@ -1858,7 +1858,7 @@ Proof.
   - refine '(subst_abs _ _ _ @ _).
     refine '(maponpaths (λ x, (abs x)) (var_subst _ _ _) @ _).
     apply (maponpaths abs).
-    apply append_vec_compute_2.
+    apply last_snoc.
   - refine '(subst_pair _ _ _ _ @ _).
     apply (maponpaths (λ x, ⟨x, _⟩)).
     apply IHl.
@@ -1910,11 +1910,11 @@ Proof.
   refine '(_ @ !maponpaths (λ x, (app x _)) (inflate_subst _ _ _)).
   refine '(maponpaths (λ x, (app x _)) (subst_inflate _ _ _) @ _).
   refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-  refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 _ _) @ _).
+  refine '(maponpaths (λ x, (app _ x)) (last_snoc _ _) @ _).
   apply (maponpaths (λ x, app (_ • x) _)).
   apply funextfun.
   intro j.
-  exact (append_vec_compute_1 _ _ _).
+  exact (init_snoc_i _ _ _).
 Qed.
 
 Ltac2 Set rewrites as rewrites0 := fun () =>
@@ -1947,7 +1947,7 @@ Proof.
     refine '(subst_abs _ _ _ @ _).
     refine '(maponpaths (λ x, (abs x)) (var_subst _ _ _) @ _).
     apply (maponpaths (λ x, (abs x))).
-    apply append_vec_compute_2.
+    apply last_snoc.
   - refine '(beta_equality _ Lβ _ _ @ _).
     refine '(subst_n_tuple _ _ _ @ _).
     apply maponpaths.
@@ -1956,13 +1956,13 @@ Proof.
     refine '(subst_app _ _ _ _ @ _).
     refine '(maponpaths (λ x, (app x _)) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (app _ x)) (last_snoc _ _) @ _).
     apply (maponpaths (λ x, app x _)).
     refine '(_ @ subst_var _ (a i)).
     apply maponpaths.
     apply funextfun.
     intro j.
-    apply append_vec_compute_1.
+    apply init_snoc_i.
 Qed.
 
 Lemma n_tuple_arrow_compose
@@ -1993,8 +1993,8 @@ Definition n_π
 Proof.
   revert i.
   induction m as [ | m IHm].
-  - apply empty_vec.
-  - apply append_vec.
+  - apply nil.
+  - apply snoc.
     + intro i.
       exact (IHm i ∘ π1).
     + exact π2.
@@ -2012,14 +2012,14 @@ Proof.
   - revert i.
     refine '(stn_sn_ind _ _).
     + intro i.
-      refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ !_).
-      refine '(append_vec_compute_1 _ _ _ @ !_).
+      refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ !_).
+      refine '(init_snoc_i _ _ _ @ !_).
       refine '(subst_compose _ _ _ _ @ _).
       refine '(maponpaths (λ x, _ ∘ x) (subst_π1 _ _) @ _).
       apply (maponpaths (λ x, x ∘ _)).
       apply IHl.
-    + refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ !_).
-      refine '(append_vec_compute_2 _ _ @ !_).
+    + refine '(maponpaths_2 _ (last_snoc _ _) _ @ !_).
+      refine '(last_snoc _ _ @ !_).
       apply subst_π2.
 Qed.
 
@@ -2053,11 +2053,11 @@ Proof.
   - revert i.
     refine '(stn_sn_ind _ _).
     + intro i.
-      refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
+      refine '(maponpaths_2 _ (init_snoc_i _ _ _) _ @ _).
       refine '(app_compose _ Lβ _ _ _ @ _).
       refine '(maponpaths (λ x, (app _ x)) (π1_pair _ Lβ _ _) @ _).
       apply IHn.
-    + refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
+    + refine '(maponpaths_2 _ (last_snoc _ _) _ @ _).
       apply (π2_pair _ Lβ).
 Qed.
 

@@ -23,7 +23,7 @@ Proof.
   apply (impred_isaprop _ (λ _, isapropimpl _ _ (propproperty _))).
 Qed.
 Definition isSetOfOpen_finite_intersection :=
-  ∏ (P : Sequence (X → hProp)), (∏ m, O (P m)) → O (finite_intersection P).
+  ∏ (P : List (X → hProp)), (∏ m, O (P m)) → O (finite_intersection P).
 Lemma isaprop_isSetOfOpen_finite_intersection :
   isaprop isSetOfOpen_finite_intersection.
 Proof.
@@ -126,7 +126,7 @@ Proof.
   apply (pr1 (pr2 (pr2 T))).
 Qed.
 Lemma isOpen_finite_intersection :
-  ∏ (P : Sequence (T → hProp)),
+  ∏ (P : List (T → hProp)),
     (∏ m , isOpen (P m))
     → isOpen (finite_intersection P).
 Proof.
@@ -545,7 +545,7 @@ Context {X : hSet} (O : (X → hProp) → hProp).
 
 Definition topologygenerated :=
   λ (x : X) (A : X → hProp),
-  (∃ L : Sequence (X → hProp), (∏ n, O (L n)) × (finite_intersection L x) × (∏ y, finite_intersection L y → A y)).
+  (∃ L : List (X → hProp), (∏ n, O (L n)) × (finite_intersection L x) × (∏ y, finite_intersection L y → A y)).
 
 Lemma topologygenerated_imply :
   ∏ x : X, isfilter_imply (topologygenerated x).
@@ -665,7 +665,7 @@ Proof.
   intros x Hx.
   apply TopologyFromNeighborhood_correct.
   apply hinhpr.
-  exists (singletonSequence P).
+  exists (singletonList P).
   repeat split.
   - induction n as [n Hn].
     exact Op.

@@ -157,7 +157,7 @@ Defined.
 Definition isweqvecfun {n} : isweq (el:vec A n → ⟦ n ⟧ → A)
   := isweq_iso el make_vec make_vec_el el_make_vec_fun.
 
-Definition weqvecfun n : vec A n ≃ Vector A n
+Definition weqvecfun n : vec A n ≃ vector A n
   := make_weq el isweqvecfun.
 
 Lemma isofhlevelvec {n} (is1 : isofhlevel n A) k

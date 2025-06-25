@@ -241,7 +241,7 @@ Section TheoryOfExtensions.
           : A → (algebra_pullback extensions_theory_embedding B : algebra _).
         Proof.
           intro a.
-          refine (action (A := B) _ empty_vec).
+          refine (action (A := B) _ nil).
           refine ((BinCoproductIn1 (H A (theory_algebra T 0)) : algebra_morphism _ _) _).
           exact a.
         Defined.
@@ -473,7 +473,7 @@ Section TheoryOfExtensions.
         refine (algebra_mor_comp _ _ @ _).
         apply funextfun.
         intro a.
-        refine (_ @ subst_action B ((BinCoproductIn1 _ : algebra_morphism _ _) a) empty_vec b @ _).
+        refine (_ @ subst_action B ((BinCoproductIn1 _ : algebra_morphism _ _) a) nil b @ _).
         + refine (!_ @ maponpaths (λ x, action (A := B) (x a) b) (algebra_mor_comp _ _)).
           apply (maponpaths (λ x, action (A := B) (algebra_morphism_to_function x a) b)).
           apply BinCoproductIn1Commutes.
@@ -560,7 +560,7 @@ Section Factorization.
     refine (algebra_morphism_to_function (BinCoproductArrow _ (c := (algebra_pullback F (theory_algebra T' n))) _ _)).
     - apply algebra_pullback_mor.
       apply theory_algebra_free.
-      apply empty_vec.
+      apply nil.
     - apply theory_algebra_free.
       exact var.
   Defined.

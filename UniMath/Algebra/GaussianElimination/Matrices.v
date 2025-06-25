@@ -37,36 +37,36 @@ End Misc.
 Section Vectors_as_Matrices.
   (** Vectors as column and row vectors *)
   Lemma weq_rowvec
-    : ∏ X : UU, ∏ n : nat, Vector X n ≃ Matrix X 1 n.
+    : ∏ X : UU, ∏ n : nat, vector X n ≃ Matrix X 1 n.
   Proof.
     intros; apply weq_vector_1.
   Defined.
 
-  Lemma row_vec_inj { X : rig } { n : nat } (v1 v2 : Vector X n)
+  Lemma row_vec_inj { X : rig } { n : nat } (v1 v2 : vector X n)
     : row_vec v1 = row_vec v2 -> v1 = v2.
   Proof.
     intros H; apply (invmaponpathsweq (@weq_rowvec X n)  _ _ H).
   Defined.
 
   Lemma weq_colvec
-    : ∏ X : UU, ∏ n : nat, weq (Vector X n) (Matrix X n 1).
+    : ∏ X : UU, ∏ n : nat, weq (vector X n) (Matrix X n 1).
   Proof.
     intros; apply weqffun, weq_vector_1.
   Defined.
 
-  Lemma col_vec_inj { X : rig } { n : nat } (v1 v2 : Vector X n)
+  Lemma col_vec_inj { X : rig } { n : nat } (v1 v2 : vector X n)
     : col_vec v1 = col_vec v2 -> v1 = v2.
   Proof.
     intros H; apply (invmaponpathsweq (@weq_colvec X n)  _ _ H).
   Defined.
 
-  Lemma col_vec_inj_pointwise { X : rig } { n : nat } (v1 v2 : Vector X n)
+  Lemma col_vec_inj_pointwise { X : rig } { n : nat } (v1 v2 : vector X n)
     : forall i : (stn n), (col_vec v1 i) = (col_vec v2 i) -> (v1 i) = (v2 i).
   Proof.
     intros i eq; apply (invmaponpathsweq (@weq_vector_1 X)  _ _ eq).
   Defined.
 
-  Lemma col_vec_eq {X : UU} {n : nat} (v : Vector X n)
+  Lemma col_vec_eq {X : UU} {n : nat} (v : vector X n)
   : ∏ i : (stn 1), v = col (col_vec v) i.
   Proof.
     easy.
@@ -232,7 +232,7 @@ Section Identity_Matrix.
     apply stn_eq_or_neq_symm_nondep.
   Defined.
 
-  Lemma id_pointwise_prod { n : nat } (v : Vector R n) (i : ⟦ n ⟧%stn)
+  Lemma id_pointwise_prod { n : nat } (v : vector R n) (i : ⟦ n ⟧%stn)
     : (@identity_matrix R n i) *pw v
       = (@scalar_lmult_vec R (v i) n (identity_matrix i)).
   Proof.
@@ -243,7 +243,7 @@ Section Identity_Matrix.
     - now rewrite rigmultx0, rigmult0x.
   Defined.
 
-  Lemma sum_id_pointwise_prod { n : nat } (v : Vector R n) (i : ⟦ n ⟧%stn) :
+  Lemma sum_id_pointwise_prod { n : nat } (v : vector R n) (i : ⟦ n ⟧%stn) :
     Σ ((identity_matrix i) *pw v) = (v i).
   Proof.
     apply sum_stdb_vector_pointwise_prod.
@@ -263,7 +263,7 @@ Section Identity_Matrix.
   Defined.
 
   Lemma col_vec_mult_eq
-    { m n : nat } (mat : Matrix R m n) (v1 : Vector R n) (v2 : Vector R m)
+    { m n : nat } (mat : Matrix R m n) (v1 : vector R n) (v2 : vector R m)
     (e : (mat ** (col_vec v1)) = col_vec v2)
     : ∏ i : (stn m),
     Σ ((mat i) *pw v1) = v2 i.
@@ -582,7 +582,7 @@ Section MatricesCommrig.
     apply rigcomm2.
   Defined.
 
-  Lemma row_vec_col_vec_mult_eq {m n} (A : Matrix CR m n) (x : Vector CR n)
+  Lemma row_vec_col_vec_mult_eq {m n} (A : Matrix CR m n) (x : vector CR n)
   : transpose ((row_vec x) ** (transpose A)) = A ** (col_vec x).
   Proof.
     etrans. { apply matrix_product_transpose. }

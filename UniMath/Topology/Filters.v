@@ -26,7 +26,7 @@ Proof.
 Qed.
 
 Definition isfilter_finite_intersection :=
-  ∏ (L : Sequence (X → hProp)), (∏ n, F (L n)) → F (finite_intersection L).
+  ∏ (L : List (X → hProp)), (∏ n, F (L n)) → F (finite_intersection L).
 Lemma isaprop_isfilter_finite_intersection :
   isaprop isfilter_finite_intersection.
 Proof.
@@ -966,11 +966,11 @@ Section filtergenerated.
 
 Context {X : UU}.
 Context (L : (X → hProp) → hProp).
-Context (Hl : ∏ (L' : Sequence (X → hProp)), (∏ m, L (L' m)) → ∃ x : X, ∏ m, L' m x).
+Context (Hl : ∏ (L' : List (X → hProp)), (∏ m, L (L' m)) → ∃ x : X, ∏ m, L' m x).
 
 Definition filtergenerated : (X → hProp) → hProp :=
   λ A : X → hProp,
-        ∃ (L' : Sequence (X → hProp)), (∏ m, L (L' m)) × (∏ x : X, finite_intersection L' x → A x).
+        ∃ (L' : List (X → hProp)), (∏ m, L (L' m)) × (∏ x : X, finite_intersection L' x → A x).
 
 Lemma filtergenerated_imply :
   isfilter_imply filtergenerated.
@@ -1051,7 +1051,7 @@ Proof.
 Defined.
 
 Definition FilterGenerated {X : UU} (L : (X → hProp) → hProp)
-           (Hl : ∏ L' : Sequence (X → hProp),
+           (Hl : ∏ L' : List (X → hProp),
   (∏ m : stn (length L'), L (L' m)) → ∃ x : X, finite_intersection L' x) : Filter X.
 Proof.
   exists (PreFilterGenerated L).
@@ -1071,7 +1071,7 @@ Proof.
   split.
   - intros A La.
     apply hinhpr.
-    exists (singletonSequence A).
+    exists (singletonList A).
     split.
     + intros. assumption.
     + intros x Hx.
@@ -1088,7 +1088,7 @@ Proof.
 Qed.
 Lemma FilterGenerated_correct {X : UU} :
    ∏ (L : (X → hProp) → hProp)
-   (Hl : ∏ L' : Sequence (X → hProp),
+   (Hl : ∏ L' : List (X → hProp),
          (∏ m, L (L' m)) →
          (∃ x : X, finite_intersection L' x)),
    (∏ A : X → hProp, L A → (FilterGenerated L Hl) A)
@@ -1099,7 +1099,7 @@ Proof.
   split.
   - intros A La.
     apply hinhpr.
-    exists (singletonSequence A).
+    exists (singletonList A).
     split.
     + intros; assumption.
     + intros x Hx.
@@ -1118,7 +1118,7 @@ Qed.
 Lemma FilterGenerated_inv {X : UU} :
    ∏ (L : (X → hProp) → hProp) (F : Filter X),
    (∏ A : X → hProp, L A → F A) →
-   ∏ (L' : Sequence (X → hProp)),
+   ∏ (L' : List (X → hProp)),
    (∏ m, L (L' m)) →
    (∃ x : X, finite_intersection L' x).
 Proof.
@@ -1149,7 +1149,7 @@ Proof.
       * intros L Hl.
         assert (B : ∃ B : X → hProp, F B × (∏ x, (A x ∧ B x → A x ∧ finite_intersection L x))).
         { revert L Hl.
-          apply (Sequence_rect (P := λ L : Sequence (X → hProp),
+          apply (Sequence_rect (P := λ L : List (X → hProp),
                                     (∏ m : stn (length L), (λ B : X → hProp, F B ∨ B = A) (L m)) →
                                     ∃ B : X → hProp,
                                       F B × (∏ x : X, A x ∧ B x → A x ∧ finite_intersection L x))).
@@ -1166,7 +1166,7 @@ Proof.
           3: apply IHl.
           + intros C.
             generalize (Hl lastelement) ; simpl.
-            rewrite append_vec_compute_2.
+            rewrite last_snoc.
             apply hinhfun.
             apply sumofmaps ; [intros Fl | intros ->].
             * refine (tpair _ _ _).
@@ -1191,7 +1191,7 @@ Proof.
           + intros.
             generalize (Hl (dni_lastelement m)) ; simpl.
             rewrite <- replace_dni_last.
-            now rewrite append_vec_compute_1. }
+            now rewrite init_snoc_i. }
       revert B.
       apply hinhuniv.
       intros B.
@@ -1204,7 +1204,7 @@ Proof.
     + split.
       * intros B Fb.
         apply hinhpr.
-        exists (singletonSequence B).
+        exists (singletonList B).
         split.
         ** intros m.
            apply hinhpr.
@@ -1212,7 +1212,7 @@ Proof.
         ** intros x Hx.
            apply (Hx (O ,, paths_refl _)).
       * apply hinhpr.
-        exists (singletonSequence A).
+        exists (singletonList A).
         split.
         ** intros m.
            apply hinhpr.
@@ -1356,7 +1356,7 @@ Proof.
 Qed.
 
 Lemma base_finite_intersection :
-  ∏ L : Sequence (X → hProp),
+  ∏ L : List (X → hProp),
     (∏ n, base (L n)) → ∃ A, base A × (∏ x, A x → finite_intersection L x).
 Proof.
   intros L Hbase.
@@ -1394,7 +1394,7 @@ Proof.
   apply hPropUnivalence.
   - apply hinhfun.
     intros A.
-    exists (singletonSequence (pr1 A)).
+    exists (singletonList (pr1 A)).
     split.
     + intros m ; simpl.
       exact (pr1 (pr2 A)).
@@ -1414,7 +1414,7 @@ Proof.
 Qed.
 
 Lemma filterbase_generated_hypothesis :
-  ∏ L' : Sequence (X → hProp),
+  ∏ L' : List (X → hProp),
     (∏ m : stn (length L'), base (L' m))
     → ∃ x : X, finite_intersection L' x.
 Proof.
@@ -1486,7 +1486,7 @@ Proof.
 Qed.
 
 Lemma FilterBase_Generated_hypothesis {X : UU} (base : BaseOfFilter X) :
-  ∏ L' : Sequence (X → hProp),
+  ∏ L' : List (X → hProp),
     (∏ m : stn (length L'), base (L' m))
     → ∃ x : X, finite_intersection L' x.
 Proof.

@@ -41,7 +41,7 @@ Section Echelon_Form.
   Context {R: ring}.
 
   Definition is_leading_entry {n : nat}
-    (v : Vector R n) (i_1 : ⟦ n ⟧%stn)
+    (v : vector R n) (i_1 : ⟦ n ⟧%stn)
     := (v i_1 != 0%ring)
       × (∏ i_2 : ⟦ n ⟧%stn, i_2 < i_1 -> (v i_2) = 0%ring).
 
@@ -91,7 +91,7 @@ Section LeadingEntry.
   (** The leading entry of a (dual <-> "flipped") vector:
      [... _ _ X 0 0 0] -> index of X  (Up to a separator variable) *)
    Definition leading_entry_compute_dual_internal_general
-     {X : UU} { n : nat } (v : Vector F n)
+     {X : UU} { n : nat } (v : vector F n)
      (iter : ⟦ S n ⟧%stn)
      : maybe (⟦ n ⟧%stn).
    Proof.
@@ -106,7 +106,7 @@ Section LeadingEntry.
   (** The leading entry of a (dual <-> "flipped") vector:
      [... _ _ X 0 0 0] -> index of X  (Up to a separator variable) *)
   Definition leading_entry_compute_dual_internal
-    { n : nat } (v : Vector F n) (iter : ⟦ S n ⟧%stn)
+    { n : nat } (v : vector F n) (iter : ⟦ S n ⟧%stn)
     : maybe (⟦ n ⟧%stn).
   Proof.
     destruct iter as [iter lt].
@@ -119,7 +119,7 @@ Section LeadingEntry.
 
   (** Leading entry of a vector in terms of dual *)
   Definition leading_entry_compute_internal
-    { n : nat } (v : Vector F n) (iter : ⟦ S n ⟧%stn)
+    { n : nat } (v : vector F n) (iter : ⟦ S n ⟧%stn)
     : maybe (⟦ n ⟧)%stn.
   Proof.
     destruct (leading_entry_compute_dual_internal
@@ -129,13 +129,13 @@ Section LeadingEntry.
   Defined.
 
 
-  Definition leading_entry_compute {n : nat} (v : Vector F n)
+  Definition leading_entry_compute {n : nat} (v : vector F n)
      := leading_entry_compute_internal v (n,, natgthsnn _).
 
-  Definition leading_entry_dual_compute {n : nat} (v : Vector F n)
+  Definition leading_entry_dual_compute {n : nat} (v : vector F n)
      := leading_entry_compute_dual_internal v (n,, natgthsnn _).
 
-  Lemma leading_entry_compute_eq {n : nat} (v : Vector F n)
+  Lemma leading_entry_compute_eq {n : nat} (v : vector F n)
     (i_1 i_2 : ⟦ n ⟧%stn)
     (e_1 : leading_entry_compute v = just i_1)
     (e_2 : leading_entry_dual_compute
@@ -155,7 +155,7 @@ Section LeadingEntry.
     now rewrite <- e_3, e_4.
   Defined.
 
-  Lemma leading_entry_compute_impl {n : nat} (v : Vector F n)
+  Lemma leading_entry_compute_impl {n : nat} (v : vector F n)
     (i_1 : ⟦ n ⟧%stn)
     (e_1 : leading_entry_compute_internal v (n,, natgthsnn _) = just i_1)
     : ∑ (i_2 : ⟦ n ⟧%stn),
@@ -173,7 +173,7 @@ Section LeadingEntry.
   Defined.
 
   Lemma leading_entry_compute_dual_internal_inv1
-    { n : nat } (v : Vector F n) (iter : ⟦ S n ⟧%stn)
+    { n : nat } (v : vector F n) (iter : ⟦ S n ⟧%stn)
     {i : stn n} (not_nothing : (leading_entry_compute_dual_internal v iter) = just i)
     : i < iter × (v i != 0%ring).
   Proof.
@@ -193,7 +193,7 @@ Section LeadingEntry.
   Defined.
 
   Definition leading_entry_compute_dual_internal_inv2
-    {n : nat} (v : Vector F n) (iter : ⟦ S n ⟧%stn)
+    {n : nat} (v : vector F n) (iter : ⟦ S n ⟧%stn)
     (not_nothing : (leading_entry_compute_dual_internal v iter) = nothing)
     : ∏ i : ⟦ n ⟧%stn, i < iter -> v i = 0%ring.
   Proof.
@@ -212,7 +212,7 @@ Section LeadingEntry.
   Defined.
 
   Definition leading_entry_compute_dual_internal_inv3
-    {n : nat} (v : Vector F n)
+    {n : nat} (v : vector F n)
     (iter : ⟦ S n ⟧%stn)
     (i : ⟦ n ⟧%stn)
     (eq : (leading_entry_compute_dual_internal v iter) = just i)
@@ -241,7 +241,7 @@ Section LeadingEntry.
   Defined.
 
   Definition leading_entry_compute_dual_internal_inv4
-    {n : nat} (v : Vector F n)
+    {n : nat} (v : vector F n)
     (iter : ⟦ S n ⟧%stn)
     (i : ⟦ n ⟧%stn)
     (eq : (leading_entry_compute_dual_internal v iter) = just i)
@@ -253,7 +253,7 @@ Section LeadingEntry.
   Defined.
 
   Lemma leading_entry_compute_internal_inv1
-    {n : nat} (v : Vector F n) (i : ⟦ n ⟧%stn)
+    {n : nat} (v : vector F n) (i : ⟦ n ⟧%stn)
     (eq : (leading_entry_compute_internal v (n,, natgthsnn _)) = (just i))
     : is_leading_entry v i.
   Proof.
@@ -279,7 +279,7 @@ Section LeadingEntry.
   Defined.
 
   Lemma leading_entry_compute_internal_inv2
-    {n : nat} (v : Vector F n) (iter : ⟦ S n ⟧%stn)
+    {n : nat} (v : vector F n) (iter : ⟦ S n ⟧%stn)
     (eq_nothing : (leading_entry_compute_internal v iter) = nothing)
     : ∏ i : ⟦ n ⟧%stn, (dualelement i) < iter -> v i = 0%ring.
   Proof.
@@ -304,7 +304,7 @@ Section LeadingEntry.
   Defined.
 
   Lemma leading_entry_compute_inv1
-    {n : nat} (v : Vector F n)
+    {n : nat} (v : vector F n)
     (eq_nothing : (leading_entry_compute v) = nothing)
     : ∏ i : ⟦ n ⟧%stn, v i = 0%ring.
   Proof.
@@ -320,7 +320,7 @@ Section LeadingEntry.
   Defined.
 
   Lemma leading_entry_compute_inv2
-    {n : nat} (v : Vector F n)
+    {n : nat} (v : vector F n)
     (i : ⟦ n ⟧%stn)
     (eq : (leading_entry_compute v) = just i)
     : is_leading_entry v i.
@@ -668,7 +668,7 @@ Section Gauss.
     : Matrix F m n.
   Proof.
     destruct (natchoice0 n) as [contr_eq | p].
-    { unfold Matrix, Vector; intros; apply fromstn0.
+    { unfold Matrix, vector; intros; apply fromstn0.
       now rewrite contr_eq. }
     destruct (select_uncleared_column _ mat row p)
       as [[piv_col [? [piv_row ?]]] | none].

@@ -166,9 +166,9 @@ Section MakeIsLambdaTheoryMorphism'.
       refine (mor_subst _ _ _ @ _).
       refine (maponpaths (λ x, x • _) H1 @ _).
       apply (maponpaths (subst _)).
-      apply append_vec_eq.
+      apply snoc_eq.
       + intro i.
-        refine (maponpaths (λ x, _ x) (append_vec_compute_1 _ _ _) @ _).
+        refine (maponpaths (λ x, _ x) (init_snoc_i _ _ _) @ _).
         refine (mor_subst _ _ _ @ _).
         apply (maponpaths (subst _)).
         apply funextfun.
@@ -183,22 +183,22 @@ Section MakeIsLambdaTheoryMorphism'.
         refine (mor_subst _ _ _ @ _).
         refine (maponpaths (λ x, x • _) H1 @ !_).
         apply maponpaths.
-        refine (!append_vec_eq _ _).
+        refine (!snoc_eq _ _).
         * intro i.
-          refine (maponpaths (λ x, _ x) (append_vec_compute_1 _ _ _) @ _).
+          refine (maponpaths (λ x, _ x) (init_snoc_i _ _ _) @ _).
           refine (mor_subst _ _ _ @ _).
           refine (maponpaths (λ x, x • _) H2 @ _).
           apply (maponpaths (subst _)).
           apply proofirrelevancecontr.
           apply iscontr_vector_0.
-        * exact (maponpaths (λ x, _ x) (append_vec_compute_2 _ _)).
+        * exact (maponpaths (λ x, _ x) (last_snoc _ _)).
       + refine (!_ @ maponpaths _ H4).
         refine (mor_subst _ _ _ @ _).
         refine (maponpaths (λ x, x • _) H1 @ !_).
         apply (maponpaths (subst _)).
-        refine (!append_vec_eq _ _).
+        refine (!snoc_eq _ _).
         * intro i.
-          refine (maponpaths (λ x, _ x) (append_vec_compute_1 _ _ _) @ _).
+          refine (maponpaths (λ x, _ x) (init_snoc_i _ _ _) @ _).
           refine (mor_subst _ _ _ @ _).
           apply (maponpaths (subst _)).
           apply funextfun.

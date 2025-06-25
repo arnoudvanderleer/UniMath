@@ -78,11 +78,11 @@ Section EndomorphismTheory.
     - revert i.
       refine '(stn_sn_ind _ _).
       + intro i.
-        refine '(maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
-        refine '(append_vec_compute_1 _ _ _ @ !_).
+        refine '(maponpaths _ (init_snoc_i _ _ _) @ !_).
+        refine '(init_snoc_i _ _ _ @ !_).
         apply (U_compose _ Lβ).
-      + refine '(maponpaths _ (append_vec_compute_2 _ _) @ !_).
-        refine '(append_vec_compute_2 _ _ @ !_).
+      + refine '(maponpaths _ (last_snoc _ _) @ !_).
+        refine '(last_snoc _ _ @ !_).
         apply (U_compose _ Lβ).
   Qed.
 
@@ -150,7 +150,7 @@ Section EndomorphismTheory.
     refine '(maponpaths (λ x, (abs (app (app (((abs (_ ∘ x)) ∘ _) ∘ _) _) _))) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (app (((abs ((x ∘ _) ∘ _)) ∘ _) ∘ _) _) _))) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (app (((abs ((_ ∘ x) ∘ _)) ∘ _) ∘ _) _) _))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app (app (((abs ((_ ∘ x) ∘ _)) ∘ _) ∘ _) _) _))) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app (app (((abs ((_ ∘ x) ∘ _)) ∘ _) ∘ _) _) _))) (last_snoc _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (app (((abs ((x ∘ _) ∘ x)) ∘ _) ∘ _) _) _))) (subst_U_term _ _) @ _).
     refine '(maponpaths (λ x, abs (app x _)) (app_compose _ Lβ _ _ _) @ _).
     refine '(maponpaths (λ x, abs (app x _)) (app_compose _ Lβ _ _ _) @ _).
@@ -158,7 +158,7 @@ Section EndomorphismTheory.
     refine '(maponpaths (λ x, (abs (app x _))) (subst_compose _ _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (x ∘ _) _))) (subst_compose _ _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app ((_ ∘ x) ∘ _) _))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app ((_ ∘ x) ∘ _) _))) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app ((_ ∘ x) ∘ _) _))) (last_snoc _ _) @ _).
     refine '(maponpaths (λ x, (abs (app ((x ∘ _) ∘ x) _))) (subst_U_term _ _) @ _).
     do 2 (refine '(maponpaths (λ x, (abs x)) (app_compose _ Lβ _ _ _) @ _)).
     refine '(maponpaths (λ x, (abs x)) (app_U _ Lβ _) @ _).
@@ -212,7 +212,7 @@ Section Isomorphism.
     refine '(subst_app _ _ _ _ @ _).
     refine '(maponpaths (λ x, (app x _)) (subst_n_π _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (app _ x)) (last_snoc _ _) @ _).
     refine '(maponpaths (λ x, app _ (app (inflate x) _)) (R_power_object_is_n_tuple_arrow _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ (app x _))) (inflate_n_tuple_arrow _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (app_n_tuple_arrow _ Lβ _ _) @ _).
@@ -269,9 +269,9 @@ Section Isomorphism.
     refine '(subst_app _ _ _ _ @ _).
     refine '(maponpaths (λ x, (app x _)) (subst_n_π _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (app _ (x • _))) (last_snoc _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 _ _) @ _).
+    refine '(maponpaths (λ x, (app _ x)) (last_snoc _ _) @ _).
     apply n_π_tuple.
     exact Lβ.
   Qed.

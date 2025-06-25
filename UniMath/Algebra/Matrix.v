@@ -27,7 +27,7 @@ Require Import UniMath.Algebra.RigsAndRings.
 
 (** ** Vectors *)
 
-Definition pointwise {X : UU} (n : nat) (op : binop X) : binop (Vector X n) :=
+Definition pointwise {X : UU} (n : nat) (op : binop X) : binop (vector X n) :=
   λ v1 v2 i, op (v1 i) (v2 i).
 
 (** *** Standard conditions on one binary operation *)
@@ -121,7 +121,7 @@ Section Structures.
   Definition pointwise_hSet (X : hSet) (n : nat) : hSet.
   Proof.
     use make_hSet.
-    - exact (Vector X n).
+    - exact (vector X n).
     - change isaset with (isofhlevel 2).
       apply vector_hlevel, setproperty.
   Defined.
@@ -268,12 +268,12 @@ Section Weighting.
 
   (** Definition 1.1.1 in arXiv:1012.5857v3 *)
   Definition weighting {m n : nat} (mat : Matrix R m n) : UU :=
-    ∑ vec : Vector R n, (mat ** (col_vec vec)) = col_vec (const_vec (1%rig)).
+    ∑ vec : vector R n, (mat ** (col_vec vec)) = col_vec (const_vec (1%rig)).
 
   Definition coweighting {m n : nat} (mat : Matrix R m n) : UU :=
-    ∑ vec : Vector R m, ((row_vec vec) ** mat) = row_vec (const_vec (1%rig)).
+    ∑ vec : vector R m, ((row_vec vec) ** mat) = row_vec (const_vec (1%rig)).
 
-  Lemma matrix_mult_vectors {n : nat} (vec1 vec2 : Vector R n) :
+  Lemma matrix_mult_vectors {n : nat} (vec1 vec2 : vector R n) :
     ((row_vec vec1) ** (col_vec vec2)) = weq_matrix_1_1 (Σ (vec1 ^ vec2)).
   Proof.
     apply funextfun; intro i; apply funextfun; intro j; reflexivity.
@@ -281,7 +281,7 @@ Section Weighting.
 
   (** Multiplying a column vector by the identity row vector is the same as
       taking the sum of its entries. *)
-  Local Lemma sum_entries1 {n : nat} (vec : Vector R n) :
+  Local Lemma sum_entries1 {n : nat} (vec : vector R n) :
     weq_matrix_1_1 (Σ vec) = ((row_vec (const_vec (1%rig))) ** (col_vec vec)).
   Proof.
     refine (_ @ !matrix_mult_vectors _ _).
@@ -291,7 +291,7 @@ Section Weighting.
     apply riglunax2.
   Defined.
 
-  Local Lemma sum_entries2 {n : nat} (vec : Vector R n) :
+  Local Lemma sum_entries2 {n : nat} (vec : vector R n) :
       weq_matrix_1_1 (Σ vec) = (row_vec vec ** col_vec (const_vec 1%rig)).
   Proof.
     refine (_ @ !matrix_mult_vectors _ _).

@@ -53,17 +53,17 @@ Proof.
       do 3 rewrite subst_abs.
       rewrite Hl.
       do 2 apply maponpaths.
-      refine (append_vec_eq _ _).
+      refine (snoc_eq _ _).
       * intro.
-        refine (maponpaths (λ x, subst x _) (append_vec_compute_1 _ _ _) @ _).
+        refine (maponpaths (λ x, subst x _) (init_snoc_i _ _ _) @ _).
         rewrite inflate_subst.
         unfold inflate.
         rewrite subst_subst.
         apply maponpaths.
         apply funextfun.
         intro.
-        now rewrite var_subst, append_vec_compute_1.
-      * now rewrite append_vec_compute_2, var_subst, append_vec_compute_2.
+        now rewrite var_subst, init_snoc_i.
+      * now rewrite last_snoc, var_subst, last_snoc.
     + intros m n l f Hl Hf m' f_m' n' f_n'.
       rewrite Hl.
       do 2 rewrite subst_subst.
@@ -85,7 +85,7 @@ Proof.
       apply maponpaths.
       refine (_ @ Hl).
       apply maponpaths.
-      exact (!append_vec_eq (λ i, !inflate_var i) (idpath _)).
+      exact (!snoc_eq (λ i, !inflate_var i) (idpath _)).
     + intros ? ? ? ? Hl Hf.
       rewrite subst_subst.
       apply maponpaths.
@@ -121,11 +121,11 @@ Proof.
   - rewrite subst_app.
     do 2 rewrite subst_subst.
     rewrite var_subst.
-    rewrite append_vec_compute_2.
+    rewrite last_snoc.
     apply (maponpaths (λ x, _ (_ x) _)).
     apply funextfun.
     intro.
-    now rewrite var_subst, append_vec_compute_1.
+    now rewrite var_subst, init_snoc_i.
   - now rewrite subst_abs.
 Qed.
 
@@ -149,13 +149,13 @@ Proof.
   apply funextfun.
   refine (stn_sn_ind _ _).
   - intro i.
-    rewrite append_vec_compute_1.
+    rewrite init_snoc_i.
     do 2 rewrite inflate_var.
     rewrite var_subst.
-    now rewrite append_vec_compute_1.
-  - rewrite append_vec_compute_2.
+    now rewrite init_snoc_i.
+  - rewrite last_snoc.
     rewrite var_subst.
-    now rewrite append_vec_compute_2.
+    now rewrite last_snoc.
 Qed.
 
 End LambdaCalculus.

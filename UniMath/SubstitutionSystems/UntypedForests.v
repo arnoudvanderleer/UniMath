@@ -119,8 +119,8 @@ Proof.
     - intros H. induction H  as [term_construct | elim_construct].
       + induction term_construct as [abs|sum].
         * exact ((((sv :: []) ,,st) :: []),,st).
-        * exact ((functionToList sum (fun _ => ([] ,, se))) ,, st ).
-      + exact ((([],,sv) :: ((functionToList elim_construct (fun _ => ([] ,, st))))),, se).
+        * exact ((make_list sum (fun _ => ([] ,, se))) ,, st ).
+      + exact ((([],,sv) :: ((make_list elim_construct (fun _ => ([] ,, st))))),, se).
 Defined.
 
 (** The canonical functor associated with UntypedForest_Sig **)
@@ -209,7 +209,7 @@ Lemma app_source_gen_nonzero_eq (n : nat):
      (functor_compose UntypedForest_gen (projSortToSet sv ∙ hat_functorSet st))
 (ContinuityOfMultiSortedSigToFunctor.hat_exp_functor_list'_optimized
 sort Hsort SET TerminalHSET BinProductsHSET BinCoproductsHSET
-CoproductsHSET ((functionToList (S n)  (fun _ => ([] ,, st)),,se)) UntypedForest_gen).
+CoproductsHSET ((make_list (S n)  (fun _ => ([] ,, st)),,se)) UntypedForest_gen).
 Proof.
    apply idpath.
 Qed.
@@ -218,7 +218,7 @@ Lemma app_source_gen_newstyle_nonzero_aux_eq (n : nat):
    app_source_gen_newstyle_nonzero_aux n =
 ContinuityOfMultiSortedSigToFunctor.hat_exp_functor_list'_optimized sort
 Hsort SET TerminalHSET BinProductsHSET BinCoproductsHSET CoproductsHSET
-((functionToList (S n)  (fun _ => ([] ,, st)),,se)) UntypedForest_gen.
+((make_list (S n)  (fun _ => ([] ,, st)),,se)) UntypedForest_gen.
 Proof.
    induction n.
    - apply idpath.
@@ -321,7 +321,7 @@ Lemma sum_source_gen_eq (n : nat):
    sum_source_gen  n =
 (ContinuityOfMultiSortedSigToFunctor.hat_exp_functor_list'_optimized
 sort Hsort SET TerminalHSET BinProductsHSET BinCoproductsHSET
-CoproductsHSET ((functionToList n  (fun _ => ([] ,, se)),,st)) UntypedForest_gen).
+CoproductsHSET ((make_list n  (fun _ => ([] ,, se)),,st)) UntypedForest_gen).
 Proof.
    apply idpath.
 Qed.
@@ -330,7 +330,7 @@ Lemma sum_source_gen_newstyle_nonzero_eq (n : nat) :
   sum_source_gen_newstyle_nonzero  n  =
 (ContinuityOfMultiSortedSigToFunctor.hat_exp_functor_list'_optimized
 sort Hsort SET TerminalHSET BinProductsHSET BinCoproductsHSET
-CoproductsHSET ((functionToList  (S n)  (fun _ => ([] ,, se)),,st)) UntypedForest_gen).
+CoproductsHSET ((make_list  (S n)  (fun _ => ([] ,, se)),,st)) UntypedForest_gen).
 Proof.
   induction n.
   -apply idpath.
