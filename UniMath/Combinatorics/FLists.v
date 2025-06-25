@@ -62,9 +62,28 @@ Coercion nonempty_list_to_list {X : UU} (x : nonempty_list X) : list X := make_l
 
 Definition make_nonempty_list {X : UU} {n : nat} (xs : vector X (S n)) : nonempty_list X := (n ,, xs).
 
+Definition nonempty_list'
+  (X : UU)
+  : UU
+  := ∑ (xs : list X), length xs != 0.
+
+Definition make_nonempty_list'
+  {X : UU}
+  (xs : list X)
+  (H : length xs != 0)
+  : nonempty_list' X
+  := xs ,, H.
+
+Definition nonempty_list'_eq
+  {X : UU}
+  (xs ys : nonempty_list' X)
+  (H : pr1 xs = pr1 ys)
+  : xs = ys
+  := subtypePath (λ _, isapropneg _) H.
+
 Definition nonempty_list_weq
   (X : UU)
-  : (∑ (xs : list X), length xs != 0) ≃ nonempty_list X.
+  : nonempty_list' X ≃ nonempty_list X.
 Proof.
   use weq_iso.
   - intro xs.
@@ -74,13 +93,12 @@ Proof.
     + exact (fromempty (Hxs (idpath 0))).
     + exact (make_nonempty_list xs).
   - intro xs.
-    exists xs.
-    exact (negpathssx0 _).
+    exact (make_nonempty_list' xs (negpathssx0 _)).
   - abstract (
       intro xs;
       induction xs as [xs Hxs];
       induction xs as [n xs];
-      apply (subtypePath (λ _, isapropneg _));
+      apply nonempty_list'_eq;
       induction n as [|n IHn];
       [ exact (fromempty (Hxs (idpath 0)))
       | reflexivity ]
@@ -165,7 +183,7 @@ Section NilSnoc.
   Lemma snoc_init_last (xs : list X) (Hxs : length xs != 0)
     : snoc (init xs Hxs) (last xs Hxs) = xs.
   Proof.
-    refine (_ @ base_paths _ _ (homotinvweqweq (nonempty_list_weq X) (xs ,, Hxs))).
+    refine (_ @ base_paths _ _ (homotinvweqweq (nonempty_list_weq X) (make_nonempty_list' _ Hxs))).
     apply pair_path_in2, snoc_init_last.
   Qed.
 
@@ -339,58 +357,43 @@ Section Concatenate.
     apply concatenate_0l.
   Qed.
 
+  Lemma nonempty_list_weq_concatenate
+    (xs ys : list X)
+    (Hys : length ys != 0)
+    : nonempty_list_weq X (make_nonempty_list' (concatenate xs ys) (Hys ∘ plusmn0n0 _ _))
+      = make_nonempty_list (transportf (vector X) (natplusnsm _ _)
+          (FVectors.concatenate xs (nonempty_list_weq X (make_nonempty_list' ys Hys)))).
+  Proof.
+    pose (ys' := invmap (nonempty_list_weq _) (nonempty_list_weq _ (make_nonempty_list' ys Hys))).
+    refine (maponpaths (nonempty_list_weq X)
+        (_ : _ = make_nonempty_list' (concatenate xs (pr1 ys')) (pr2 ys' ∘ plusmn0n0 _ _)) @ _).
+    - apply nonempty_list'_eq.
+      apply (maponpaths (concatenate xs)).
+      exact (base_paths (make_nonempty_list' ys Hys) _ (!homotinvweqweq _ _)).
+    - apply pathsweq1'.
+      apply nonempty_list'_eq.
+      now refine (total2_paths_f _ _).
+  Qed.
+
   Lemma init_concatenate
     (xs ys : list X)
-    (Hy : length ys != 0)
-    : init (concatenate xs ys) (Hy ∘ plusmn0n0 _ _ : length (concatenate xs ys) != 0) = concatenate xs (init ys Hy).
+    (Hys : length ys != 0)
+    : init (concatenate xs ys) (Hys ∘ plusmn0n0 _ _) = concatenate xs (init ys Hys).
   Proof.
-    induction xs as [m xs].
-    induction ys as [n ys].
-    induction n as [| n IHn].
-    - exact (fromempty (Hy (idpath 0))).
-    - induction m as [| m IHm].
-      + apply pair_path_in2.
-        refine (init_concatenate xs ys).
-      + use list_eq.
-        * apply natplusnsm.
-        * intro i.
-          simpl.
-          unfold FVectors.concatenate, FVectors.init, invmap.
-          simpl.
-          unfold weqfromcoprodofstn_invmap.
-          pose (Hi := maponpaths (stntonat _) (transport_stn _ _) : stntonat _ (transportf stn (natplusnsm m n) i) = i).
-          rewrite !replace_dni_last.
-          set (q1 := natlthorgeh _ _).
-          set (q2 := natlthorgeh _ _).
-          induction q1 as [q1 | q1], q2 as [q2 | q2].
-          -- apply (vector_stn_proofirrelevance (zs := xs)).
-            exact (!Hi).
-          -- apply fromempty.
-            exact (isirreflnatgth _ (transportf (λ x, x > dni_lastelement i) Hi (natgehgthtrans _ _ _ q2 q1))).
-          -- apply fromempty.
-            exact (isirreflnatgth _ (transportf (λ x, dni_lastelement i > x) Hi (natgehgthtrans _ _ _ q1 q2))).
-          -- apply (maponpaths ys).
-            apply subtypePath_prop.
-            refine (maponpaths_2 _ _ _).
-            exact (!Hi).
+    refine (maponpaths (λ (x : nonempty_list _), make_list (FVectors.init x))
+        (nonempty_list_weq_concatenate _ _ _) @ _).
+    apply (maponpaths make_list).
+    apply init_concatenate.
   Qed.
 
   Lemma last_concatenate
     (xs ys : list X)
-    (Hy : length ys != 0)
-    : last (concatenate xs ys) (Hy ∘ plusmn0n0 _ _ : length (concatenate xs ys) != 0) = last ys Hy.
+    (Hys : length ys != 0)
+    : last (concatenate xs ys) (Hys ∘ plusmn0n0 _ _) = last ys Hys.
   Proof.
-    induction xs as [m xs].
-    induction ys as [n ys].
-    induction n as [| n IHn].
-    - exact (fromempty (Hy (idpath 0))).
-    - induction m as [| m IHm].
-      + refine (_ @ last_concatenate xs ys).
-        now apply (vector_stn_proofirrelevance (zs := ys)).
-      + refine (maponpaths (coprod_rect _ _ _) (_ : _ = inr lastelement)).
-        apply (switch_weq (weqfromcoprodofstn _ _)).
-        apply subtypePath_prop.
-        apply natplusnsm.
+    refine (maponpaths (λ (x : nonempty_list _), FVectors.last x)
+        (nonempty_list_weq_concatenate _ _ _) @ _).
+    apply last_concatenate.
   Qed.
 
   Definition concatenate_step
