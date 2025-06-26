@@ -357,6 +357,16 @@ Section Concatenate.
     apply concatenate_0l.
   Qed.
 
+  Definition concatenate_snoc
+    (xs ys : list X)
+    (y : X)
+    : concatenate xs (snoc ys y) = snoc (concatenate xs ys) y.
+  Proof.
+    use total2_paths_f.
+    - apply natplusnsm.
+    - apply concatenate_snoc.
+  Qed.
+
   Lemma nonempty_list_weq_concatenate
     (xs ys : list X)
     (Hys : length ys != 0)
@@ -431,25 +441,21 @@ Proof.
   exact (flatten_step _ (λ i j, xs i j)).
 Defined.
 
-(* Work from here *)
-
 (* partitions *)
 
-Definition partition' {X n} (f:stn n → nat) (x:stn (stnsum f) → X) : stn n → list X.
-Proof. intros i. exists (f i). intro j. exact (x(inverse_lexicalEnumeration f (i,,j))).
-Defined.
-
-Definition partition {X n} (f:stn n → nat) (x:stn (stnsum f) → X) : list (list X).
-Proof. intros. exists n. exact (partition' f x).
-Defined.
-
-Definition flatten_partition {X n} (f:stn n → nat) (x:stn (stnsum f) → X) :
-  flatten (partition f x) ~ x.
+Definition partition
+  {X : UU}
+  (f : list nat)
+  (x : vector X (stnsum f))
+  : list (list X).
 Proof.
-  intros. intro i.
-  change (x (weqstnsum1 f (pr1 (invmap (weqstnsum1 f) i),, pr2 (invmap (weqstnsum1 f) i))) = x i).
-  apply maponpaths. apply subtypePath_prop. now rewrite homotweqinvweq.
+  refine (make_list _).
+  intro i.
+  refine (make_list _).
+  exact (partition f x i).
 Defined.
+
+(* Work from here *)
 
 (* associativity of "concatenate" *)
 

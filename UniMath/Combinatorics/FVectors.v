@@ -308,7 +308,8 @@ Section Concatenate.
 
     Context {m n : nat}.
     Context (xs : vector X m).
-    Context (ys : vector X (S n)).
+    Context (ys : vector X n).
+    Context (zs : vector X (S n)).
 
     Definition concatenate_0r'
       (i : stn (m + 0))
@@ -340,15 +341,58 @@ Section Concatenate.
       exact concatenate_0l'.
     Defined.
 
+    Lemma concatenate_snoc
+      (y : X)
+      : transportf (vector X) (natplusnsm m n) (concatenate xs (snoc ys y))
+        = snoc (concatenate xs ys) y.
+    Proof.
+      apply transportf_transpose_left.
+      apply funextfun.
+      intro i'.
+      refine  (_ @ transportb_fun' _ _ _).
+      refine (!_ @ maponpaths (λ i, snoc _ _ (transportf _ _ i)) (homotweqinvweq (weqfromcoprodofstn _ _) i')).
+      refine (!_ @ maponpaths (concatenate _ _) (homotweqinvweq (weqfromcoprodofstn _ _) i')).
+      induction (invmap (weqfromcoprodofstn _ _) i') as [i | i].
+      - refine (maponpaths (coprod_rect _ _ _) (homotinvweqweq (weqfromcoprodofstn _ _) _) @ !_).
+        pose (Hi := pr1_transportf (B := λ (_ : nat), nat) _ _ @ eqtohomot (transportf_const _ _) _ :
+          (transportf stn (natplusnsm m n) (weqfromcoprodofstn m (S n) (inl i)) : nat) = i).
+        simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
+        + refine (transportb (λ x, x < _) Hi _).
+          rewrite <- (natplusr0 i).
+          refine (natlehandplus (S i) m 0 n _ (natleh0n _)).
+          apply stnlt.
+        + refine (maponpaths (coprod_rect (λ (_ : stn m ⨿ stn n), X) _ _) (_ : _ = inl i)).
+          apply (switch_weq (weqfromcoprodofstn m n)).
+          apply subtypePath_prop.
+          exact Hi.
+      - refine (maponpaths (coprod_rect _ _ _) (homotinvweqweq (weqfromcoprodofstn _ _) _) @ _).
+        pose (Hi := pr1_transportf (B := λ (_ : nat), nat) _ _ @ eqtohomot (transportf_const _ _) _ :
+          (transportf stn (natplusnsm m n) (stn_right m (S n) i) : nat) = m + i).
+        induction (natlehchoice i n (stnlt i)) as [Hi' | Hi'].
+        + refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ Hi') @ !_).
+          simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
+          * refine (transportb (λ x, x < _) Hi _).
+            apply natlthandplusl.
+            apply Hi'.
+          * refine (maponpaths (coprod_rect (λ (_ : stn m ⨿ stn n), X) _ _) (_ : _ = inr _)).
+            apply (switch_weq (weqfromcoprodofstn m n)).
+            apply subtypePath_prop.
+            apply Hi.
+        + refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ Hi') @ !_).
+          refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ _)).
+          induction Hi'.
+          apply Hi.
+    Qed.
+
     Lemma init_concatenate
-      : init (transportf (vector X) (natplusnsm _ _) (concatenate xs ys))
-      = concatenate xs (init ys).
+      : init (transportf (vector X) (natplusnsm _ _) (concatenate xs zs))
+      = concatenate xs (init zs).
     Proof.
       apply funextfun.
       intro i.
       refine (!maponpaths (λ x, transportf (vector X) x _ _) (pathsinv0inv0 _) @ _).
       refine (!transportb_fun' _ _ _ @ _).
-      refine (!maponpaths (λ x, coprod_rect _ xs ys (_ (_ (_ x)))) (homotweqinvweq (weqfromcoprodofstn _ _) i) @ _).
+      refine (!maponpaths (λ x, coprod_rect _ xs zs (_ (_ (_ x)))) (homotweqinvweq (weqfromcoprodofstn _ _) i) @ _).
       unfold concatenate.
       induction (invmap (weqfromcoprodofstn m n) i) as [i' | i'];
       [ refine (maponpaths _ (_ : _ = inl i'))
@@ -360,8 +404,8 @@ Section Concatenate.
     Qed.
 
     Lemma last_concatenate
-      : last (transportf (vector X) (natplusnsm _ _) (concatenate xs ys))
-      = last ys.
+      : last (transportf (vector X) (natplusnsm _ _) (concatenate xs zs))
+      = last zs.
     Proof.
       refine (!maponpaths (λ e, transportf (vector X) e _ _) (pathsinv0inv0 _) @ _).
       refine (!transportb_fun' _ _ _ @ _).
@@ -372,7 +416,7 @@ Section Concatenate.
     Qed.
 
     Definition concatenate_step
-      : transportf (vector X) (natplusnsm _ _) (concatenate xs ys) = snoc (concatenate xs (init ys)) (last ys).
+      : transportf (vector X) (natplusnsm _ _) (concatenate xs zs) = snoc (concatenate xs (init zs)) (last zs).
     Proof.
       refine (!snoc_init_last _ @ _).
       apply two_arg_paths.
@@ -415,6 +459,30 @@ Proof.
   induction (invmap (weqfromcoprodofstn _ _) _) as [B|C].
   - reflexivity.
   - now induction C.            (* not needed with primitive projections *)
+Defined.
+
+Definition partition
+  {X : UU}
+  {n : nat}
+  (f : vector nat n)
+  (x : vector X (stnsum f))
+  : ∏ (i : stn n), vector X (f i).
+Proof.
+  intros i j.
+  exact (x (inverse_lexicalEnumeration f (i ,, j))).
+Defined.
+
+Definition flatten_partition
+  {X : UU}
+  {n : nat}
+  (f : vector nat n)
+  (x : vector X (stnsum f))
+  : ∏ i, flatten (partition f x) i = x i.
+Proof.
+  intro i.
+  apply (maponpaths x).
+  apply subtypePath_prop.
+  exact (base_paths _ _ (homotweqinvweq (weqstnsum1 f) _)).
 Defined.
 
 Section Fold.
