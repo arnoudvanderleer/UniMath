@@ -68,7 +68,7 @@ Section Snoc.
     refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ (transportb (λ x, x < n) (di_eq1 (stnlt i)) (stnlt i))) @ _).
     apply (maponpaths xs).
     apply stn_eq.
-    exact (di_eq1 (stnlt i)).
+    exact (maponpaths pr1 (eqtohomot (replace_dni_last _) _)).
   Qed.
 
   Lemma init_snoc :
@@ -218,15 +218,61 @@ Section Induction.
 
 End Induction.
 
-Definition map
-  {X Y : UU} {n : nat} (f : X → Y) (xs : vector X n)
-  : vector Y n
-  := f ∘ xs.
+Section Fold.
 
-Definition reindex
-  {X : UU} {m n : nat} (xs : vector X n) (f : vector (stn n) m)
-  : vector X m
-  := xs ∘ f.
+  Context {X : UU} {Y : UU}.
+
+  Section Left.
+
+    Context (f : Y → X → Y) (y : Y).
+
+    Definition foldl {n : nat} : vector X n → Y
+      := vector_rect y (λ n, f) n.
+
+    Definition foldl_nil
+      : foldl nil = y
+      := vector_rect_nil _ _.
+
+    Definition foldl_snoc
+      {n : nat}
+      (xs : vector X n)
+      (x : X)
+      : foldl (snoc xs x) = f (foldl xs) x
+      := vector_rect_snoc _ _ _ _.
+
+  End Left.
+
+  Section Right.
+
+    Context (f : X → Y → Y).
+
+    Definition foldr
+      (y : Y)
+      {n : nat}
+      (xs : vector X n)
+      : Y
+      := vector_rect (P := λ n, Y → Y) (λ acc, acc) (λ _ f_init x acc, f_init (f x acc)) n xs y.
+
+    Lemma foldr_nil
+      (y : Y)
+      : foldr y nil = y.
+    Proof.
+      exact (eqtohomot (vector_rect_nil _ _) y).
+    Qed.
+
+    Lemma foldr_snoc
+      (y : Y)
+      {n : nat}
+      (xs : vector X n)
+      (x : X)
+      : foldr y (snoc xs x) = foldr (f x y) xs.
+    Proof.
+      exact (eqtohomot (vector_rect_snoc _ _ _ _) y).
+    Qed.
+
+  End Right.
+
+End Fold.
 
 Section Equality.
 
@@ -304,129 +350,234 @@ Section Concatenate.
     + exact (ys k).
   Defined.
 
-  Section Lemmas.
 
-    Context {m n : nat}.
-    Context (xs : vector X m).
-    Context (ys : vector X n).
-    Context (zs : vector X (S n)).
+  Lemma concatenate_0r'
+    {n : nat}
+    (xs : vector X n)
+    (i : stn (n + 0))
+    : concatenate xs nil i = xs (transportf stn (natplusr0 n) i).
+  Proof.
+    exact (maponpaths (coprod_rect _ _ _) (weqfromcoprodofstn_invmap_r0 _ _)).
+  Qed.
 
-    Definition concatenate_0r'
-      (i : stn (m + 0))
-      : concatenate xs nil i = xs (transportf stn (natplusr0 m) i).
-    Proof.
-      exact (maponpaths (coprod_rect _ _ _) (weqfromcoprodofstn_invmap_r0 _ _)).
-    Qed.
+  Lemma concatenate_0r
+    {n : nat}
+    (xs : vector X n)
+    : concatenate xs nil = transportb (vector X) (natplusr0 _) xs.
+  Proof.
+    apply funextfun.
+    intro i.
+    refine (_ @ transportb_fun' _ _ _).
+    exact (concatenate_0r' _ i).
+  Qed.
 
-    Definition concatenate_0r
-      : concatenate xs nil = transportb (vector X) (natplusr0 _) xs.
-    Proof.
-      apply funextfun.
-      intro i.
-      refine (_ @ transportb_fun' _ _ _).
-      exact (concatenate_0r' i).
-    Defined.
+  Lemma concatenate_0l'
+    {n : nat}
+    (xs : vector X n)
+    (i : stn n)
+    : concatenate nil xs i = xs i.
+  Proof.
+    exact (maponpaths (coprod_rect _ _ _) (weqfromcoprodofstn_invmap_l0 _ _)).
+  Qed.
 
-    Definition concatenate_0l'
-      (i : stn m)
-      : concatenate nil xs i = xs i.
-    Proof.
-      exact (maponpaths (coprod_rect _ _ _) (weqfromcoprodofstn_invmap_l0 _ _)).
-    Defined.
+  Lemma concatenate_0l
+    {n : nat}
+    (xs : vector X n)
+    : concatenate nil xs = xs.
+  Proof.
+    apply funextfun.
+    exact (concatenate_0l' _).
+  Qed.
 
-    Definition concatenate_0l
-      : concatenate nil xs = xs.
-    Proof.
-      apply funextfun.
-      exact concatenate_0l'.
-    Defined.
-
-    Lemma concatenate_snoc
-      (y : X)
-      : transportf (vector X) (natplusnsm m n) (concatenate xs (snoc ys y))
-        = snoc (concatenate xs ys) y.
-    Proof.
-      apply transportf_transpose_left.
-      apply funextfun.
-      intro i'.
-      refine  (_ @ transportb_fun' _ _ _).
-      refine (!_ @ maponpaths (λ i, snoc _ _ (transportf _ _ i)) (homotweqinvweq (weqfromcoprodofstn _ _) i')).
-      refine (!_ @ maponpaths (concatenate _ _) (homotweqinvweq (weqfromcoprodofstn _ _) i')).
-      induction (invmap (weqfromcoprodofstn _ _) i') as [i | i].
-      - refine (maponpaths (coprod_rect _ _ _) (homotinvweqweq (weqfromcoprodofstn _ _) _) @ !_).
-        pose (Hi := pr1_transportf (B := λ (_ : nat), nat) _ _ @ eqtohomot (transportf_const _ _) _ :
-          (transportf stn (natplusnsm m n) (weqfromcoprodofstn m (S n) (inl i)) : nat) = i).
+  Lemma concatenate_snoc
+    {m n : nat}
+    (xs : vector X m)
+    (ys : vector X n)
+    (y : X)
+    : concatenate xs (snoc ys y)
+      = transportb (vector X) (natplusnsm m n) (snoc (concatenate xs ys) y).
+  Proof.
+    apply funextfun.
+    intro i'.
+    refine  (_ @ transportb_fun' _ _ _).
+    refine (!_ @ maponpaths (λ i, snoc _ _ (transportf _ _ i)) (homotweqinvweq (weqfromcoprodofstn _ _) i')).
+    refine (!_ @ maponpaths (concatenate _ _) (homotweqinvweq (weqfromcoprodofstn _ _) i')).
+    induction (invmap (weqfromcoprodofstn _ _) i') as [i | i].
+    - refine (maponpaths (coprod_rect _ _ _) (homotinvweqweq (weqfromcoprodofstn _ _) _) @ !_).
+      pose (Hi := pr1_transportf (B := λ (_ : nat), nat) _ _ @ eqtohomot (transportf_const _ _) _ :
+        (transportf stn (natplusnsm m n) (weqfromcoprodofstn m (S n) (inl i)) : nat) = i).
+      simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
+      + refine (transportb (λ x, x < _) Hi _).
+        rewrite <- (natplusr0 i).
+        refine (natlehandplus (S i) m 0 n _ (natleh0n _)).
+        apply stnlt.
+      + refine (maponpaths (coprod_rect (λ (_ : stn m ⨿ stn n), X) _ _) (_ : _ = inl i)).
+        apply (switch_weq (weqfromcoprodofstn m n)).
+        apply subtypePath_prop.
+        exact Hi.
+    - refine (maponpaths (coprod_rect _ _ _) (homotinvweqweq (weqfromcoprodofstn _ _) _) @ _).
+      pose (Hi := pr1_transportf (B := λ (_ : nat), nat) _ _ @ eqtohomot (transportf_const _ _) _ :
+        (transportf stn (natplusnsm m n) (stn_right m (S n) i) : nat) = m + i).
+      induction (natlehchoice i n (stnlt i)) as [Hi' | Hi'].
+      + refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ Hi') @ !_).
         simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
-        + refine (transportb (λ x, x < _) Hi _).
-          rewrite <- (natplusr0 i).
-          refine (natlehandplus (S i) m 0 n _ (natleh0n _)).
-          apply stnlt.
-        + refine (maponpaths (coprod_rect (λ (_ : stn m ⨿ stn n), X) _ _) (_ : _ = inl i)).
+        * refine (transportb (λ x, x < _) Hi _).
+          apply natlthandplusl.
+          apply Hi'.
+        * refine (maponpaths (coprod_rect (λ (_ : stn m ⨿ stn n), X) _ _) (_ : _ = inr _)).
           apply (switch_weq (weqfromcoprodofstn m n)).
           apply subtypePath_prop.
-          exact Hi.
-      - refine (maponpaths (coprod_rect _ _ _) (homotinvweqweq (weqfromcoprodofstn _ _) _) @ _).
-        pose (Hi := pr1_transportf (B := λ (_ : nat), nat) _ _ @ eqtohomot (transportf_const _ _) _ :
-          (transportf stn (natplusnsm m n) (stn_right m (S n) i) : nat) = m + i).
-        induction (natlehchoice i n (stnlt i)) as [Hi' | Hi'].
-        + refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ Hi') @ !_).
-          simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
-          * refine (transportb (λ x, x < _) Hi _).
-            apply natlthandplusl.
-            apply Hi'.
-          * refine (maponpaths (coprod_rect (λ (_ : stn m ⨿ stn n), X) _ _) (_ : _ = inr _)).
-            apply (switch_weq (weqfromcoprodofstn m n)).
-            apply subtypePath_prop.
-            apply Hi.
-        + refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ Hi') @ !_).
-          refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ _)).
-          induction Hi'.
           apply Hi.
-    Qed.
+      + refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ Hi') @ !_).
+        refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ _)).
+        induction Hi'.
+        apply Hi.
+  Qed.
 
-    Lemma init_concatenate
-      : init (transportf (vector X) (natplusnsm _ _) (concatenate xs zs))
-      = concatenate xs (init zs).
-    Proof.
-      apply funextfun.
-      intro i.
-      refine (!maponpaths (λ x, transportf (vector X) x _ _) (pathsinv0inv0 _) @ _).
-      refine (!transportb_fun' _ _ _ @ _).
-      refine (!maponpaths (λ x, coprod_rect _ xs zs (_ (_ (_ x)))) (homotweqinvweq (weqfromcoprodofstn _ _) i) @ _).
-      unfold concatenate.
-      induction (invmap (weqfromcoprodofstn m n) i) as [i' | i'];
-      [ refine (maponpaths _ (_ : _ = inl i'))
-      | refine (maponpaths _ (_ : _ = inr (dni lastelement i'))) ];
-        apply (switch_weq (weqfromcoprodofstn _ _));
-        refine (transport_stn _ _ @ _);
-        apply subtypePath_prop;
-        now rewrite !replace_dni_last.
-    Qed.
+  Local Lemma aux_transport_snoc
+    {m n : nat}
+    (xs : vector X m)
+    (x : X)
+    (p : m = n)
+    : snoc (transportf (vector X) p xs) x
+      = transportf (λ l, vector X l) (maponpaths S p) (snoc xs x).
+  Proof.
+    now induction p.
+  Qed.
 
-    Lemma last_concatenate
-      : last (transportf (vector X) (natplusnsm _ _) (concatenate xs zs))
-      = last zs.
-    Proof.
-      refine (!maponpaths (λ e, transportf (vector X) e _ _) (pathsinv0inv0 _) @ _).
-      refine (!transportb_fun' _ _ _ @ _).
-      refine (maponpaths (coprod_rect _ _ _) (_ : _ = inr lastelement)).
-      apply (switch_weq (weqfromcoprodofstn _ _)).
-      refine (transport_stn _ _ @ _).
-      now apply subtypePath_prop.
-    Qed.
+  Lemma concatenate_is_foldl
+    {m n : nat}
+    (xs : vector X m)
+    (ys : vector X n)
+    : concatenate xs ys
+      = transportf (vector X) (natpluscomm _ _) (vector_rect (P := λ n, vector X (n + m)) xs (λ n, snoc) n ys).
+  Proof.
+    revert n ys.
+    refine (vector_ind _ _).
+    - refine (concatenate_0r _ @ _).
+      apply transportf_transpose_right.
+      refine (transport_b_b _ _ _ _ @ _).
+      apply transportf_set.
+      apply isasetnat.
+    - intros n ys Hys y.
+      refine (concatenate_snoc _ _ _ @ _).
+      refine (maponpaths (λ x, transportb _ _ (snoc x _)) Hys @ _).
+      refine (_ @ !maponpaths _ (vector_rect_snoc (P := λ n, vector X (n + m)) _ _ _ _)).
+      refine (maponpaths _ (aux_transport_snoc _ _ _) @ _).
+      apply transportf_transpose_right.
+      refine (transport_b_b _ _ _ _ @ _).
+      refine (transport_b_f _ _ _ _ @ _).
+      apply transportf_set.
+      apply isasetnat.
+  Qed.
 
-    Definition concatenate_step
-      : transportf (vector X) (natplusnsm _ _) (concatenate xs zs) = snoc (concatenate xs (init zs)) (last zs).
-    Proof.
-      refine (!snoc_init_last _ @ _).
-      apply two_arg_paths.
-      - apply init_concatenate.
-      - apply last_concatenate.
-    Qed.
+  Lemma init_concatenate
+    {m n : nat}
+    (xs : vector X m)
+    (ys : vector X (S n))
+    : init (transportf (vector X) (natplusnsm _ _) (concatenate xs ys))
+    = concatenate xs (init ys).
+  Proof.
+    apply funextfun.
+    intro i.
+    refine (!maponpaths (λ x, transportf (vector X) x _ _) (pathsinv0inv0 _) @ _).
+    refine (!transportb_fun' _ _ _ @ _).
+    refine (!maponpaths (λ x, coprod_rect _ xs ys (_ (_ (_ x)))) (homotweqinvweq (weqfromcoprodofstn _ _) i) @ _).
+    unfold concatenate.
+    induction (invmap (weqfromcoprodofstn m n) i) as [i' | i'];
+    [ refine (maponpaths _ (_ : _ = inl i'))
+    | refine (maponpaths _ (_ : _ = inr (dni lastelement i'))) ];
+      apply (switch_weq (weqfromcoprodofstn _ _));
+      refine (transport_stn _ _ @ _);
+      apply subtypePath_prop;
+      now rewrite !replace_dni_last.
+  Qed.
 
-  End Lemmas.
+  Lemma last_concatenate
+    {m n : nat}
+    (xs : vector X m)
+    (ys : vector X (S n))
+    : last (transportf (vector X) (natplusnsm _ _) (concatenate xs ys))
+    = last ys.
+  Proof.
+    refine (!maponpaths (λ e, transportf (vector X) e _ _) (pathsinv0inv0 _) @ _).
+    refine (!transportb_fun' _ _ _ @ _).
+    refine (maponpaths (coprod_rect _ _ _) (_ : _ = inr lastelement)).
+    apply (switch_weq (weqfromcoprodofstn _ _)).
+    refine (transport_stn _ _ @ _).
+    now apply subtypePath_prop.
+  Qed.
+
+  Lemma concatenate_step
+    {m n : nat}
+    (xs : vector X m)
+    (ys : vector X (S n))
+    : concatenate xs ys
+      = transportb (vector X) (natplusnsm _ _) (snoc (concatenate xs (init ys)) (last ys)).
+  Proof.
+    apply transportb_transpose_right.
+    refine (!snoc_init_last _ @ _).
+    apply two_arg_paths.
+    - apply init_concatenate.
+    - apply last_concatenate.
+  Qed.
+
+  Local Lemma concatenate_transport_r
+    {l m n : nat}
+    (xs : vector X l)
+    (ys : vector X m)
+    (p : m = n)
+    : concatenate xs (transportf (vector X) p ys)
+    = transportf (vector X) (maponpaths (λ x, l + x) p) (concatenate xs ys).
+  Proof.
+    now induction p.
+  Qed.
+
+  Lemma isassoc_concatenate
+    {l m n : nat}
+    (xs : vector X l)
+    (ys : vector X m)
+    (zs : vector X n)
+    : concatenate (concatenate xs ys) zs = transportb (vector X) (natplusassoc _ _ _) (concatenate xs (concatenate ys zs)).
+  Proof.
+    revert n zs.
+    refine (vector_ind _ _).
+    - refine (concatenate_0r _ @ _).
+      refine (_ @ !maponpaths (λ x, transportb _ _ (concatenate _ x)) (concatenate_0r _)).
+      refine (_ @ !maponpaths (transportb _ _) (concatenate_transport_r _ _ _)).
+      do 2 apply transportf_transpose_right.
+      do 2 refine (transport_b_b _ _ _ _ @ _).
+      apply transportf_set.
+      apply isasetnat.
+    - intros n zs Hzs z.
+      refine (concatenate_snoc _ _ _ @ _).
+      refine (maponpaths (λ x, transportb _ _ (snoc x _)) Hzs @ _).
+      refine (maponpaths (transportb _ _) (aux_transport_snoc _ _ _) @ _).
+      refine (_ @ !maponpaths (λ x, transportb _ _ (concatenate _ x)) (concatenate_snoc _ _ _)).
+      refine (_ @ !maponpaths (transportb _ _) (concatenate_transport_r _ _ _)).
+      refine (_ @ !maponpaths (λ x, transportb _ _ (transportf _ _ x)) (concatenate_snoc _ _ _)).
+      apply transportb_transpose_right.
+      apply transportf_transpose_right.
+      apply transportb_transpose_right.
+      do 2 (
+        refine (transport_f_b _ _ _ _ @ _);
+        refine (transport_f_f _ _ _ _ @ _)
+      ).
+      apply transportf_set.
+      apply isasetnat.
+  Qed.
 
 End Concatenate.
+
+Definition map
+  {X Y : UU} {n : nat} (f : X → Y) (xs : vector X n)
+  : vector Y n
+  := f ∘ xs.
+
+Definition reindex
+  {X : UU} {m n : nat} (xs : vector X n) (f : vector (stn n) m)
+  : vector X m
+  := xs ∘ f.
 
 Definition flatten
   {X : UU}
@@ -448,14 +599,13 @@ Proof.
   intros.
   apply funextfun; intro i.
   unfold flatten.
-  unfold funcomp.
   rewrite 2 weqstnsum1_eq'.
   unfold StandardFiniteSets.weqstnsum_invmap at 1.
-  change (weqfromcoprodofstn_invmap ?a ?b) with (invmap (weqfromcoprodofstn a b)).
+  rewrite nat_rect_step.
   unfold concatenate.
-  unfold nat_rect, coprod_rect, funcomp.
-  change (invmap (weqfromcoprodofstn (stnsum (λ r : stn n, ms (dni lastelement r))) ?a))
-  with (invmap (weqfromcoprodofstn (stnsum (ms ∘ dni lastelement)) a)) at 1 2.
+  unfold funcomp.
+  change (weqfromcoprodofstn_invmap ?a ?b) with (invmap (weqfromcoprodofstn a b)).
+  change (λ r : stn n, ms (dni lastelement r)) with (ms ∘ dni lastelement) at 1 2.
   induction (invmap (weqfromcoprodofstn _ _) _) as [B|C].
   - reflexivity.
   - now induction C.            (* not needed with primitive projections *)
@@ -485,58 +635,41 @@ Proof.
   exact (base_paths _ _ (homotweqinvweq (weqstnsum1 f) _)).
 Defined.
 
-Section Fold.
+Definition reverse
+  {X : UU}
+  {n : nat}
+  (xs : vector X n)
+  : vector X n
+  := λ i, xs (dualelement i).
 
-  Context {X : UU} {Y : UU}.
+Lemma reverse_index
+  {X : UU}
+  {n : nat}
+  (xs : vector X n)
+  (i : stn n)
+  : reverse xs (dualelement i) = xs i.
+Proof.
+  apply (maponpaths xs).
+  apply dual_dual_element.
+Qed.
 
-  Section Left.
+Lemma reverse_index'
+  {X : UU}
+  {n : nat}
+  (xs : vector X n)
+  (i : stn n)
+  : reverse xs i = xs (dualelement i).
+Proof.
+  reflexivity.
+Qed.
 
-    Context (f : Y → X → Y) (y : Y).
-
-    Definition foldl {n : nat} : vector X n → Y
-      := vector_rect y (λ n, f) n.
-
-    Definition foldl_nil
-      : foldl nil = y
-      := vector_rect_nil _ _.
-
-    Definition foldl_snoc
-      {n : nat}
-      (xs : vector X n)
-      (x : X)
-      : foldl (snoc xs x) = f (foldl xs) x
-      := vector_rect_snoc _ _ _ _.
-
-  End Left.
-
-  Section Right.
-
-    Context (f : X → Y → Y).
-
-    Definition foldr
-      (y : Y)
-      {n : nat}
-      (xs : vector X n)
-      : Y
-      := vector_rect (P := λ n, Y → Y) (λ acc, acc) (λ _ f_init x acc, f_init (f x acc)) n xs y.
-
-    Lemma foldr_nil
-      (y : Y)
-      : foldr y nil = y.
-    Proof.
-      exact (eqtohomot (vector_rect_nil _ _) y).
-    Qed.
-
-    Lemma foldr_snoc
-      (y : Y)
-      {n : nat}
-      (xs : vector X n)
-      (x : X)
-      : foldr y (snoc xs x) = foldr (f x y) xs.
-    Proof.
-      exact (eqtohomot (vector_rect_snoc _ _ _ _) y).
-    Qed.
-
-  End Right.
-
-End Fold.
+Lemma reverse_reverse
+  {X : UU}
+  {n : nat}
+  (xs : vector X n)
+  : reverse (reverse xs) = xs.
+Proof.
+  apply funextfun.
+  intro i.
+  apply reverse_index.
+Qed.

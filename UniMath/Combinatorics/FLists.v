@@ -242,14 +242,6 @@ End Induction.
 
 (** *** Lemmas *)
 
-Definition map {X Y} (f : X → Y) (xs : list X) : list Y := make_list (map f xs).
-
-Definition map_unordered_list {X Y} (f : X → Y) (xs : unordered_list X) : unordered_list Y
-  := make_unordered_list (f ∘ xs).
-
-Definition reindex {X} (xs : list X) (f : list (stn (length xs))) : list X
-  := make_list (reindex xs f).
-
 Section Equality.
 
   Context {X : UU}.
@@ -341,30 +333,40 @@ Section Concatenate.
     induction (!pr1 (nil_length _) H).
     refine (list_eq (natplusr0 _ : length (concatenate xs nil) = _) _).
     intro i.
-    refine (_ @ !transportb_fun' _ _ _).
-    refine (eqtohomot _ i).
-    apply concatenate_0r.
+    apply concatenate_0r'.
   Qed.
 
-  Definition concatenate_0l
+  Lemma concatenate_0l
     (xs ys : list X)
     (H : length xs = 0)
     : concatenate xs ys = ys.
   Proof.
     induction (!pr1 (nil_length _) H).
     apply (list_eq (idpath _ : length (concatenate nil ys) = length ys)).
-    apply eqtohomot.
-    apply concatenate_0l.
+    apply concatenate_0l'.
   Qed.
 
-  Definition concatenate_snoc
+  Lemma concatenate_snoc
     (xs ys : list X)
     (y : X)
     : concatenate xs (snoc ys y) = snoc (concatenate xs ys) y.
   Proof.
-    use total2_paths_f.
+    use total2_paths_b.
     - apply natplusnsm.
     - apply concatenate_snoc.
+  Qed.
+
+  Lemma concatenate_is_foldl
+    (xs ys : list X)
+    : concatenate xs ys = foldl snoc xs ys.
+  Proof.
+    revert ys.
+    refine (list_ind _ _).
+    - now apply concatenate_0r.
+    - intros ys Hys y.
+      refine (concatenate_snoc _ _ _ @ _).
+      refine (_ @ !foldl_snoc _ _ _ _).
+      now apply maponpaths_2.
   Qed.
 
   Lemma nonempty_list_weq_concatenate
@@ -412,29 +414,49 @@ Section Concatenate.
     : concatenate xs ys = snoc (concatenate xs (init ys Hy)) (last ys Hy).
   Proof.
     refine (!maponpaths (λ t, concatenate xs (pr1 t)) (homotinvweqweq (nonempty_list_weq X) (ys ,, Hy)) @ _).
-    use total2_paths_f.
+    use total2_paths_b.
     - apply natplusnsm.
-    - apply FVectors.concatenate_step.
+    - apply concatenate_step.
   Defined.
 
+  Definition isassoc_concatenate
+    (xs ys zs : list X)
+    : concatenate (concatenate xs ys) zs = concatenate xs (concatenate ys zs).
+  Proof.
+    use total2_paths_b.
+    - apply natplusassoc.
+    - apply isassoc_concatenate.
+  Qed.
+
 End Concatenate.
+
+Definition map {X Y : UU} (f : X → Y) (xs : list X) : list Y := make_list (map f xs).
+
+Definition map_unordered_list {X Y : UU} (f : X → Y) (xs : unordered_list X) : unordered_list Y
+  := make_unordered_list (f ∘ xs).
+
+Definition reindex {X : UU} (xs : list X) (f : list (stn (length xs))) : list X
+  := make_list (reindex xs f).
 
 Definition flatten {X : UU} (x : list (list X))
   : list X
   := make_list (flatten (list_to_function ∘ x)).
 
-Definition flatten_unordered_list {X : UU} : unordered_list (unordered_list X) → unordered_list X.
+Definition flatten_unordered_list
+  {X : UU}
+  (xs : unordered_list (unordered_list X))
+  : unordered_list X.
 Proof.
-  intros x.
   use tpair.
-  - exact ((∑ i, pr1 (x i))%finset).
-  - intros ij. exact (x (pr1 ij) (pr2 ij)). (* could also have used (uncurry (unorderedListToFunction x)) here *)
+  - exact ((∑ i, pr1 (xs i))%finset).
+  - exact (uncurry (unordered_list_to_function xs)).
 Defined.
 
 Definition flatten_step
   {X : UU}
   (xs : nonempty_list (list X))
-  : flatten xs = concatenate (flatten (reindex xs (make_list (dni lastelement)))) (last xs (negpathssx0 _)).
+  : flatten xs
+    = concatenate (flatten (reindex xs (make_list (dni lastelement)))) (last xs (negpathssx0 _)).
 Proof.
   intros.
   apply pair_path_in2.
@@ -455,93 +477,32 @@ Proof.
   exact (partition f x i).
 Defined.
 
-(* Work from here *)
-
-(* associativity of "concatenate" *)
-
-Definition isassoc_concatenate {X : UU} (x y z : list X) :
-  concatenate (concatenate x y) z = concatenate x (concatenate y z).
+Definition flatten_partition
+  {X : UU}
+  (f : list nat)
+  (x : vector X (stnsum f))
+  : flatten (partition f x) = make_list x.
 Proof.
-  use list_eq'.
-  - cbn. apply natplusassoc.
-  - intros i ltg ltg'. cbn. unfold FVectors.concatenate. unfold invmap. simpl. unfold weqfromcoprodofstn_invmap. unfold coprod_rect. cbn.
-    induction (natlthorgeh i (length x + length y)) as [H | H].
-    + induction (natlthorgeh (make_stn (length x + length y) i H) (length x)) as [H1 | H1].
-      * induction (natlthorgeh i (length x)) as [H2 | H2].
-        -- apply maponpaths. apply isinjstntonat. apply idpath.
-        -- apply fromempty. exact (natlthtonegnatgeh i (length x) H1 H2).
-      * induction (natchoice0 (length y)) as [H2 | H2].
-        -- apply fromempty. induction H2. induction (! (natplusr0 (length x))).
-           apply (natlthtonegnatgeh i (length x) H H1).
-        -- induction (natlthorgeh i (length x)) as [H3 | H3].
-           ++ apply fromempty. apply (natlthtonegnatgeh i (length x) H3 H1).
-           ++ induction (natchoice0 (length y + length z)) as [H4 | H4].
-              ** apply fromempty. induction (! H4).
-                 use (isirrefl_natneq (length y)).
-                 use natlthtoneq.
-                 use (natlehlthtrans (length y) (length y + length z) (length y) _ H2).
-                 apply natlehnplusnm.
-              ** cbn. induction (natlthorgeh (i - length x) (length y)) as [H5 | H5].
-                 --- apply maponpaths. apply isinjstntonat. apply idpath.
-                 --- apply fromempty.
-                     use (natlthtonegnatgeh (i - (length x)) (length y)).
-                     +++ set (tmp := natlthandminusl i (length x + length y) (length x) H
-                                                     (natlthandplusm (length x) _ H2)).
-                         rewrite (natpluscomm (length x) (length y)) in tmp.
-                         rewrite plusminusnmm in tmp. exact tmp.
-                     +++ exact H5.
-    + induction (natchoice0 (length z)) as [H1 | H1].
-      * apply fromempty. cbn in ltg. induction H1. rewrite natplusr0 in ltg.
-        exact (natlthtonegnatgeh i (length x + length y) ltg H).
-      * induction (natlthorgeh i (length x)) as [H2 | H2].
-        -- apply fromempty.
-           use (natlthtonegnatgeh i (length x) H2).
-           use (istransnatgeh i (length x + length y) (length x) H).
-           apply natgehplusnmn.
-        -- induction (natchoice0 (length y + length z)) as [H3 | H3].
-           ++ apply fromempty. cbn in ltg'. induction H3. rewrite natplusr0 in ltg'.
-              exact (natlthtonegnatgeh i (length x) ltg' H2).
-           ++ cbn. induction (natlthorgeh (i - length x) (length y)) as [H4 | H4].
-              ** apply fromempty.
-                 use (natlthtonegnatgeh i (length x + length y) _ H).
-                 apply (natlthandplusr _ _ (length x)) in H4.
-                 rewrite minusplusnmm in H4.
-                 --- rewrite natpluscomm in H4. exact H4.
-                 --- exact H2.
-              ** apply maponpaths. apply isinjstntonat. cbn. apply (! (NaturalNumbers.natminusminus _ _ _)).
-Qed.
+  apply pair_path_in2.
+  apply funextfun.
+  exact (flatten_partition f x).
+Defined.
+
+(* Work from here *)
 
 (** Reverse *)
 
-Definition reverse {X : UU} (x : list X) : list X :=
-  make_list (fun i : (stn (length x)) => x (dualelement i)).
+Definition reverse
+  {X : UU}
+  (xs : list X)
+  : list X
+  := make_list (reverse xs).
 
-Lemma reversereverse {X : UU} (x : list X) : reverse (reverse x) = x.
+Lemma reverse_reverse
+  {X : UU}
+  (x : list X)
+  : reverse (reverse x) = x.
 Proof.
-  induction x as [n x].
   apply pair_path_in2.
-  apply funextfun; intro i.
-  unfold reverse, dualelement, coprod_rect. cbn.
-  induction (natchoice0 n) as [H | H].
-  + apply fromempty. rewrite <- H in i. now apply negstn0.
-  + cbn. apply maponpaths. apply isinjstntonat. apply minusminusmmn. apply natgthtogehm1. apply stnlt.
-Qed.
-
-Lemma reverse_index {X : UU} (x : list X) (i : stn (length x)) :
-  (reverse x) (dualelement i) = x i.
-Proof.
-  cbn. unfold dualelement, coprod_rect.
-  set (e := natgthtogehm1 (length x) i (stnlt i)).
-  induction (natchoice0 (length x)) as [H' | H'].
-  - apply maponpaths. apply isinjstntonat. cbn. apply (minusminusmmn _ _ e).
-  - apply maponpaths. apply isinjstntonat. cbn. apply (minusminusmmn _ _ e).
-Qed.
-
-Lemma reverse_index' {X : UU} (x : list X) (i : stn (length x)) :
-  (reverse x) i = x (dualelement i).
-Proof.
-  cbn. unfold dualelement, coprod_rect.
-  induction (natchoice0 (length x)) as [H' | H'].
-  - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
-  - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
+  apply reverse_reverse.
 Qed.

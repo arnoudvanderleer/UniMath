@@ -216,6 +216,23 @@ Proof.
   - exact (make_stn n (n - 1 - i) (dualelement_lt i n H)).
 Defined.
 
+Definition dual_dual_element
+  {n : nat}
+  (i : stn n)
+  : dualelement (dualelement i) = i.
+Proof.
+  unfold dualelement.
+  induction (natchoice0 n) as [H | H].
+  + induction H.
+    apply fromempty.
+    apply (negnatlthn0 i).
+    apply stnlt.
+  + apply subtypePath_prop.
+    apply minusminusmmn.
+    apply natgthtogehm1.
+    apply stnlt.
+Qed.
+
 Definition stnmtostnn ( m n : nat ) (isnatleh: natleh m n ) : ⟦m⟧ -> ⟦n⟧ :=
   λ x : ⟦m⟧, match x with tpair _ i is
                  => make_stn _ i ( natlthlehtrans i m n is isnatleh ) end.
