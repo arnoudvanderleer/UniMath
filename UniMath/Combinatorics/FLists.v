@@ -12,7 +12,7 @@ Defined in March 2018 by Langston Barrett (@siddharthist).
  *)
 
 Require Import UniMath.Foundations.All.
-Require Import UniMath.MoreFoundations.Tactics.
+Require Import UniMath.MoreFoundations.All.
 
 Require Import UniMath.Combinatorics.FiniteSets.
 Require Import UniMath.Combinatorics.Lists.
@@ -154,7 +154,7 @@ Local Notation "s □ x" := (append s x) (at level 64, left associativity).
 
 Definition nil_unique {X} (x : stn 0 -> X) : nil = (0,,x).
 Proof.
-  intros. unfold nil. apply maponpaths. apply isapropifcontr. apply iscontr_vector_0.
+  intros. unfold nil. apply maponpaths. apply nil_proofirrelevance.
 Defined.
 
 (* induction principle for contractible types, as a warmup *)
@@ -325,7 +325,11 @@ Proof.
   unfold Sequence_rect; simpl.
   change p0 with (transportf P (idpath nil) p0) at 2.
   apply (maponpaths (λ e, transportf P e p0)).
-  exact (maponpaths (maponpaths functionToSequence) (iscontr_adjointness _ _ _)).
+  refine (maponpaths (maponpaths _) (_ : _ = idpath _)).
+  apply switch_weq.
+  apply funextsec.
+  intro i.
+  exact (fromstn0 i).
 Defined.
 
 Lemma Sequence_rect_compute_cons
