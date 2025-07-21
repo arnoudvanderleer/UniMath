@@ -30,7 +30,7 @@ Section Arbitrary_Vectors.
 
   Lemma iscontr_nil_vector {X : UU} : iscontr (Vector X 0).
   Proof.
-    apply iscontrfunfromempty2. apply fromstn0.
+    apply iscontrfunfromempty2. apply negstn0.
   Defined.
 
   Lemma vector_1_inj { X : rig } { n : nat } (e1 e2 : X)

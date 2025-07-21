@@ -856,8 +856,7 @@ Lemma transport_stn {m n : nat} (e: m=n) (i: ⟦m⟧ ) :
 Proof.
   intros.
   induction e.
-  apply subtypePath_prop.
-  apply idpath.
+  reflexivity.
 Defined.
 
 Lemma stnsum_left_right (m n : nat) (f: ⟦m+n⟧ -> nat) :

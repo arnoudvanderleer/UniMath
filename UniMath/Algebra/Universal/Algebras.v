@@ -4,6 +4,7 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
+Require Export UniMath.Combinatorics.StandardFiniteSets.
 Require Export UniMath.Algebra.Universal.SortedTypes.
 Require Export UniMath.Algebra.Universal.Signatures.
 
