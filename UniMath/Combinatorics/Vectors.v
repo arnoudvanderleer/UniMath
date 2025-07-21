@@ -7,15 +7,6 @@ Require Import UniMath.Foundations.NaturalNumbers.
 Local Open Scope nat.
 Local Open Scope stn.
 
-(** ** Lemmata about standard finite sets. *)
-
-Definition stn_extens {n} (i j : ⟦ n ⟧) (p : stntonat _ i = stntonat _ j)
-  : i = j
-  := subtypePath' p (propproperty (j < n)).
-
-Definition fromstn0 (i : ⟦ 0 ⟧) {A : UU} : A
-  := fromempty (negnatlthn0 (pr1 i) (pr2 i)).
-
 (** ** Vectors. *)
 
 Definition vec (A : UU) (n : nat) : UU.
@@ -90,7 +81,7 @@ Proof.
     induction j as [|k _].
     + cbn.
       apply maponpaths.
-      apply stn_extens.
+      apply subtypePath_prop.
       apply idpath.
     + etrans.
       { apply meq. }

@@ -623,6 +623,9 @@ Proof.
   apply negstn0.
 Defined.
 
+Definition fromstn0 (i : ⟦ 0 ⟧) {A : UU} : A
+  := fromempty (negstn0 i).
+
 Definition weqstn1tounit : ⟦1⟧ ≃ unit.
 Proof.
   set ( f := λ x : ⟦1⟧, tt ).
@@ -2029,8 +2032,8 @@ Defined.
 (* Functions with domain in Standard finite sets. *)
 Definition fun_stnsn_to_stnn {X : UU} {n : nat} (f : stn (S n) → X) : stn n → X := f ∘ dni_lastelement.
 
-Definition stnfun_singleton_complement {X : UU} {n : nat} (f : stn (S n) → X) : 
-      ¬ hfiber (fun_stnsn_to_stnn f) (f lastelement) → stn n → 
+Definition stnfun_singleton_complement {X : UU} {n : nat} (f : stn (S n) → X) :
+      ¬ hfiber (fun_stnsn_to_stnn f) (f lastelement) → stn n →
       (singleton_complement (f lastelement)).
 Proof.
   intros X0 X1.
@@ -2039,7 +2042,7 @@ Proof.
   eexists. apply contra.
 Defined.
 
-Lemma isdeceq_isdecsurj {X : UU} {n : nat} (f : ⟦ n ⟧ → X ) (y : X) : 
+Lemma isdeceq_isdecsurj {X : UU} {n : nat} (f : ⟦ n ⟧ → X ) (y : X) :
     isdeceq X → decidable (hfiber f y).
 Proof.
   generalize dependent X.
@@ -2052,7 +2055,7 @@ Proof.
       apply tpair with (pr1 := (m ,, (natlthtolths _ _ lth))), eq.
     + induction (deceqX (f (lastelement)) x); [left | right].
       * apply (tpair _ lastelement). assumption.
-      * intros H. induction H as [p eq]. induction p as [m lth]. 
+      * intros H. induction H as [p eq]. induction p as [m lth].
         induction (natlehchoice _ _ (natlthsntoleh _ _ lth)).
         -- apply b. apply tpair with (pr1 := (m ,, a)).
            induction eq. unfold g, fun_stnsn_to_stnn, make_stn. unfold funcomp.
@@ -2061,7 +2064,7 @@ Proof.
            apply maponpaths, stn_eq, idpath.
 Qed.
 
-Lemma surj_fun_stnsn_to_stnn {X : UU} {n : nat} (f : ⟦ S n ⟧ → X) : isdeceq X → issurjective f → 
+Lemma surj_fun_stnsn_to_stnn {X : UU} {n : nat} (f : ⟦ S n ⟧ → X) : isdeceq X → issurjective f →
       hfiber (fun_stnsn_to_stnn f) (f lastelement) → issurjective (fun_stnsn_to_stnn f).
 Proof.
   intros deceqX surj x. induction x as [x eq].
@@ -2074,6 +2077,6 @@ Proof.
     + apply tpair with (pr1 := m ,, a).
       unfold fun_stnsn_to_stnn, make_stn, funcomp.
       induction eq'. apply maponpaths, stn_eq, idpath.
-    + induction eq', b0. apply fromempty, b. 
+    + induction eq', b0. apply fromempty, b.
       apply maponpaths, stn_eq, idpath.
 Qed.
