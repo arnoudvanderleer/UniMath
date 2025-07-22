@@ -1,6 +1,6 @@
 (**
 
-  Function Lists
+  Lists as Functions
 
   A [list] is a [vector] of any length.
 
@@ -290,7 +290,7 @@ Proof.
   (* proof needed to complete induction for sequences *)
 Abort.
 
-(** * 5. Sequence operations *)
+(** * 5. List operations *)
 
 (** ** 5.1. Map *)
 
@@ -497,6 +497,7 @@ Proof.
   - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
   - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
 Qed.
+
 
 (* TODO: Move to Equivalences *)
 

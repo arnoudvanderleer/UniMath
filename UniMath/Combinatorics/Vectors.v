@@ -1,13 +1,33 @@
-(** * Vectors as iterated products. *)
-(** Gianluca Amato, Matteo Calosci, Marco Maggesi, Cosimo Perini Brogi 2019-2024. *)
+(**
 
+  Vectors as Iterated Products
+
+  Description
+
+  Contents
+  1. Definitions
+  1.1. Constructors
+  1.2. Accessors
+  2. Equality lemmas
+  3. Misc
+  3.1. The constant vector
+  4. Induction
+  5. Vector operations
+  5.1. Map
+  5.2. Zip
+  5.3. Fold
+  5.4. Concatenate
+
+  Originally developed by Gianluca Amato, Matteo Calosci, Marco Maggesi, Cosimo Perini Brogi,
+    2019-2024.
+ *)
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.Foundations.NaturalNumbers.
 
 Local Open Scope nat.
 Local Open Scope stn.
 
-(** ** Vectors. *)
+(** * 1. Definitions *)
 
 Definition vec (A : UU) (n : nat) : UU.
 Proof.
@@ -16,14 +36,12 @@ induction n as [|n IHn].
 - apply (A × IHn).
 Defined.
 
-(** *** Constructors. *)
+(** ** 1.1. Constructors *)
 
 Definition vnil {A: UU}: vec A 0 := tt.
 
 Definition vcons {A: UU} {n} (x : A) (v : vec A n) : vec A (S n)
   := x,, v.
-
-(** *** Notations. *)
 
 Declare Scope vec_scope.
 
@@ -43,17 +61,7 @@ Section vecs.
 
 Context {A : UU}.
 
-Definition drop {n} (f : ⟦ S n ⟧ → A) (i : ⟦ n ⟧) : A :=
-  f (dni_firstelement i).
-
-Definition make_vec {n} (f : ⟦ n ⟧ → A) : vec A n.
-Proof.
-  induction n as [|m h].
-  - exact [()].
-  - exact ((f firstelement) ::: (h (drop f))).
-Defined.
-
-(** *** Projections. *)
+(** ** 1.2. Accessors *)
 
 Definition hd {n} (v : vec A (S n)) : A := pr1 v.
 
@@ -70,32 +78,6 @@ Proof.
     + exact (f (tl v) (k,, jlt)).
 Defined.
 
-(** *** Some identities for computing [el]. *)
-
-Lemma el_make_vec {n} (f : ⟦ n ⟧ → A) : el (make_vec f) ~ f .
-Proof.
-  intro i.
-  induction n as [|m meq].
-  - exact (fromstn0 i).
-  - induction i as (j,jlt).
-    induction j as [|k _].
-    + cbn.
-      apply maponpaths.
-      apply subtypePath_prop.
-      apply idpath.
-    + etrans.
-      { apply meq. }
-      unfold drop.
-      apply maponpaths.
-      apply idpath.
-Defined.
-
-Lemma el_make_vec_fun {n} (f : ⟦ n ⟧ → A) : el (make_vec f) = f.
-Proof.
-  apply funextfun.
-  apply el_make_vec.
-Defined.
-
 Lemma el_vcons_tl {n} (v : vec A n) (x : A) (i : ⟦ n ⟧) :
   el (x ::: v) (dni_firstelement i) = el v i.
 Proof.
@@ -108,18 +90,7 @@ Proof.
   reflexivity.
 Defined.
 
-Lemma drop_el {n} (v : vec A (S n)) (i: ⟦ n ⟧ ) : drop (el v) i = el (tl v) i.
-Proof.
-  apply idpath.
-Defined.
-
-Lemma el_tl {n} (v : vec A (S n)) (i : ⟦ n ⟧)
-  : el (tl v) i = drop (el v) i.
-Proof.
-  apply idpath.
-Defined.
-
-(** *** Extensionality. *)
+(** * 2. Equality lemmas *)
 
 Definition vec0_eq (u v : vec A 0) : u = v
   := proofirrelevancecontr iscontrunit u v.
@@ -129,47 +100,24 @@ Definition vecS_eq {n} {u v : vec A (S n)}
   : u = v
   := dirprod_paths p q.
 
-Lemma vec_extens {n} {u v : vec A n}
-  : (∏ i : ⟦ n ⟧, el u i = el v i) → u = v.
+(** * 3. Misc *)
+
+(** ** 3.1. The constant vector *)
+
+Definition vec_fill (a: A): ∏ n: nat, vec A n
+  := nat_rect (λ n: nat, vec A n) [()] (λ (n: nat) (v: vec A n), a ::: v).
+
+Lemma el_vec_fill (a: A) {n:nat} (i:⟦ n ⟧) : el (vec_fill a n) i = a.
 Proof.
-  intros H.
-  induction n as [|m meq].
-  - apply vec0_eq.
-  - apply vecS_eq.
-    + exact (H firstelement).
-    + apply meq.
-      intros.
-      do 2 rewrite el_tl.
-      apply H.
+  induction n as [ | n IHn].
+  + use (fromstn0 i).
+  + induction i as [i ilt].
+    induction i as [| i IHi].
+    - apply idpath.
+    - use IHn.
 Defined.
 
-Lemma make_vec_el {n} (v : vec A n) : make_vec (el v) = v.
-Proof.
-  apply vec_extens.
-  intros i.
-  rewrite el_make_vec.
-  reflexivity.
-Defined.
-
-(** *** Weak equivalence with functions. *)
-
-Definition isweqvecfun {n} : isweq (el:vec A n → ⟦ n ⟧ → A)
-  := isweq_iso el make_vec make_vec_el el_make_vec_fun.
-
-Definition weqvecfun n : vec A n ≃ (⟦ n ⟧ -> A)
-  := make_weq el isweqvecfun.
-
-Lemma isofhlevelvec {n} (is1 : isofhlevel n A) k
-  : isofhlevel n (vec A k).
-Proof.
-  induction k as [|k IH].
-  - apply isofhlevelcontr, iscontrunit.
-  - apply isofhleveldirprod.
-    + apply is1.
-    + apply IH.
-Defined.
-
-(** *** Induction. *)
+(** * 4. Induction. *)
 
 Lemma vec_ind (P : ∏ n, vec A n → UU) :
   P 0 [()]
@@ -193,7 +141,9 @@ Defined.
 
 End vecs.
 
-(** *** Map, fold and append. *)
+(** * 5. Vector operations *)
+
+(** ** 5.1. Map *)
 
 Definition vec_map {A B : UU} (f : A → B) {n} (v : vec A n) : vec B n.
 Proof.
@@ -229,39 +179,6 @@ Proof.
               use H.
 Defined.
 
-Lemma vec_map_as_make_vec {A B: UU} (f: A → B) {n} (v: vec A n)
-  : vec_map f v = make_vec (λ i, f (el v i)).
-Proof.
-  apply vec_extens.
-  intro i.
-  rewrite el_vec_map.
-  rewrite el_make_vec.
-  apply idpath.
-Defined.
-
-Definition vec_foldr {A B : UU} (f : A -> B -> B) (b : B) {n}
-  : vec A n -> B
-  := vec_ind (λ (n : nat) (_ : vec A n), B) b
-                (λ (a : A) (m : nat) (_ : vec A m) (acc : B), f a acc)
-                n.
-
-Definition vec_foldr1 {A : UU} (f : A -> A -> A) {n} : vec A (S n) → A
-  := nat_rect (λ n : nat, vec A (S n) → A)
-              hd
-              (λ (m : nat) (h : vec A (S m) → A),
-               uncurry (λ (x : A) (u : vec A (S m)), f x (h u)))
-              n.
-
-Definition vec_append {A : UU} {m} (u : vec A m) {n} (v : vec A n)
-  : vec A (m + n)
-  := vec_ind (λ (p : nat) (_ : vec A p), vec A (p + n))
-                v
-                (λ (x : A) (p : nat) (_ : vec A p) (w : vec A (p + n)),
-                 x ::: w)
-                m u.
-
-(** *** Fusion laws. *)
-
 Lemma vec_map_id {A : UU} {n} (v: vec A n)
   : vec_map (idfun A) v = v.
 Proof.
@@ -286,39 +203,6 @@ Proof.
     + apply HPxs.
 Defined.
 
-Lemma vec_map_make_vec {A B: UU} {n: nat} (g: ⟦ n ⟧ → A) (f: A → B)
-  : vec_map f (make_vec g) = make_vec (f ∘ g).
-Proof.
-  apply vec_extens.
-  intro i.
-  rewrite el_vec_map.
-  rewrite el_make_vec.
-  rewrite el_make_vec.
-  apply idpath.
-Defined.
-
-Lemma vec_append_lid {A : UU} (u : vec A 0) {n}
-  : vec_append u = idfun (vec A n).
-Proof.
-  induction u.
-  reflexivity.
-Defined.
-
-(** *** Other operations on vecs. *)
-
-Definition vec_fill {A: UU} (a: A): ∏ n: nat, vec A n
-  := nat_rect (λ n: nat, vec A n) [()] (λ (n: nat) (v: vec A n), a ::: v).
-
-Lemma el_vec_fill {A: UU} (a: A) {n:nat} (i:⟦ n ⟧) : el (vec_fill a n) i = a.
-Proof.
-  induction n as [ | n IHn].
-  + use (fromstn0 i).
-  + induction i as [i ilt].
-    induction i as [| i IHi].
-    - apply idpath.
-    - use IHn.
-Defined.
-
 Lemma el_vec_map_vec_fill {A B : UU} (f : A → B) {n} (a:A) (i : ⟦ n ⟧)
   : el (vec_map f (vec_fill a n)) i = f a.
   Proof.
@@ -339,6 +223,8 @@ Proof.
     exact HPind.
 Defined.
 
+(** ** 5.2. Zip *)
+
 Definition vec_zip {A B: UU} {n: nat} (v1: vec A n) (v2: vec B n): vec (A × B) n.
 Proof.
   induction n.
@@ -346,4 +232,151 @@ Proof.
   - induction v1 as [x1 xs1].
     induction v2 as [x2 xs2].
     exact ((x1 ,, x2) ::: IHn xs1 xs2).
+Defined.
+
+(** ** 5.3. Fold *)
+
+Definition vec_foldr {A B : UU} (f : A -> B -> B) (b : B) {n}
+  : vec A n -> B
+  := vec_ind (λ (n : nat) (_ : vec A n), B) b
+                (λ (a : A) (m : nat) (_ : vec A m) (acc : B), f a acc)
+                n.
+
+Definition vec_foldr1 {A : UU} (f : A -> A -> A) {n} : vec A (S n) → A
+  := nat_rect (λ n : nat, vec A (S n) → A)
+              hd
+              (λ (m : nat) (h : vec A (S m) → A),
+               uncurry (λ (x : A) (u : vec A (S m)), f x (h u)))
+              n.
+
+(** ** 5.4. Concatenate *)
+
+Definition vec_append {A : UU} {m} (u : vec A m) {n} (v : vec A n)
+  : vec A (m + n)
+  := vec_ind (λ (p : nat) (_ : vec A p), vec A (p + n))
+                v
+                (λ (x : A) (p : nat) (_ : vec A p) (w : vec A (p + n)),
+                 x ::: w)
+                m u.
+
+Lemma vec_append_lid {A : UU} (u : vec A 0) {n}
+  : vec_append u = idfun (vec A n).
+Proof.
+  induction u.
+  reflexivity.
+Defined.
+
+
+(* TODO: Move to Equivalences *)
+
+Section Equivalences.
+
+  Context {A : UU}.
+
+  Definition drop {n} (f : ⟦ S n ⟧ → A) (i : ⟦ n ⟧) : A :=
+    f (dni_firstelement i).
+
+  Lemma drop_el {n} (v : vec A (S n)) (i: ⟦ n ⟧ ) : drop (el v) i = el (tl v) i.
+  Proof.
+    apply idpath.
+  Defined.
+
+  Lemma el_tl {n} (v : vec A (S n)) (i : ⟦ n ⟧)
+    : el (tl v) i = drop (el v) i.
+  Proof.
+    apply idpath.
+  Defined.
+
+  Lemma vec_extens {n} {u v : vec A n}
+    : (∏ i : ⟦ n ⟧, el u i = el v i) → u = v.
+  Proof.
+    intros H.
+    induction n as [|m meq].
+    - apply vec0_eq.
+    - apply vecS_eq.
+      + exact (H firstelement).
+      + apply meq.
+        intros.
+        do 2 rewrite el_tl.
+        apply H.
+  Defined.
+
+  (** *** Weak equivalence with functions. *)
+
+  Definition make_vec {n} (f : ⟦ n ⟧ → A) : vec A n.
+  Proof.
+    induction n as [|m h].
+    - exact [()].
+    - exact ((f firstelement) ::: (h (drop f))).
+  Defined.
+
+  Lemma el_make_vec {n} (f : ⟦ n ⟧ → A) : el (make_vec f) ~ f .
+  Proof.
+    intro i.
+    induction n as [|m meq].
+    - exact (fromstn0 i).
+    - induction i as (j,jlt).
+      induction j as [|k _].
+      + cbn.
+        apply maponpaths.
+        apply subtypePath_prop.
+        apply idpath.
+      + etrans.
+        { apply meq. }
+        unfold drop.
+        apply maponpaths.
+        apply idpath.
+  Defined.
+
+  Lemma el_make_vec_fun {n} (f : ⟦ n ⟧ → A) : el (make_vec f) = f.
+  Proof.
+    apply funextfun.
+    apply el_make_vec.
+  Defined.
+
+  Lemma make_vec_el {n} (v : vec A n) : make_vec (el v) = v.
+  Proof.
+    apply vec_extens.
+    intros i.
+    rewrite el_make_vec.
+    reflexivity.
+  Defined.
+
+  Definition isweqvecfun {n} : isweq (el:vec A n → ⟦ n ⟧ → A)
+    := isweq_iso el make_vec make_vec_el el_make_vec_fun.
+
+  Definition weqvecfun n : vec A n ≃ (⟦ n ⟧ -> A)
+    := make_weq el isweqvecfun.
+
+  Lemma isofhlevelvec {n} (is1 : isofhlevel n A) k
+    : isofhlevel n (vec A k).
+  Proof.
+    induction k as [|k IH].
+    - apply isofhlevelcontr, iscontrunit.
+    - apply isofhleveldirprod.
+      + apply is1.
+      + apply IH.
+  Defined.
+
+End Equivalences.
+
+Lemma vec_map_as_make_vec {A B: UU} (f: A → B) {n} (v: vec A n)
+  : vec_map f v = make_vec (λ i, f (el v i)).
+Proof.
+  apply vec_extens.
+  intro i.
+  rewrite el_vec_map.
+  rewrite el_make_vec.
+  apply idpath.
+Defined.
+
+Lemma vec_map_make_vec {A B: UU} {n: nat} (g: ⟦ n ⟧ → A) (f: A → B)
+  : vec_map f (make_vec g) = make_vec (f ∘ g).
+Proof.
+  apply vec_extens.
+  intro i.
+  rewrite el_vec_map.
+  rewrite el_make_vec.
+  rewrite el_make_vec.
+  apply idpath.
 Defined.

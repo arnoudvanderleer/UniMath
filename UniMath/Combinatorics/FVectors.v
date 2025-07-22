@@ -1,6 +1,6 @@
 (**
 
-  Function Vectors
+  Vectors as Functions
 
   A [vector] of length n with values in X is an ordered n-tuple of elements of X, encoded here as a
   function ⟦n⟧ → X.
