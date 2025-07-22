@@ -1,17 +1,28 @@
-(** * Finite sequences
+(**
 
-Defined in March 2018 by Langston Barrett (@siddharthist).
+  Function Lists
+
+  A [list] is a [vector] of any length.
+
+  Contents
+  1. Definitions
+  1.1. Constructors
+  1.2. Accessors
+  2. Equality lemmas
+  3. Misc
+  3.1. Nil is unique
+  3.2. The equivalence of types between list X and unit ⊔ (list X × X)
+  4. Induction
+  5. Sequence operations
+  5.1. Map
+  5.2. Concatenate
+  5.3. Flatten
+  5.4. Partitions
+  5.5. Reverse
+
+  Originally defined in March 2018 by Langston Barrett (@siddharthist).
+
  *)
-
-(** ** Contents
-
-  Sequences
-  - Definitions
-  - Lemmas
-
- *)
-(** A [Sequence] is a [Vector] of any length. *)
-
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
@@ -20,7 +31,7 @@ Require Import UniMath.Combinatorics.Lists.
 Require Import UniMath.Combinatorics.Vectors.
 Require Import UniMath.Combinatorics.FVectors.
 
-(** * Definitions *)
+(** * 1. Definitions *)
 
 Definition Sequence (X : UU) := ∑ n, Vector X n.
 
@@ -28,7 +39,7 @@ Definition NonemptySequence (X:UU) := ∑ n, stn (S n) -> X.
 
 Definition UnorderedSequence (X:UU) := ∑ I:FiniteSet, I -> X.
 
-(** * Constructors *)
+(** ** 1.1. Constructors *)
 
 Definition functionToSequence {X n} (f:stn n -> X) : Sequence X
   := (n,,f).
@@ -44,7 +55,7 @@ Defined.
 
 Local Notation "s □ x" := (append s x) (at level 64, left associativity).
 
-(** * Accessors *)
+(** ** 1.2. Accessors *)
 
 Definition length {X} : Sequence X -> nat := pr1.
 
@@ -132,7 +143,7 @@ Proof.
   intros. simpl. apply pair_path_in2. apply drop_and_append_vec.
 Defined.
 
-(** * Equality lemmas  *)
+(** * 2. Equality lemmas  *)
 
 Definition sequenceEquality2 {X} (f g:Sequence X) (p:length f=length g) :
   (∏ i, f i = g (transportf stn p i)) -> f = g.
@@ -184,12 +195,16 @@ Proof.
     - now apply maponpaths, isinjstntonat.
 Defined.
 
-(** * Random junk *)
+(** * 3. Misc *)
+
+(** ** 3.1. Nil is unique *)
 
 Definition nil_unique {X} (x : stn 0 -> X) : nil = (0,,x).
 Proof.
   intros. unfold nil. apply maponpaths. apply nil_proofirrelevance.
 Defined.
+
+(** ** 3.2. The equivalence of types between list X and unit ⊔ (list X × X) *)
 
 Definition disassembleSequence {X} : Sequence X -> coprod unit (X × Sequence X).
 Proof.
@@ -235,7 +250,7 @@ Proof.
   simpl. induction d; contradicts b (isirreflnatlth i).
 Defined.
 
-(** * Induction *)
+(** * 4. Induction *)
 
 Definition Sequence_rect {X} {P : Sequence X ->UU}
            (p0 : P nil)
@@ -275,9 +290,9 @@ Proof.
   (* proof needed to complete induction for sequences *)
 Abort.
 
-(** * Sequence operations *)
+(** * 5. Sequence operations *)
 
-(** ** Map *)
+(** ** 5.1. Map *)
 
 Definition composeSequence {X Y} (f:X->Y) : Sequence X -> Sequence Y := λ x, functionToSequence (f ∘ x).
 
@@ -287,7 +302,7 @@ Definition composeSequence' {X m n} (f:stn n -> X) (g:stn m -> stn n) : Sequence
 Definition composeUnorderedSequence {X Y} (f:X->Y) : UnorderedSequence X -> UnorderedSequence Y
   := λ x, functionToUnorderedSequence(f ∘ x).
 
-(** ** Concatenate *)
+(** ** 5.2. Concatenate *)
 
 Definition concatenate {X : UU} : binop (Sequence X)
   := λ x y, functionToSequence (concatenate' x y).
@@ -383,7 +398,7 @@ Proof.
               ** apply maponpaths. apply isinjstntonat. cbn. apply (! (natminusminus _ _ _)).
 Qed.
 
-(** ** Flatten *)
+(** ** 5.3. Flatten *)
 
 Definition flatten {X : UU} : Sequence (Sequence X) -> Sequence X.
 Proof.
@@ -430,7 +445,7 @@ Proof.
   exact (flattenStep' xlens xvals).
 Defined.
 
-(** ** Partitions *)
+(** ** 5.4. Partitions *)
 
 Definition partition' {X n} (f:stn n -> nat) (x:stn (stnsum f) -> X) : stn n -> Sequence X.
 Proof. intros i. exists (f i). intro j. exact (x(inverse_lexicalEnumeration f (i,,j))).
@@ -448,7 +463,7 @@ Proof.
   apply maponpaths. apply subtypePath_prop. now rewrite homotweqinvweq.
 Defined.
 
-(** ** Reverse *)
+(** ** 5.5. Reverse *)
 
 Definition reverse {X : UU} (x : Sequence X) : Sequence X :=
   functionToSequence (fun i : (stn (length x)) => x (dualelement i)).
@@ -483,7 +498,7 @@ Proof.
   - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
 Qed.
 
-(* Move to Equivalences *)
+(* TODO: Move to Equivalences *)
 
 Definition weqListSequence {X} : list X ≃ Sequence X.
 Proof.

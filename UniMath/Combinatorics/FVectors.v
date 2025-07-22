@@ -1,22 +1,33 @@
-(** * Finite sequences
+(**
 
-Vectors defined in March 2018 by Langston Barrett (@siddharthist).
+  Function Vectors
+
+  A [vector] of length n with values in X is an ordered n-tuple of elements of X, encoded here as a
+  function ⟦n⟧ → X.
+
+  Contents
+  1. Definitions
+  1.1. Constructors
+  1.2. Accessors
+  2. Equality lemmas
+  3. Misc
+  3.1. Constant vector
+  3.2. Nil is unique
+  3.3. hlevel of vectors
+  3.4. Every type is equivalent to vectors of length 1 on that type.
+  4. Induction
+
+  Originally defined in March 2018 by Langston Barrett (@siddharthist).
+
  *)
-
-(** ** Contents
-
-  Vectors
-
- *)
-
 Require Import UniMath.Foundations.All.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
-(** ** Vectors *)
+(** * 1. Definitions *)
 
-(** A [Vector] of length n with values in X is an ordered n-tuple of elements of X,
-    encoded here as a function ⟦n⟧ → X. *)
 Definition Vector (X : UU) (n : nat) : UU := stn n -> X.
+
+(** ** 1.1. Constructors *)
 
 Definition empty_vec {X : UU} : Vector X 0 := λ i, fromstn0 i.
 
@@ -32,7 +43,18 @@ Section Append.
     - exact x.
   Defined.
 
-  Definition append_vec_compute_1 i : append_vec (dni lastelement i) = vec i.
+End Append.
+
+(** ** 1.2. Accessors *)
+
+Section Accessors.
+
+  Context {X : UU} {n : nat} (vec : Vector X n) (vecsn : Vector X (S n)) (x : X).
+
+  Definition tail (vecsn : Vector X (S n)) : Vector X n :=
+    vecsn ∘ dni (0,, natgthsn0 n).
+
+  Definition append_vec_compute_1 i : append_vec vec x (dni lastelement i) = vec i.
   Proof.
     intros.
     induction i as [i b]; simpl.
@@ -43,7 +65,7 @@ Section Append.
     - simpl. destruct p. induction (isirreflnatlth i b).
   Defined.
 
-  Definition append_vec_compute_2 : append_vec lastelement = x.
+  Definition append_vec_compute_2 : append_vec vec x lastelement = x.
   Proof.
     intros; unfold append_vec; simpl.
     induction (natlehchoice4 n n (natgthsnn n)) as [a|a]; simpl.
@@ -51,10 +73,10 @@ Section Append.
     - reflexivity.
   Defined.
 
-End Append.
+End Accessors.
 
-Lemma drop_and_append_vec {X n} (x : Vector X (S n)) :
-  append_vec (x ∘ dni_lastelement) (x lastelement) = x.
+Lemma drop_and_append_vec {X : UU} {n : nat} (vecsn : Vector X (S n)) :
+  append_vec (vecsn ∘ dni_lastelement) (vecsn lastelement) = vecsn.
 Proof.
   intros.
   apply funextfun; intros [i b].
@@ -73,8 +95,7 @@ Proof.
     * simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
 Defined.
 
-Definition tail {X : UU} {n : nat} (vecsn : Vector X (S n)) : Vector X n :=
-  vecsn ∘ dni (0,, natgthsn0 n).
+(** * 2. Equality lemmas *)
 
 Definition vectorEquality {X : UU} {m n : nat} (f : Vector X n) (g : Vector X m) (p : n = m) :
   (∏ i, f i = g (transportf stn p i))
@@ -86,17 +107,19 @@ Proof.
   assumption.
 Defined.
 
-(** hlevel of vectors *)
-Lemma vector_hlevel (X : UU) (n : nat) {m : nat} (ism : isofhlevel m X) :
-  isofhlevel m (Vector X n).
+Definition vector_stn_proofirrelevance {X : UU} {n : nat} {vec : Vector X n}
+          {i j : stn n} : (stntonat _ i = stntonat _ j) -> vec i = vec j.
 Proof.
-  apply impred; auto.
+  intro.
+  apply maponpaths, isinjstntonat; assumption.
 Defined.
 
-(** Constant vector *)
+(** * 3. Misc *)
+
+(** ** 3.1. Constant vector *)
 Definition const_vec {X : UU} {n : nat} (x : X) : Vector X n := λ _, x.
 
-(** The unique empty vector *)
+(** ** 3.2. Nil is unique *)
 Definition nil_proofirrelevance (X : UU)
   (xs ys : Vector X 0)
   : xs = ys.
@@ -106,7 +129,14 @@ Proof.
   exact (fromstn0 i).
 Defined.
 
-(** Every type is equivalent to vectors of length 1 on that type. *)
+(** ** 3.3. hlevel of vectors *)
+Lemma vector_hlevel (X : UU) (n : nat) {m : nat} (ism : isofhlevel m X) :
+  isofhlevel m (Vector X n).
+Proof.
+  apply impred; auto.
+Defined.
+
+(** ** 3.4. Every type is equivalent to vectors of length 1 on that type. *)
 Lemma weq_vector_1 {X : UU} : X ≃ Vector X 1.
   intermediate_weq (unit → X).
   - apply invweq, weqfunfromunit.
@@ -114,13 +144,7 @@ Lemma weq_vector_1 {X : UU} : X ≃ Vector X 1.
     exact weqstn1tounit.
 Defined.
 
-(** It doesn't matter what the proofs are in the stn inputs. *)
-Definition vector_stn_proofirrelevance {X : UU} {n : nat} {vec : Vector X n}
-          {i j : stn n} : (stntonat _ i = stntonat _ j) -> vec i = vec j.
-Proof.
-  intro.
-  apply maponpaths, isinjstntonat; assumption.
-Defined.
+(** * 4. Induction *)
 
 (** An induction principle for vectors: If a statement is true for the empty
     vector, and if it is true for vectors of length n it is also true for those
