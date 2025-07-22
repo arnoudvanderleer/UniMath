@@ -13,10 +13,10 @@
   3.1. The constant vector
   4. Induction
   5. Vector operations
-  5.1. Map
-  5.2. Zip
-  5.3. Fold
-  5.4. Concatenate
+  5.1. Fold
+  5.2. Map
+  5.3. Concatenate
+  5.4. Zip
 
   Originally developed by Gianluca Amato, Matteo Calosci, Marco Maggesi, Cosimo Perini Brogi,
     2019-2024.
@@ -117,6 +117,18 @@ Proof.
     - use IHn.
 Defined.
 
+(** ** 3.2. Hlevel of vectors *)
+
+Lemma isofhlevelvec {n} (is1 : isofhlevel n A) k
+  : isofhlevel n (vec A k).
+Proof.
+  induction k as [|k IH].
+  - apply isofhlevelcontr, iscontrunit.
+  - apply isofhleveldirprod.
+    + apply is1.
+    + apply IH.
+Defined.
+
 (** * 4. Induction. *)
 
 Lemma vec_ind (P : ∏ n, vec A n → UU) :
@@ -143,7 +155,22 @@ End vecs.
 
 (** * 5. Vector operations *)
 
-(** ** 5.1. Map *)
+(** ** 5.1. Fold *)
+
+Definition vec_foldr {A B : UU} (f : A -> B -> B) (b : B) {n}
+  : vec A n -> B
+  := vec_ind (λ (n : nat) (_ : vec A n), B) b
+                (λ (a : A) (m : nat) (_ : vec A m) (acc : B), f a acc)
+                n.
+
+Definition vec_foldr1 {A : UU} (f : A -> A -> A) {n} : vec A (S n) → A
+  := nat_rect (λ n : nat, vec A (S n) → A)
+              hd
+              (λ (m : nat) (h : vec A (S m) → A),
+               uncurry (λ (x : A) (u : vec A (S m)), f x (h u)))
+              n.
+
+(** ** 5.2. Map *)
 
 Definition vec_map {A B : UU} (f : A → B) {n} (v : vec A n) : vec B n.
 Proof.
@@ -223,33 +250,7 @@ Proof.
     exact HPind.
 Defined.
 
-(** ** 5.2. Zip *)
-
-Definition vec_zip {A B: UU} {n: nat} (v1: vec A n) (v2: vec B n): vec (A × B) n.
-Proof.
-  induction n.
-  - exact [()].
-  - induction v1 as [x1 xs1].
-    induction v2 as [x2 xs2].
-    exact ((x1 ,, x2) ::: IHn xs1 xs2).
-Defined.
-
-(** ** 5.3. Fold *)
-
-Definition vec_foldr {A B : UU} (f : A -> B -> B) (b : B) {n}
-  : vec A n -> B
-  := vec_ind (λ (n : nat) (_ : vec A n), B) b
-                (λ (a : A) (m : nat) (_ : vec A m) (acc : B), f a acc)
-                n.
-
-Definition vec_foldr1 {A : UU} (f : A -> A -> A) {n} : vec A (S n) → A
-  := nat_rect (λ n : nat, vec A (S n) → A)
-              hd
-              (λ (m : nat) (h : vec A (S m) → A),
-               uncurry (λ (x : A) (u : vec A (S m)), f x (h u)))
-              n.
-
-(** ** 5.4. Concatenate *)
+(** ** 5.3. Concatenate *)
 
 Definition vec_append {A : UU} {m} (u : vec A m) {n} (v : vec A n)
   : vec A (m + n)
@@ -264,6 +265,17 @@ Lemma vec_append_lid {A : UU} (u : vec A 0) {n}
 Proof.
   induction u.
   reflexivity.
+Defined.
+
+(** ** 5.4. Zip *)
+
+Definition vec_zip {A B: UU} {n: nat} (v1: vec A n) (v2: vec B n): vec (A × B) n.
+Proof.
+  induction n.
+  - exact [()].
+  - induction v1 as [x1 xs1].
+    induction v2 as [x2 xs2].
+    exact ((x1 ,, x2) ::: IHn xs1 xs2).
 Defined.
 
 
@@ -347,16 +359,6 @@ Section Equivalences.
 
   Definition weqvecfun n : vec A n ≃ (⟦ n ⟧ -> A)
     := make_weq el isweqvecfun.
-
-  Lemma isofhlevelvec {n} (is1 : isofhlevel n A) k
-    : isofhlevel n (vec A k).
-  Proof.
-    induction k as [|k IH].
-    - apply isofhlevelcontr, iscontrunit.
-    - apply isofhleveldirprod.
-      + apply is1.
-      + apply IH.
-  Defined.
 
 End Equivalences.
 

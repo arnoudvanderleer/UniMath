@@ -12,30 +12,45 @@ Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.Combinatorics.Vectors.
 
-(** * Lists over an arbitrary type *)
 Section lists.
 
 Context {A : UU}.
 
-(** The type of lists *)
+(** * 1. Definitions *)
+
 Definition list : UU := ∑ n, vec A n.
 
-(** Length of a list *)
+(** ** 1.1. Accessors *)
+
 Definition length : list -> nat := pr1.
 
-(** Coercion to a vector *)
 Definition list_to_vec: ∏ l: list, vec A (length l) := pr2.
 Coercion list_to_vec: list >-> vec.
 
-(** The empty list *)
+Definition nth x : stn(length x) -> A := el (pr2 x).
+
+(** ** 1.2. Constructors *)
+
 Definition nil : list := (0,, vnil).
 
-(** List cons *)
 Definition cons (x : A) (xs : list) : list :=
   (S (pr1 xs),, vcons x xs).
 
 Local Notation "[]" := nil (at level 0, format "[]").
 Local Infix "::" := cons.
+
+(** * 3. Misc *)
+
+(** ** 3.1. HLevel of lists *)
+
+Lemma isofhlevellist (n : nat) (is1 : isofhlevel (S (S n)) A) : isofhlevel (S (S n)) list.
+Proof.
+  use isofhleveltotal2.
+  - intros m k. apply isofhlevelsnprop, isasetnat.
+  - intro m. apply isofhlevelvec, is1.
+Defined.
+
+(** * 4. Induction *)
 
 Lemma list_ind : ∏ (P : list -> UU),
      P nil
@@ -63,80 +78,18 @@ Proof.
   apply idpath.
 Defined.
 
-Definition foldr {B : UU} (f : A -> B -> B) (b : B) : list -> B :=
-  list_ind (λ _, B) b (λ a _ b', f a b').
-
-(** Variation of foldr that returns a for the empty list and folds the
-    rest with the first element as new default value *)
-Definition foldr1 (f : A -> A -> A) (a : A) : list → A.
-Proof.
-  apply list_ind.
-  - exact a.
-  - intros a' l fl. revert l. apply list_ind.
-    + exact a'.
-    + intros _ _ _. exact (f a' fl).
-Defined.
-
-(** Variation of foldr1 with embedded mapping, see below for [foldr1_foldr1_map] *)
-Definition foldr1_map {B : UU} (f : B -> B -> B) (b : B) (h : A -> B) : list → B.
-Proof.
-  apply list_ind.
-  - exact b.
-  - intros a' l fl. revert l. apply list_ind.
-    + exact (h a').
-    + intros _ _ _. exact (f (h a') fl).
-Defined.
-
-(** The n-th element of a list *)
-
-Definition nth x : stn(length x) -> A := el (pr2 x).
-
-Definition functionToList' n : (stn n -> A) -> vec A n.
-Proof.
-  intros f.
-  induction n as [|n I].
-  - exact tt.
-  - exists (f (●0))%stn.
-    exact (I(f ∘ dni (●0)))%stn.
-Defined.
-
-Definition functionToList n : (stn n -> A) -> list.
-Proof.
-  intros f.
-  exact (n ,, make_vec f).
-Defined.
-
-Section Test.
-
-  Local Open Scope stn.
-
-  Context {a b c d:A}.
-  Let x := a::b::c::d::[].
-  Goal nth x (●0) = a. apply idpath. Qed.
-  Goal nth x (●1) = b. apply idpath. Qed.
-  Goal nth x (●2) = c. apply idpath. Qed.
-  Goal nth x (●3) = d. apply idpath. Qed.
-
-  Goal functionToList _ (nth x) = x. apply idpath. Qed.
-
-End Test.
-
 End lists.
 
 (** Make the type not implicit for list *)
 Arguments list : clear implicits.
 
-Section more_lists.
+(** * 5. Sequence operations *)
 
-Definition map {A B : UU} (f : A -> B) : list A -> list B :=
-  foldr (λ a l, cons (f a) l) nil.
+(** ** Fold *)
 
-Lemma mapStep {A B : UU} (f : A -> B) (a:A) (x:list A) : map f (cons a x) = cons (f a) (map f x).
-Proof.
-  apply idpath.
-Defined.
+Definition foldr {A B : UU} (f : A -> B -> B) (b : B) : list A -> B :=
+  list_ind (λ _, B) b (λ a _ b', f a b').
 
-(** Various unfolding lemmas *)
 Lemma foldr_nil {A B : UU} (f : A -> B -> B) (b : B) : foldr f b nil = b.
 Proof.
   apply idpath.
@@ -148,39 +101,15 @@ Proof.
   apply idpath.
 Qed.
 
-Lemma map_nil {A B : UU} (f : A -> B) : map f nil = nil.
+(** Variation of foldr that returns a for the empty list and folds the
+    rest with the first element as new default value *)
+Definition foldr1 {A : UU} (f : A -> A -> A) (a : A) : list A → A.
 Proof.
-  apply idpath.
-Qed.
-
-Lemma map_cons {A B : UU} (f : A -> B) (x : A) (xs : list A) :
-  map f (cons x xs) = cons (f x) (map f xs).
-Proof.
-  apply idpath.
-Qed.
-
-Lemma map_compose {A B C : UU} (f : A → B) (g : B → C) (xs : list A) :
-  map (g ∘ f) xs = map g (map f xs).
-Proof.
-  revert xs. apply list_ind.
-  - apply idpath.
-  - intros x xs IH. now rewrite !map_cons, IH.
-Defined.
-
-Lemma map_idfun {A : UU} (xs : list A) :
-  map (idfun A) xs = xs.
-Proof.
-  revert xs. apply list_ind.
-  - apply idpath.
-  - intros x xs IH. now rewrite !map_cons, IH.
-Defined.
-
-Lemma map_homot {A B : UU} {f g : A → B} (h : f ~ g) (xs : list A) :
-  map f xs = map g xs.
-Proof.
-  revert xs. apply list_ind.
-  - apply idpath.
-  - intros x xs IH. now rewrite !map_cons, h, IH.
+  apply list_ind.
+  - exact a.
+  - intros a' l fl. revert l. apply list_ind.
+    + exact a'.
+    + intros _ _ _. exact (f a' fl).
 Defined.
 
 Lemma foldr1_nil {A: UU} (f : A -> A -> A) (a : A) : foldr1 f a nil = a.
@@ -199,6 +128,16 @@ Lemma foldr1_cons {A : UU} (f : A -> A -> A) (a : A) (x y : A) (xs : list A) :
 Proof.
 apply idpath.
 Qed.
+
+(** Variation of foldr1 with embedded mapping, see below for [foldr1_foldr1_map] *)
+Definition foldr1_map {A B : UU} (f : B -> B -> B) (b : B) (h : A -> B) : list A → B.
+Proof.
+  apply list_ind.
+  - exact b.
+  - intros a' l fl. revert l. apply list_ind.
+    + exact (h a').
+    + intros _ _ _. exact (f (h a') fl).
+Defined.
 
 Lemma foldr1_map_nil {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B) :
   foldr1_map f b h nil = b.
@@ -257,6 +196,51 @@ Proof.
   - intros a1 xs' a2 res H. apply P2. exact H.
 Defined.
 
+(** ** Map *)
+
+Definition map {A B : UU} (f : A -> B) : list A -> list B :=
+  foldr (λ a l, cons (f a) l) nil.
+
+Lemma mapStep {A B : UU} (f : A -> B) (a:A) (x:list A) : map f (cons a x) = cons (f a) (map f x).
+Proof.
+  apply idpath.
+Defined.
+
+Lemma map_nil {A B : UU} (f : A -> B) : map f nil = nil.
+Proof.
+  apply idpath.
+Qed.
+
+Lemma map_cons {A B : UU} (f : A -> B) (x : A) (xs : list A) :
+  map f (cons x xs) = cons (f x) (map f xs).
+Proof.
+  apply idpath.
+Qed.
+
+Lemma map_compose {A B C : UU} (f : A → B) (g : B → C) (xs : list A) :
+  map (g ∘ f) xs = map g (map f xs).
+Proof.
+  revert xs. apply list_ind.
+  - apply idpath.
+  - intros x xs IH. now rewrite !map_cons, IH.
+Defined.
+
+Lemma map_idfun {A : UU} (xs : list A) :
+  map (idfun A) xs = xs.
+Proof.
+  revert xs. apply list_ind.
+  - apply idpath.
+  - intros x xs IH. now rewrite !map_cons, IH.
+Defined.
+
+Lemma map_homot {A B : UU} {f g : A → B} (h : f ~ g) (xs : list A) :
+  map f xs = map g xs.
+Proof.
+  revert xs. apply list_ind.
+  - apply idpath.
+  - intros x xs IH. now rewrite !map_cons, h, IH.
+Defined.
+
 Lemma foldr1_foldr1_map {A B : UU} (f : B -> B -> B) (b : B) (h : A -> B) (xs : list A) :
   foldr1_map f b h xs = foldr1 f b (map h xs).
 Proof.
@@ -274,12 +258,10 @@ Proof.
     exact H.
 Qed.
 
-End more_lists.
-
 Local Notation "[]" := nil (at level 0, format "[]").
 Local Infix "::" := cons.
 
-(** concatenate two lists  *)
+(** ** Concatenate *)
 
 Definition concatenate {X} : list X -> list X -> list X
   := λ r s, foldr cons s r.
@@ -338,7 +320,7 @@ Proof.
   apply foldr1_foldr1_map.
 Qed.
 
-(** Append a single element to a list *)
+(** ** Append *)
 
 Definition append {X} (x : X) (l : list X) : list X :=
   l ++ x::[].
@@ -352,7 +334,23 @@ Lemma append_concatenate {X} (x : X) (l s : list X) : append x (l ++ s) = l ++ a
 Lemma map_append {X Y} (f : X → Y) (x : X) (r : list X) : map f (append x r) = append (f x) (map f r).
   Proof. exact (map_concatenate _ _ _). Defined.
 
-(** Reverse a list *)
+(** Flatten *)
+
+Definition flatten {X} : list (list X) → list X.
+Proof.
+  apply list_ind.
+  + exact [].
+  + intros s _ f. exact (concatenate s f).
+Defined.
+
+Lemma flattenStep {X} (x:list X) (m : list(list X)) : flatten (x::m) = concatenate x (flatten m).
+Proof.
+  unfold flatten.
+  rewrite list_ind_compute_2.
+  apply idpath.
+Defined.
+
+(** ** Reverse *)
 
 Definition reverse {X} : list X → list X :=
   foldr append [].
@@ -387,25 +385,36 @@ Proof.
   - intros x xs p. now rewrite !reverseStep, reverse_append, p.
 Defined.
 
-(** flatten lists of lists  *)
 
-Definition flatten {X} : list (list X) → list X.
+(* TODO: To Equivalences *)
+
+Definition functionToList' {A : UU} (n : nat) : (stn n -> A) -> vec A n.
 Proof.
-  apply list_ind.
-  + exact [].
-  + intros s _ f. exact (concatenate s f).
+  intros f.
+  induction n as [|n I].
+  - exact tt.
+  - exists (f (●0))%stn.
+    exact (I(f ∘ dni (●0)))%stn.
 Defined.
 
-Lemma flattenStep {X} (x:list X) (m : list(list X)) : flatten (x::m) = concatenate x (flatten m).
+Definition functionToList {A : UU} (n : nat) : (stn n -> A) -> list A.
 Proof.
-  unfold flatten.
-  rewrite list_ind_compute_2.
-  apply idpath.
+  intros f.
+  exact (n ,, make_vec f).
 Defined.
 
-Lemma isofhlevellist (n : nat) {X : UU} (is1 : isofhlevel (S (S n)) X) : isofhlevel (S (S n)) (list X).
-Proof.
-  use isofhleveltotal2.
-  - intros m k. apply isofhlevelsnprop, isasetnat.
-  - intro m. apply isofhlevelvec, is1.
-Defined.
+Section Test.
+
+  Local Open Scope stn.
+
+  Context {A : UU}.
+  Context {a b c d:A}.
+  Let x := a::b::c::d::[].
+  Goal nth x (●0) = a. apply idpath. Qed.
+  Goal nth x (●1) = b. apply idpath. Qed.
+  Goal nth x (●2) = c. apply idpath. Qed.
+  Goal nth x (●3) = d. apply idpath. Qed.
+
+  Goal functionToList _ (nth x) = x. apply idpath. Qed.
+
+End Test.
