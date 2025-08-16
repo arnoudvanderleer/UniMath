@@ -27,6 +27,10 @@ Require Import UniMath.Foundations.NaturalNumbers.
 Local Open Scope nat.
 Local Open Scope stn.
 
+Declare Scope pvector_scope.
+Delimit Scope pvector_scope with pvector.
+Local Open Scope pvector_scope.
+
 (** * 1. Definitions *)
 
 Definition vec (A : UU) (n : nat) : UU.
@@ -36,6 +40,8 @@ induction n as [|n IHn].
 - apply (A × IHn).
 Defined.
 
+Bind Scope pvector_scope with vec.
+
 (** ** 1.1. Constructors *)
 
 Definition vnil {A: UU}: vec A 0 := tt.
@@ -43,19 +49,9 @@ Definition vnil {A: UU}: vec A 0 := tt.
 Definition vcons {A: UU} {n} (x : A) (v : vec A n) : vec A (S n)
   := x,, v.
 
-Declare Scope vec_scope.
-
-Delimit Scope vec_scope with vec.
-
-Bind Scope vec_scope with vec.
-
-Local Open Scope vec_scope.
-
-Notation "[()]" := vnil (at level 0, format "[()]"): vec_scope.
-
-Infix ":::" := vcons (at level 60, right associativity) : vec_scope.
-
-Notation "[( x ; .. ; y )]" := (vcons x .. (vcons y [()]) ..): vec_scope.
+Notation "[]" := vnil (at level 0, format "[]"): pvector_scope.
+Infix "::p" := vcons (at level 60, right associativity) : pvector_scope.
+Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): pvector_scope.
 
 Section vecs.
 
@@ -79,13 +75,13 @@ Proof.
 Defined.
 
 Lemma el_vcons_tl {n} (v : vec A n) (x : A) (i : ⟦ n ⟧) :
-  el (x ::: v) (dni_firstelement i) = el v i.
+  el (x ::p v) (dni_firstelement i) = el v i.
 Proof.
   apply idpath.
 Defined.
 
 Lemma el_vcons_hd {n} (v : vec A n) (x : A) :
-  el (x ::: v) (firstelement) = x.
+  el (x ::p v) (firstelement) = x.
 Proof.
   reflexivity.
 Defined.
@@ -105,7 +101,7 @@ Definition vecS_eq {n} {u v : vec A (S n)}
 (** ** 3.1. The constant vector *)
 
 Definition vec_fill (a: A): ∏ n: nat, vec A n
-  := nat_rect (λ n: nat, vec A n) [()] (λ (n: nat) (v: vec A n), a ::: v).
+  := nat_rect (λ n: nat, vec A n) [] (λ (n: nat) (v: vec A n), a ::p v).
 
 Lemma el_vec_fill (a: A) {n:nat} (i:⟦ n ⟧) : el (vec_fill a n) i = a.
 Proof.
@@ -132,26 +128,30 @@ Defined.
 (** * 4. Induction. *)
 
 Lemma vec_ind (P : ∏ n, vec A n → UU) :
-  P 0 [()]
-  → (∏ x n (v : vec A n), P n v → P (S n) (x ::: v))
+  P 0 []
+  → (∏ x n (v : vec A n), P n v → P (S n) (x ::p v))
   → (∏ n (v : vec A n), P n v).
 Proof.
   intros Hnil Hcons.
   induction n as [|m H]; intros.
-  - apply (transportb (P 0) (vec0_eq v [()]) Hnil).
+  - apply (transportb (P 0) (vec0_eq v []) Hnil).
   - apply Hcons, H.
 Defined.
 
 Lemma vec_ind_compute (P : ∏ n, vec A n → UU)
   {n:nat} {v:vec A n} {x:A}
-  (H0 : P 0 [()])
-  (HI : ∏ x n (v : vec A n), P n v → P (S n) (x ::: v))
-  : (vec_ind P H0 HI) (S n) (x:::v) = HI x n v (vec_ind P H0 HI n v).
+  (H0 : P 0 [])
+  (HI : ∏ x n (v : vec A n), P n v → P (S n) (x ::p v))
+  : (vec_ind P H0 HI) (S n) (x ::p v) = HI x n v (vec_ind P H0 HI n v).
 Proof.
   apply idpath.
 Defined.
 
 End vecs.
+
+Notation "[]" := vnil (at level 0, format "[]"): pvector_scope.
+Infix "::p" := vcons (at level 60, right associativity) : pvector_scope.
+Notation "[ x ; .. ; y ]" := (vcons x .. (vcons y []) ..) : pvector_scope.
 
 (** * 5. Vector operations *)
 
@@ -175,10 +175,8 @@ Definition vec_foldr1 {A : UU} (f : A -> A -> A) {n} : vec A (S n) → A
 Definition vec_map {A B : UU} (f : A → B) {n} (v : vec A n) : vec B n.
 Proof.
   induction n as [|m h].
-  - exact vnil.
-  - eapply vcons.
-    + exact (f (hd v)).
-    + exact (h (tl v)).
+  - exact [].
+  - exact (f (hd v) ::p h (tl v)).
 Defined.
 
 Lemma hd_vec_map {A B : UU} (f : A → B) {n} (v : vec A (S n))
@@ -245,7 +243,7 @@ Proof.
   apply vec_ind.
   - apply idpath.
   - intros x n xs HPind.
-    change (b ::: vec_map (λ _: A, b) xs = b ::: vec_fill b n).
+    change (b ::p vec_map (λ _: A, b) xs = b ::p vec_fill b n).
     apply maponpaths.
     exact HPind.
 Defined.
@@ -257,7 +255,7 @@ Definition vec_append {A : UU} {m} (u : vec A m) {n} (v : vec A n)
   := vec_ind (λ (p : nat) (_ : vec A p), vec A (p + n))
                 v
                 (λ (x : A) (p : nat) (_ : vec A p) (w : vec A (p + n)),
-                 x ::: w)
+                 x ::p w)
                 m u.
 
 Lemma vec_append_lid {A : UU} (u : vec A 0) {n}
@@ -272,10 +270,10 @@ Defined.
 Definition vec_zip {A B: UU} {n: nat} (v1: vec A n) (v2: vec B n): vec (A × B) n.
 Proof.
   induction n.
-  - exact [()].
+  - exact [].
   - induction v1 as [x1 xs1].
     induction v2 as [x2 xs2].
-    exact ((x1 ,, x2) ::: IHn xs1 xs2).
+    exact ((x1 ,, x2) ::p IHn xs1 xs2).
 Defined.
 
 
@@ -318,8 +316,8 @@ Section Equivalences.
   Definition make_vec {n} (f : ⟦ n ⟧ → A) : vec A n.
   Proof.
     induction n as [|m h].
-    - exact [()].
-    - exact ((f firstelement) ::: (h (drop f))).
+    - exact [].
+    - exact ((f firstelement) ::p (h (drop f))).
   Defined.
 
   Lemma el_make_vec {n} (f : ⟦ n ⟧ → A) : el (make_vec f) ~ f .

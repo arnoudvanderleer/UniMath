@@ -12,6 +12,10 @@ Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.Combinatorics.Vectors.
 
+Declare Scope plist_scope.
+Delimit Scope plist_scope with plist.
+Local Open Scope plist_scope.
+
 Section lists.
 
 Context {A : UU}.
@@ -19,6 +23,8 @@ Context {A : UU}.
 (** * 1. Definitions *)
 
 Definition list : UU := ∑ n, vec A n.
+
+Bind Scope plist_scope with list.
 
 (** ** 1.1. Accessors *)
 
@@ -31,13 +37,14 @@ Definition nth x : stn(length x) -> A := el (pr2 x).
 
 (** ** 1.2. Constructors *)
 
-Definition nil : list := (0,, vnil).
+Definition nil : list := (0,, [])%pvector.
 
 Definition cons (x : A) (xs : list) : list :=
-  (S (pr1 xs),, vcons x xs).
+  (S (pr1 xs),, x ::p xs)%pvector.
 
-Local Notation "[]" := nil (at level 0, format "[]").
-Local Infix "::" := cons.
+Notation "[]" := nil (at level 0, format "[]"): plist_scope.
+Infix "::p" := cons (at level 60, right associativity) : plist_scope.
+Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): plist_scope.
 
 (** * 3. Misc *)
 
@@ -53,8 +60,8 @@ Defined.
 (** * 4. Induction *)
 
 Lemma list_ind : ∏ (P : list -> UU),
-     P nil
-  -> (∏ (x : A) (xs : list), P xs -> P (x :: xs))
+     P []
+  -> (∏ (x : A) (xs : list), P xs -> P (x ::p xs))
   -> ∏ xs, P xs.
 Proof.
 intros P Hnil Hcons xs.
@@ -69,16 +76,20 @@ Defined.
 
 Lemma list_ind_compute_2
       (P : list -> UU)
-      (p0 : P nil)
-      (ind : ∏ (x : A) (xs : list), P xs -> P (x :: xs))
+      (p0 : P [])
+      (ind : ∏ (x : A) (xs : list), P xs -> P (x ::p xs))
       (x : A) (xs : list)
       (f := list_ind P p0 ind) :
-  f (x::xs) = ind x xs (f xs).
+  f (x ::p xs) = ind x xs (f xs).
 Proof.
   apply idpath.
 Defined.
 
 End lists.
+
+Notation "[]" := nil (at level 0, format "[]"): plist_scope.
+Infix "::p" := cons (at level 60, right associativity) : plist_scope.
+Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): plist_scope.
 
 (** Make the type not implicit for list *)
 Arguments list : clear implicits.
@@ -90,13 +101,13 @@ Arguments list : clear implicits.
 Definition foldr {A B : UU} (f : A -> B -> B) (b : B) : list A -> B :=
   list_ind (λ _, B) b (λ a _ b', f a b').
 
-Lemma foldr_nil {A B : UU} (f : A -> B -> B) (b : B) : foldr f b nil = b.
+Lemma foldr_nil {A B : UU} (f : A -> B -> B) (b : B) : foldr f b [] = b.
 Proof.
   apply idpath.
 Qed.
 
 Lemma foldr_cons {A B : UU} (f : A -> B -> B) (b : B) (x : A) (xs : list A) :
-  foldr f b (cons x xs) = f x (foldr f b xs).
+  foldr f b (x ::p xs) = f x (foldr f b xs).
 Proof.
   apply idpath.
 Qed.
@@ -112,19 +123,19 @@ Proof.
     + intros _ _ _. exact (f a' fl).
 Defined.
 
-Lemma foldr1_nil {A: UU} (f : A -> A -> A) (a : A) : foldr1 f a nil = a.
+Lemma foldr1_nil {A: UU} (f : A -> A -> A) (a : A) : foldr1 f a [] = a.
 Proof.
   apply idpath.
 Qed.
 
 Lemma foldr1_cons_nil {A : UU} (f : A -> A -> A) (a : A) (x : A) :
-  foldr1 f a (cons x nil) = x.
+  foldr1 f a [x] = x.
 Proof.
 apply idpath.
 Qed.
 
 Lemma foldr1_cons {A : UU} (f : A -> A -> A) (a : A) (x y : A) (xs : list A) :
-  foldr1 f a (cons x (cons y xs)) = f x (foldr1 f a (cons y xs)).
+  foldr1 f a (x ::p (y ::p xs)) = f x (foldr1 f a (y ::p xs)).
 Proof.
 apply idpath.
 Qed.
@@ -140,20 +151,20 @@ Proof.
 Defined.
 
 Lemma foldr1_map_nil {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B) :
-  foldr1_map f b h nil = b.
+  foldr1_map f b h [] = b.
 Proof.
   apply idpath.
 Qed.
 
 Lemma foldr1_map_cons_nil {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B)
-  (x : A) : foldr1_map f b h (cons x nil) = h x.
+  (x : A) : foldr1_map f b h [x] = h x.
 Proof.
   apply idpath.
 Qed.
 
 Lemma foldr1_map_cons {A : UU} {B : UU} (f : B -> B -> B) (b : B) (h : A -> B)
   (x y : A) (xs : list A) :
-  foldr1_map f b h (cons x (cons y xs)) = f (h x) (foldr1_map f b h (cons y xs)).
+  foldr1_map f b h (x ::p (y ::p xs)) = f (h x) (foldr1_map f b h (y ::p xs)).
 Proof.
   apply idpath.
 Qed.
@@ -163,12 +174,12 @@ Qed.
     [P] takes the list argument [xs] of [foldr1_map] and the purported value of [foldr1_map f b h xs]
     [P0] and [P1] ask that [P] is correct for lists of length <=1
     [P2] deals with longer lists and reflects the effect of adding a subsequent element [a2] to the list, where [res] keeps the
-    result of [foldr1_map f b h (cons a1 xs)] abstract
+    result of [foldr1_map f b h (a1 ::p xs)] abstract
 *)
 Definition foldr1_map_ind {A B : UU} (f : B -> B -> B) (b : B) (h : A -> B) (P : list A -> B -> UU)
-  (P0 : P nil b)
-  (P1 : ∏ a, P (cons a nil) (h a))
-  (P2 : ∏ a1 xs a2 res, P (cons a1 xs) res -> P (cons a2 (cons a1 xs)) (f (h a2) res))
+  (P0 : P [] b)
+  (P1 : ∏ a, P ([a]) (h a))
+  (P2 : ∏ a1 xs a2 res, P (a1 ::p xs) res -> P (a2 ::p (a1 ::p xs)) (f (h a2) res))
   (xs : list A) : P xs (foldr1_map f b h xs).
 Proof.
   revert xs.
@@ -176,7 +187,7 @@ Proof.
   - induction xs.
     apply P0.
   - induction n as [|n IH].
-    + induction xs as [m []].
+    + induction xs as [m [ ]].
       apply P1.
     + induction xs as [m [k xs]].
       assert (IHinst := IH (k,,xs)).
@@ -199,20 +210,20 @@ Defined.
 (** ** Map *)
 
 Definition map {A B : UU} (f : A -> B) : list A -> list B :=
-  foldr (λ a l, cons (f a) l) nil.
+  foldr (λ a l, (f a) ::p l) [].
 
-Lemma mapStep {A B : UU} (f : A -> B) (a:A) (x:list A) : map f (cons a x) = cons (f a) (map f x).
+Lemma mapStep {A B : UU} (f : A -> B) (a:A) (x:list A) : map f (a ::p x) = (f a) ::p (map f x).
 Proof.
   apply idpath.
 Defined.
 
-Lemma map_nil {A B : UU} (f : A -> B) : map f nil = nil.
+Lemma map_nil {A B : UU} (f : A -> B) : map f [] = [].
 Proof.
   apply idpath.
 Qed.
 
 Lemma map_cons {A B : UU} (f : A -> B) (x : A) (xs : list A) :
-  map f (cons x xs) = cons (f x) (map f xs).
+  map f (x ::p xs) = (f x) ::p (map f xs).
 Proof.
   apply idpath.
 Qed.
@@ -258,36 +269,33 @@ Proof.
     exact H.
 Qed.
 
-Local Notation "[]" := nil (at level 0, format "[]").
-Local Infix "::" := cons.
-
 (** ** Concatenate *)
 
 Definition concatenate {X} : list X -> list X -> list X
   := λ r s, foldr cons s r.
 
-Local Infix "++" := concatenate.
+Infix "++p" := concatenate (at level 60, right associativity) : plist_scope.
 
 Lemma concatenateStep {X} (x:X) (r s:list X) :
-  (x::r) ++ s = x :: (r ++ s).
+  (x ::p r) ++p s = x ::p (r ++p s).
 Proof.
   apply idpath.
 Defined.
 
-Lemma nil_concatenate {X} (r : list X) : nil ++ r = r.
+Lemma nil_concatenate {X} (r : list X) : [] ++p r = r.
 Proof. apply idpath. Defined.
 
-Lemma concatenate_nil {X} (r : list X) : r ++ nil = r.
+Lemma concatenate_nil {X} (r : list X) : r ++p [] = r.
 Proof. revert r. apply list_ind. apply idpath. intros x xs p. exact (maponpaths (cons x) p). Defined.
 
-Lemma assoc_concatenate {X} (r s t : list X) : (r ++ s) ++ t = r ++ (s ++ t).
+Lemma assoc_concatenate {X} (r s t : list X) : (r ++p s) ++p t = r ++p (s ++p t).
 Proof.
   revert r. apply list_ind.
   - apply idpath.
   - intros x xs p. now rewrite !concatenateStep, p.
 Defined.
 
-Lemma map_concatenate {X Y} (f : X → Y) (r s : list X) : map f (r ++ s) = map f r ++ map f s.
+Lemma map_concatenate {X Y} (f : X → Y) (r s : list X) : map f (r ++p s) = map f r ++p map f s.
 Proof.
   revert r. apply list_ind.
   - apply idpath.
@@ -295,7 +303,7 @@ Proof.
 Defined.
 
 Lemma foldr_concatenate {X Y : UU} (f : X → Y) (l : list X) :
-  foldr concatenate [] (map (λ x, f x::[]) l) = map f l.
+  foldr concatenate [] (map (λ x, f x::p[]) l) = map f l.
 Proof.
   revert l. apply list_ind.
   - apply idpath.
@@ -303,7 +311,7 @@ Proof.
 Qed.
 
 Lemma foldr1_map_concatenate {X Y : UU} (f : X → Y) (l : list X) :
-  map f l = foldr1_map concatenate [] (λ x, f x::[]) l.
+  map f l = foldr1_map concatenate [] (λ x, f x::p[]) l.
 Proof.
   set (P := fun xs res => map f xs = res).
   refine (foldr1_map_ind _ _ _ P _ _ _ l).
@@ -314,7 +322,7 @@ Proof.
 Qed.
 
 Lemma foldr1_concatenate {X Y : UU} (f : X → Y) (l : list X) :
-  map f l = foldr1 concatenate [] (map (λ x, f x::[]) l).
+  map f l = foldr1 concatenate [] (map (λ x, f x::p[]) l).
 Proof.
   simple refine (foldr1_map_concatenate _ _ @ _).
   apply foldr1_foldr1_map.
@@ -323,12 +331,12 @@ Qed.
 (** ** Append *)
 
 Definition append {X} (x : X) (l : list X) : list X :=
-  l ++ x::[].
+  l ++p [x].
 
-Lemma appendStep {X} (x y : X) (l : list X) : append x (y::l) = y::append x l.
+Lemma appendStep {X} (x y : X) (l : list X) : append x (y ::p l) = y ::p append x l.
   Proof. apply idpath. Defined.
 
-Lemma append_concatenate {X} (x : X) (l s : list X) : append x (l ++ s) = l ++ append x s.
+Lemma append_concatenate {X} (x : X) (l s : list X) : append x (l ++p s) = l ++p append x s.
   Proof. apply assoc_concatenate. Defined.
 
 Lemma map_append {X Y} (f : X → Y) (x : X) (r : list X) : map f (append x r) = append (f x) (map f r).
@@ -340,10 +348,10 @@ Definition flatten {X} : list (list X) → list X.
 Proof.
   apply list_ind.
   + exact [].
-  + intros s _ f. exact (concatenate s f).
+  + intros s _ f. exact (s ++p f).
 Defined.
 
-Lemma flattenStep {X} (x:list X) (m : list(list X)) : flatten (x::m) = concatenate x (flatten m).
+Lemma flattenStep {X} (x:list X) (m : list(list X)) : flatten (x::p m) = x ++p (flatten m).
 Proof.
   unfold flatten.
   rewrite list_ind_compute_2.
@@ -355,10 +363,10 @@ Defined.
 Definition reverse {X} : list X → list X :=
   foldr append [].
 
-Lemma reverse_nil (X : Type) : reverse (@nil X) = [].
+Lemma reverse_nil (X : Type) : reverse (X := X) [] = [].
 Proof. apply idpath. Defined.
 
-Lemma reverseStep {X} (x : X) (r : list X) : reverse (x::r) = append x (reverse r).
+Lemma reverseStep {X} (x : X) (r : list X) : reverse (x::p r) = append x (reverse r).
 Proof. apply idpath. Defined.
 
 Lemma map_reverse {X Y} (f : X → Y) (r : list X) : map f (reverse r) = reverse (map f r).
@@ -368,14 +376,14 @@ Proof.
   - intros x xs p. now rewrite mapStep, !reverseStep, map_append, p.
 Defined.
 
-Lemma reverse_concatenate {X} (l s : list X) : reverse (l ++ s) = reverse s ++ reverse l.
+Lemma reverse_concatenate {X} (l s : list X) : reverse (l ++p s) = reverse s ++p reverse l.
 Proof.
   revert l. apply list_ind.
   - symmetry. apply concatenate_nil.
   - intros x xs p. now rewrite concatenateStep, !reverseStep, p, append_concatenate.
 Defined.
 
-Lemma reverse_append {X} (x : X) (l : list X) : reverse (append x l) = x :: reverse l.
+Lemma reverse_append {X} (x : X) (l : list X) : reverse (append x l) = x ::p reverse l.
 Proof. unfold append. now rewrite reverse_concatenate, reverseStep, reverse_nil. Defined.
 
 Lemma reverse_reverse {X} (r : list X) : reverse (reverse r) = r.
@@ -409,7 +417,7 @@ Section Test.
 
   Context {A : UU}.
   Context {a b c d:A}.
-  Let x := a::b::c::d::[].
+  Let x := a::p b::p c::p d::p[].
   Goal nth x (●0) = a. apply idpath. Qed.
   Goal nth x (●1) = b. apply idpath. Qed.
   Goal nth x (●2) = c. apply idpath. Qed.

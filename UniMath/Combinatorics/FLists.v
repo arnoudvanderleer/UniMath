@@ -31,6 +31,10 @@ Require Import UniMath.Combinatorics.Lists.
 Require Import UniMath.Combinatorics.Vectors.
 Require Import UniMath.Combinatorics.FVectors.
 
+Declare Scope flist_scope.
+Delimit Scope flist_scope with flist.
+Local Open Scope flist_scope.
+
 (** * 1. Definitions *)
 
 Definition Sequence (X : UU) := ∑ n, Vector X n.
@@ -47,19 +51,22 @@ Definition functionToSequence {X n} (f:stn n -> X) : Sequence X
 Definition functionToUnorderedSequence {X} {I : FiniteSet} (f:I -> X) : UnorderedSequence X := (I,,f).
 
 Definition nil {X} : Sequence X.
-Proof. intros. exact (0,, empty_vec). Defined.
+Proof. intros. exact (0,, [])%fvector. Defined.
+
+Notation "[]" := nil (at level 0, format "[]"): flist_scope.
 
 Definition append {X} : Sequence X -> X -> Sequence X.
-Proof. intros x y. exact (S _,, append_vec (pr2 x) y).
+Proof. intros x y. exact (S _,, pr2 x ::f y)%fvector.
 Defined.
 
-Local Notation "s □ x" := (append s x) (at level 64, left associativity).
+Infix "::f" := append (at level 59, left associativity) : flist_scope.
+Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): flist_scope.
 
 (** ** 1.2. Accessors *)
 
 Definition length {X} : Sequence X -> nat := pr1.
 
-Definition nil_length {X} (x : Sequence X) : length x = 0 <-> x = nil.
+Definition nil_length {X} (x : Sequence X) : length x = 0 <-> x = [].
 Proof.
   intros. split.
   - intro e. induction x as [n x]. simpl in e.
@@ -73,7 +80,7 @@ Proof.
 Defined.
 
 Lemma append_length {X} (x:Sequence X) (y:X) :
-  length (append x y) = S (length x).
+  length (x ::f y) = S (length x).
 Proof. intros. reflexivity. Defined.
 
 Definition sequenceToFunction {X} (x:Sequence X) := pr2 x : stn (length x) -> X.
@@ -111,17 +118,17 @@ Proof.
   - exact (n,,x ∘ dni_lastelement).
 Defined.
 
-Definition drop' {X} (x:Sequence X) : x != nil -> Sequence X.
+Definition drop' {X} (x:Sequence X) : x != [] -> Sequence X.
 Proof. intros h. exact (drop x (pr2 (logeqnegs (nil_length x)) h)). Defined.
 
 Definition drop_and_append {X n} (x : stn (S n) -> X) :
-  append (n,,x ∘ dni_lastelement) (x lastelement) = (S n,, x).
+  (n,,x ∘ dni_lastelement) ::f (x lastelement) = (S n,, x).
 Proof.
   intros. apply pair_path_in2. apply drop_and_append_vec.
 Defined.
 
 Lemma append_and_drop_fun {X n} (x : stn n -> X) y :
-  append_vec x y ∘ dni lastelement = x.
+  (x ::f y)%fvector ∘ dni lastelement = x.
 Proof.
   intros.
   apply funextsec; intros i.
@@ -138,7 +145,7 @@ Proof.
 Defined.
 
 Definition drop_and_append' {X n} (x : stn (S n) -> X) :
-  append (drop (S n,,x) (negpathssx0 _)) (x lastelement) = (S n,, x).
+  (drop (S n,,x) (negpathssx0 _)) ::f (x lastelement) = (S n,, x).
 Proof.
   intros. simpl. apply pair_path_in2. apply drop_and_append_vec.
 Defined.
@@ -199,7 +206,7 @@ Defined.
 
 (** ** 3.1. Nil is unique *)
 
-Definition nil_unique {X} (x : stn 0 -> X) : nil = (0,,x).
+Definition nil_unique {X} (x : stn 0 -> X) : [] = (0,,x).
 Proof.
   intros. unfold nil. apply maponpaths. apply nil_proofirrelevance.
 Defined.
@@ -219,12 +226,12 @@ Definition assembleSequence {X} : coprod unit (X × Sequence X) -> Sequence X.
 Proof.
   intros co.
   induction co as [t|p].
-  - exact nil.
-  - exact (append (pr2 p) (pr1 p)).
+  - exact [].
+  - exact (pr2 p ::f pr1 p).
 Defined.
 
 Lemma assembleSequence_ii2 {X} (p : X × Sequence X) :
-  assembleSequence (ii2 p) = append (pr2 p) (pr1 p).
+  assembleSequence (ii2 p) = (pr2 p) ::f (pr1 p).
 Proof. reflexivity. Defined.
 
 Theorem SequenceAssembly {X} : Sequence X ≃ unit ⨿ (X × Sequence X).
@@ -253,8 +260,8 @@ Defined.
 (** * 4. Induction *)
 
 Definition Sequence_rect {X} {P : Sequence X ->UU}
-           (p0 : P nil)
-           (ind : ∏ (x : Sequence X) (y : X), P x -> P (append x y))
+           (p0 : P [])
+           (ind : ∏ (x : Sequence X) (y : X), P x -> P (x ::f y))
            (x : Sequence X) : P x.
 Proof. intros. induction x as [n x]. induction n as [|n IH].
   - exact (transportf P (nil_unique x) p0).
@@ -264,14 +271,14 @@ Proof. intros. induction x as [n x]. induction n as [|n IH].
                            (IH (x ∘ dni_lastelement)))).
 Defined.
 
-Lemma Sequence_rect_compute_nil {X} {P : Sequence X ->UU} (p0 : P nil)
-      (ind : ∏ (s : Sequence X) (x : X), P s -> P (append s x)) :
-  Sequence_rect p0 ind nil = p0.
+Lemma Sequence_rect_compute_nil {X} {P : Sequence X ->UU} (p0 : P [])
+      (ind : ∏ (s : Sequence X) (x : X), P s -> P (s ::f x)) :
+  Sequence_rect p0 ind [] = p0.
 Proof.
   intros.
   try reflexivity.
   unfold Sequence_rect; simpl.
-  change p0 with (transportf P (idpath nil) p0) at 2.
+  change p0 with (transportf P (idpath []) p0) at 2.
   apply (maponpaths (λ e, transportf P e p0)).
   refine (maponpaths (maponpaths _) (_ : _ = idpath _)).
   apply isasetaprop.
@@ -280,10 +287,10 @@ Proof.
 Defined.
 
 Lemma Sequence_rect_compute_cons
-      {X} {P : Sequence X ->UU} (p0 : P nil)
-      (ind : ∏ (s : Sequence X) (x : X), P s -> P (append s x))
+      {X} {P : Sequence X ->UU} (p0 : P [])
+      (ind : ∏ (s : Sequence X) (x : X), P s -> P (s ::f x))
       (p := Sequence_rect p0 ind) (x:X) (l:Sequence X) :
-  p (append l x) = ind l x (p l).
+  p (l ::f x) = ind l x (p l).
 Proof.
   intros.
   cbn.
@@ -307,11 +314,13 @@ Definition composeUnorderedSequence {X Y} (f:X->Y) : UnorderedSequence X -> Unor
 Definition concatenate {X : UU} : binop (Sequence X)
   := λ x y, functionToSequence (concatenate' x y).
 
+Infix "++f" := concatenate (at level 59, left associativity) : flist_scope.
+
 Definition concatenate_length {X} (x y:Sequence X) :
-  length (concatenate x y) = length x + length y.
+  length (x ++f y) = length x + length y.
 Proof. intros. reflexivity. Defined.
 
-Definition concatenate_0 {X} (s t:Sequence X) : length t = 0 -> concatenate s t = s.
+Definition concatenate_0 {X} (s t:Sequence X) : length t = 0 -> s ++f t = s.
 Proof.
   induction s as [m s]. induction t as [n t].
   intro e; simpl in e. induction (!e).
@@ -325,7 +334,7 @@ Proof.
 Defined.
 
 Definition concatenateStep {X : UU} (x : Sequence X) {n : nat} (y : stn (S n) -> X) :
-  concatenate x (S n,,y) = append (concatenate x (n,,y ∘ dni lastelement)) (y lastelement).
+  x ++f (S n,,y) = (x ++f (n,,y ∘ dni lastelement)) ::f (y lastelement).
 Proof.
   revert x n y. induction x as [m l]. intros n y.
   use seq_key_eq_lemma.
@@ -347,7 +356,7 @@ Proof.
 Qed.
 
 Definition isassoc_concatenate {X : UU} (x y z : Sequence X) :
-  concatenate (concatenate x y) z = concatenate x (concatenate y z).
+   (x ++f y) ++f z = x ++f (y ++f z).
 Proof.
   use seq_key_eq_lemma.
   - cbn. apply natplusassoc.
@@ -436,7 +445,7 @@ Proof.
 Defined.
 
 Definition flattenStep {X} (x: NonemptySequence (Sequence X)) :
-  flatten x = concatenate (flatten (composeSequence' x (dni lastelement))) (lastValue x).
+  flatten x = (flatten (composeSequence' x (dni lastelement))) ++f (lastValue x).
 Proof.
   intros.
   apply pair_path_in2.

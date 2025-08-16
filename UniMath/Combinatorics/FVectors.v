@@ -23,13 +23,21 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
+Declare Scope fvector_scope.
+Delimit Scope fvector_scope with fvector.
+Local Open Scope fvector_scope.
+
 (** * 1. Definitions *)
 
 Definition Vector (X : UU) (n : nat) : UU := stn n -> X.
 
+Bind Scope fvector_scope with Vector.
+
 (** ** 1.1. Constructors *)
 
 Definition empty_vec {X : UU} : Vector X 0 := λ i, fromstn0 i.
+
+Notation "[]" := empty_vec (at level 0, format "[]"): fvector_scope.
 
 Section Append.
 
@@ -45,6 +53,9 @@ Section Append.
 
 End Append.
 
+Infix "::f" := append_vec (at level 59, left associativity) : fvector_scope.
+Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): fvector_scope.
+
 (** ** 1.2. Accessors *)
 
 Section Accessors.
@@ -54,7 +65,7 @@ Section Accessors.
   Definition tail (vecsn : Vector X (S n)) : Vector X n :=
     vecsn ∘ dni (0,, natgthsn0 n).
 
-  Definition append_vec_compute_1 i : append_vec vec x (dni lastelement i) = vec i.
+  Definition append_vec_compute_1 i : (vec ::f x) (dni lastelement i) = vec i.
   Proof.
     intros.
     induction i as [i b]; simpl.
@@ -65,7 +76,7 @@ Section Accessors.
     - simpl. destruct p. induction (isirreflnatlth i b).
   Defined.
 
-  Definition append_vec_compute_2 : append_vec vec x lastelement = x.
+  Definition append_vec_compute_2 : (vec ::f x) lastelement = x.
   Proof.
     intros; unfold append_vec; simpl.
     induction (natlehchoice4 n n (natgthsnn n)) as [a|a]; simpl.
@@ -76,7 +87,7 @@ Section Accessors.
 End Accessors.
 
 Lemma drop_and_append_vec {X : UU} {n : nat} (vecsn : Vector X (S n)) :
-  append_vec (vecsn ∘ dni_lastelement) (vecsn lastelement) = vecsn.
+  (vecsn ∘ dni_lastelement) ::f (vecsn lastelement) = vecsn.
 Proof.
   intros.
   apply funextfun; intros [i b].
@@ -151,9 +162,9 @@ Defined.
     of length S n, then it is true for all vectors.
 *)
 Definition Vector_rect {X : UU} {P : ∏ n, Vector X n -> UU}
-          (p0 : P 0 empty_vec)
+          (p0 : P 0 [])
           (ind : ∏ (n : nat) (vec : Vector X n) (x : X),
-                  P n vec -> P (S n) (append_vec vec x))
+                  P n vec -> P (S n) (vec ::f x))
           {n : nat} (vec : Vector X n) : P n vec.
 Proof.
   intros.
