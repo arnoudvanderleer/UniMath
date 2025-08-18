@@ -60,7 +60,10 @@ Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): fvector_scope.
 
 Section Accessors.
 
-  Context {X : UU} {n : nat} (vec : Vector X n) (vecsn : Vector X (S n)) (x : X).
+  Context {X : UU}.
+  Context {n : nat}.
+  Context (vec : Vector X n).
+  Context (x : X).
 
   Definition tail (vecsn : Vector X (S n)) : Vector X n :=
     vecsn ∘ dni (0,, natgthsn0 n).

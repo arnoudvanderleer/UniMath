@@ -1,10 +1,12 @@
 StandardFiniteSets.v
 Vectors.v
-VectorsTests.v
 Lists.v
 FVectors.v
+VectorEquivalence.v
+VectorsTests.v
 FMatrices.v
 FLists.v
+ListEquivalence.v
 FiniteSets.v
 KFiniteTypes.v
 KFiniteSubtypes.v

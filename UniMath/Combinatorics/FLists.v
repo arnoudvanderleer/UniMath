@@ -506,13 +506,3 @@ Proof.
   - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
   - apply maponpaths. apply isinjstntonat. cbn. apply idpath.
 Qed.
-
-
-(* TODO: Move to Equivalences *)
-
-Definition weqListSequence {X} : list X ≃ Sequence X.
-Proof.
-  intros.
-  apply weqfibtototal; intro n.
-  apply weqvecfun.
-Defined.

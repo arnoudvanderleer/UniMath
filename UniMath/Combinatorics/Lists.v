@@ -37,6 +37,8 @@ Definition nth x : stn(length x) -> A := el (pr2 x).
 
 (** ** 1.2. Constructors *)
 
+Definition make_list {n : nat} (xs : vec A n) : list := n ,, xs.
+
 Definition nil : list := (0,, [])%pvector.
 
 Definition cons (x : A) (xs : list) : list :=
@@ -47,6 +49,10 @@ Infix "::p" := cons (at level 60, right associativity) : plist_scope.
 Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): plist_scope.
 
 (** * 3. Misc *)
+
+(** ** 3.1. The constant list  *)
+
+Definition constant_list (a : A) (n : nat) : list := make_list (vec_fill a n).
 
 (** ** 3.1. HLevel of lists *)
 
@@ -392,37 +398,3 @@ Proof.
   - apply idpath.
   - intros x xs p. now rewrite !reverseStep, reverse_append, p.
 Defined.
-
-
-(* TODO: To Equivalences *)
-
-Definition functionToList' {A : UU} (n : nat) : (stn n -> A) -> vec A n.
-Proof.
-  intros f.
-  induction n as [|n I].
-  - exact tt.
-  - exists (f (●0))%stn.
-    exact (I(f ∘ dni (●0)))%stn.
-Defined.
-
-Definition functionToList {A : UU} (n : nat) : (stn n -> A) -> list A.
-Proof.
-  intros f.
-  exact (n ,, make_vec f).
-Defined.
-
-Section Test.
-
-  Local Open Scope stn.
-
-  Context {A : UU}.
-  Context {a b c d:A}.
-  Let x := a::p b::p c::p d::p[].
-  Goal nth x (●0) = a. apply idpath. Qed.
-  Goal nth x (●1) = b. apply idpath. Qed.
-  Goal nth x (●2) = c. apply idpath. Qed.
-  Goal nth x (●3) = d. apply idpath. Qed.
-
-  Goal functionToList _ (nth x) = x. apply idpath. Qed.
-
-End Test.
