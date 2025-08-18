@@ -24,7 +24,7 @@ Definition monoid_sort : sorts monoid_signature := tt.
 
 Definition monoid_algebra (M: monoid)
   : algebra monoid_signature
-  := make_algebra_simple_single_sorted' monoid_signature M [( op ; unel M )].
+  := make_algebra_simple_single_sorted' monoid_signature M [op ; unel M].
 
 Module Eqspec.
 

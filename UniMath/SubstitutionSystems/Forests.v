@@ -158,7 +158,7 @@ Proof.
         * induction abs as [a b].
           exact ((((cons (a ,, sv)  []) ,, (b ,, st)) :: []) ,,  ((a ⇒ b),, st) ).
         * induction sum as [p n].
-          exact ( (functionToList n (fun _ => ([] ,, (atotype p ,, se))))  ,, ((atotype p)  ,, st)).
+          exact ( (constant_list ([] ,, (atotype p ,, se)) n)  ,, ((atotype p)  ,, st)).
       + induction elim_construct as [B p].
         exact (( ([],, ( sig_app_var_otype p B,, sv)) :: (map wrap_sig_app B))  ,, ((atotype p) ,, se)).
 Defined.

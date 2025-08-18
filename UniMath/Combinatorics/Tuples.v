@@ -17,6 +17,7 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.VectorEquivalence.
 Require Import UniMath.Combinatorics.Vectors.
 
 Local Open Scope stn.

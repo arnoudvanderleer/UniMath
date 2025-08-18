@@ -111,7 +111,7 @@ Proof.
     use weqcontrtounit.
     use iscontr_setquotuniteqrel.
   - intros x n' v' IH rels.
-    change (eqrelhvec (x ::: v') rels) with (eqreldirprod (hhd rels) (eqrelhvec v' (htl rels))).
+    change (eqrelhvec (x ::p v') rels) with (eqreldirprod (hhd rels) (eqrelhvec v' (htl rels))).
     use (weqcomp (weqsetquottodirprod (hhd rels) (eqrelhvec v' (htl rels)))).
     simpl.
     use eqweqmap.

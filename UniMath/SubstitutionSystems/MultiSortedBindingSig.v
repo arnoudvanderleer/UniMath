@@ -11,6 +11,7 @@ Require Import UniMath.Foundations.Sets.
 Require Import UniMath.MoreFoundations.Tactics.
 
 Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.ListEquivalence.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
 Require Import UniMath.CategoryTheory.Core.Categories.
@@ -67,7 +68,7 @@ Section MultiSortedSigFromBindingSig.
   Proof.
     intro n.
     refine (_,, uni).
-    exact (functionToList n (fun _ => uni)).
+    exact (constant_list uni n).
   Defined.
 
   Definition arFromBindingSig : I → list (list sort × sort) × sort.

@@ -289,7 +289,7 @@ induction xs as [[|n] xs].
 + induction xs.
   apply DL_id.
 + induction n as [|n IH].
-  * induction xs as [m []].
+  * induction xs as [m [ ]].
     apply DL_sorted_option_functor.
   * induction xs as [m [k xs]].
     apply (DL_comp (DL_sorted_option_functor m) (IH (k,,xs))).
@@ -323,7 +323,7 @@ induction xs as [[|n] xs].
 - induction xs.
   exact (pr2 (ConstConstSignature _ _ _ _)).
 - induction n as [|n IH].
-  + induction xs as [m []].
+  + induction xs as [m [ ]].
     exact (pr2 (Sig_exp_functor m)).
   + induction xs as [m [k xs]].
     exact (pr2 (BinProduct_of_Signatures _ (Sig_exp_functor _) (tpair _ _ (IH (k,,xs))))).
@@ -394,10 +394,10 @@ use make_are_adjoints.
   + intros A.
     use make_nat_trans.
     * intros t; apply ProductArrow; intros p; induction p; apply identity.
-    * abstract (now intros a b []; rewrite id_right, (functor_id A), id_left).
+    * abstract (now intros a b [ ]; rewrite id_right, (functor_id A), id_left).
   + abstract (intros A B F; apply nat_trans_eq_alt; intros t; cbn;
     rewrite precompWithProductArrow, postcompWithProductArrow;
-    apply ProductArrowUnique; intros []; cbn;
+    apply ProductArrowUnique; intros [ ]; cbn;
     now rewrite (ProductPrCommutes _ _ _ (eqsetPC _ _ (λ _, pr1 B s))), id_left, id_right).
 - use make_nat_trans.
   + intros A.
@@ -408,7 +408,7 @@ use make_are_adjoints.
     now rewrite (ProductPrCommutes _ _ _ (eqsetPC _  _ (λ _, pr1 A s))).
   + intros c; apply nat_trans_eq_alt; intros t; cbn.
     rewrite postcompWithProductArrow.
-    apply pathsinv0, ProductArrowUnique; intros [].
+    apply pathsinv0, ProductArrowUnique; intros [ ].
     now rewrite !id_left.
 Qed.
 
@@ -461,16 +461,16 @@ use make_are_adjoints.
     use make_nat_trans.
     * intros t; apply CoproductArrow; intros p.
       exact (transportf (λ z, C ⟦ pr1 A s , z ⟧) (maponpaths (pr1 A) p) (identity _)).
-    * abstract (intros a b []; now rewrite id_left, (functor_id A), id_right).
+    * abstract (intros a b [ ]; now rewrite id_left, (functor_id A), id_right).
   + abstract (intros A B F;
     apply nat_trans_eq_alt; intros t; cbn;
     rewrite precompWithCoproductArrow, postcompWithCoproductArrow;
-    apply CoproductArrowUnique; intros []; cbn;
+    apply CoproductArrowUnique; intros [ ]; cbn;
     now rewrite id_left, (CoproductInCommutes _ _ _ (CC _ _ (λ _, pr1 A s))), id_right).
 - use make_form_adjunction.
   + intros c; apply nat_trans_eq_alt; intros t; cbn.
     rewrite precompWithCoproductArrow.
-    apply pathsinv0, CoproductArrowUnique; intros [].
+    apply pathsinv0, CoproductArrowUnique; intros [ ].
     now rewrite !id_right.
   + intros A; cbn.
     now rewrite (CoproductInCommutes _ _ _ (CC _ _ (λ _, pr1 A s))).

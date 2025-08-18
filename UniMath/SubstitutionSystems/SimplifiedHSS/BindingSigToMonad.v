@@ -157,7 +157,7 @@ Proof.
 destruct xs as [[|n] xs].
 - destruct xs; apply is_omega_cocont_constant_functor.
 - induction n as [|n IHn].
-  + destruct xs as [m []]; simpl.
+  + destruct xs as [m [ ]]; simpl.
     unfold Arity_to_Signature.
     apply is_omega_cocont_precomp_option_iter, CLC.
   + destruct xs as [m [k xs]].

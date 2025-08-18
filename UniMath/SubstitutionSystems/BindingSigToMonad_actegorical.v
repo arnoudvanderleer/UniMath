@@ -274,7 +274,7 @@ Section FixACategory.
     induction xs as [[|n] xs].
     - induction xs. apply idpath.
     - induction n as [|n IH].
-      + induction xs as [m []]. apply idpath.
+      + induction xs as [m [ ]]. apply idpath.
       + induction xs as [m [k xs]].
         assert (IHinst := IH (k,,xs)).
         change (S (S n),, m,, k,, xs) with (cons m (cons k (n,,xs))).
@@ -294,7 +294,7 @@ Section FixACategory.
     - induction xs. cbn.
       exact (ConstConst_strengthCAT TC).
     - induction n as [|n IH].
-      + induction xs as [m []]. cbn.
+      + induction xs as [m [ ]]. cbn.
         exact (precomp_option_iter_strengthCAT BCC TC m).
       + induction xs as [m [k xs]].
         refine (lax_lineator_binprod _ _ _ (precomp_option_iter_strengthCAT BCC TC _) (IH (k,,xs)) _).

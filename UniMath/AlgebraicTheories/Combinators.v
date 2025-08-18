@@ -27,14 +27,15 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.Combinatorics.Tuples.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.VectorEquivalence.
+Require UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.LambdaTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 
 Require Import Ltac2.Ltac2.
 
-Local Open Scope vec.
+(* Local Open Scope pvector. *)
 Local Open Scope stn.
 Local Open Scope algebraic_theories.
 Local Open Scope lambda_calculus.
@@ -209,6 +210,9 @@ Ltac2 Set rewrites as rewrites0 := fun () =>
 
 (** * 2. Compose *)
 
+Import UniMath.Combinatorics.Vectors.
+Local Open Scope pvector.
+
 Definition compose
   {L : lambda_theory}
   {n : nat}
@@ -288,8 +292,8 @@ Lemma app_compose
   : app (a ∘ b) c = app a (app b c).
 Proof.
   refine '(_ @ (_
-    : subst (app (compose (var (● 0 : stn 3)) (var (● 1 : stn 3))) (var (● 2 : stn 3))) (weqvecfun _ [(a ; b ; c)])
-    = subst (app (var (● 0 : stn 3)) (app (var (● 1 : stn 3)) (var (● 2 : stn 3)))) (weqvecfun _ [(a ; b ; c)]))
+    : subst (app (compose (var (● 0 : stn 3)) (var (● 1 : stn 3))) (var (● 2 : stn 3))) (weqvecfun _ [a ; b ; c])
+    = subst (app (var (● 0 : stn 3)) (app (var (● 1 : stn 3)) (var (● 2 : stn 3)))) (weqvecfun _ [a ; b ; c]))
   @ _).
   - refine '(_ @ !subst_app _ _ _ _).
     refine '(_ @ !maponpaths (λ x, (app x _)) (subst_compose _ _ _ _)).
@@ -378,7 +382,7 @@ Lemma compose_assoc
   (a b c : L n)
   : a ∘ (b ∘ c) = a ∘ b ∘ c.
 Proof.
-  set (f := weqvecfun _ [(a ; b ; c)]).
+  set (f := weqvecfun _ [a ; b ; c]).
   refine '(_ @ (_
     : subst (var (● 0 : stn 3) ∘ (var (● 1 : stn 3) ∘ var (● 2 : stn 3))) f
     = subst (var (● 0 : stn 3) ∘ var (● 1 : stn 3) ∘ var (● 2 : stn 3)) f

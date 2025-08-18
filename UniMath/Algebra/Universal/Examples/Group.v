@@ -30,7 +30,7 @@ Definition group_inv_op: names group_signature := ●2.
 Module Algebra.
 
 Definition group_algebra {G: gr}
- := make_algebra_simple_single_sorted' group_signature G [( op ; unel G; grinv G )].
+ := make_algebra_simple_single_sorted' group_signature G [op ; unel G; grinv G].
 
 Definition group_mul := build_gterm' group_mul_op.
 Definition group_id  := build_gterm' group_id_op.

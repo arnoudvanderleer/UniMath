@@ -25,6 +25,7 @@ Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Categories.Monoid.
 Require Import UniMath.Combinatorics.Lists.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.VectorEquivalence.
 Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
@@ -35,7 +36,7 @@ Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.Examples.FreeObjectTheory.
 
 Local Open Scope algebraic_theories.
-Local Open Scope vec_scope.
+Local Open Scope pvector.
 Local Open Scope cat.
 
 (** * 1. The definition of the algebraic theory *)
@@ -69,7 +70,7 @@ Proof.
   use make_setwithbinop.
   - exact A.
   - intros a b.
-    exact (action op_el (weqvecfun _ [(a ; b)])).
+    exact (action op_el (weqvecfun _ [a ; b])).
 Defined.
 
 Local Lemma move_action_through_weqvecfun
@@ -77,7 +78,7 @@ Local Lemma move_action_through_weqvecfun
   {n : nat}
   {f g : free_monoid_theory n}
   (h : stn n → A)
-  : weqvecfun _ [( action f h ; action g h )] = λ i, action (weqvecfun _  [(f ; g)] i) h.
+  : weqvecfun _ [action f h ; action g h] = λ i, action (weqvecfun _  [f ; g] i) h.
 Proof.
   now apply (invmaponpathsweq (invweq (weqvecfun _))).
 Qed.
@@ -87,7 +88,7 @@ Lemma free_monoid_theory_algebra_to_setwithbinop_op_is_assoc
   : isassoc (op (X := free_monoid_theory_algebra_to_setwithbinop A)).
 Proof.
   intros a b c.
-  pose (f := weqvecfun _ [(a ; b ; c)]).
+  pose (f := weqvecfun _ [a ; b ; c]).
   pose (Hf := λ i Hi, !(var_action _ (make_stn 3 i Hi) f)).
   cbn -[weqvecfun action].
   rewrite (Hf 0 (idpath true) : a = _),
@@ -98,7 +99,7 @@ Qed.
 
 Definition free_monoid_theory_algebra_to_unit (A : algebra free_monoid_theory)
   : A
-  := action unit_el (weqvecfun _ [()]).
+  := action unit_el (weqvecfun _ []).
 
 Lemma free_monoid_theory_algebra_to_isunit (A : algebra free_monoid_theory)
   : isunit
@@ -141,8 +142,8 @@ Proof.
     refine (make_monoidfun (f := f) _).
     abstract (
       use make_ismonoidfun;
-      [ exact (λ m m', mor_action f op_el (weqvecfun _ [(m ; m')]))
-      | exact (mor_action f unit_el (weqvecfun _ [()])) ]
+      [ exact (λ m m', mor_action f op_el (weqvecfun _ [m ; m']))
+      | exact (mor_action f unit_el (weqvecfun _ [])) ]
     ).
   - abstract (
       intro f;
@@ -168,8 +169,8 @@ Proof.
   apply (list_ind (λ x, action (A := A') x a = action (A := A) x a)).
   - exact (!(lift_constant_action (A := A) _ (unel (free_monoid _)) a)).
   - intros i xs Haction.
-    refine (subst_action A' op_el (weqvecfun _ [(free_monoid_unit i ; xs)]) a @ !_).
-    refine (subst_action A op_el (weqvecfun _ [(free_monoid_unit i ; xs)]) a @ !_).
+    refine (subst_action A' op_el (weqvecfun _ [free_monoid_unit i ; xs]) a @ !_).
+    refine (subst_action A op_el (weqvecfun _ [free_monoid_unit i ; xs]) a @ !_).
     now rewrite <- (move_action_through_weqvecfun (A := A) a),
       <- Haction,
       (var_action A _ _ :

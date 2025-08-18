@@ -16,13 +16,14 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Categories.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.VectorEquivalence.
 Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraCategoryCore.
 
 Local Open Scope algebraic_theories.
-Local Open Scope vec.
+Local Open Scope pvector.
 
 (** * 1. The definition of algebras *)
 
@@ -180,13 +181,13 @@ Section ActionVector.
     := move_action_through_vector [(f)] _.
 
   Definition move_action_through_vector_2 {n : nat} (f g : (T n : hSet)) (a : stn n → A)
-    : weqvecfun _ [(action f a ; action g a )]
-      = λ i, action (weqvecfun _ [(f ; g)] i) a
-    := move_action_through_vector [(f ; g)] _.
+    : weqvecfun _ [action f a ; action g a]
+      = λ i, action (weqvecfun _ [f ; g] i) a
+    := move_action_through_vector [f ; g] _.
 
   Definition move_action_through_vector_3 {n : nat} (f g h : (T n : hSet)) (a : stn n → A)
-    : weqvecfun _ [(action f a ; action g a ; action h a )]
-      = λ i, action (weqvecfun _ [(f ; g ; h)] i) a
-    := move_action_through_vector [(f ; g ; h)] _.
+    : weqvecfun _ [action f a ; action g a ; action h a]
+      = λ i, action (weqvecfun _ [f ; g ; h] i) a
+    := move_action_through_vector [f ; g ; h] _.
 
 End ActionVector.

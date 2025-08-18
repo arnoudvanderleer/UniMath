@@ -18,7 +18,6 @@ Require Import UniMath.Algebra.Universal.SortedTypes.
 Require Export UniMath.Algebra.Universal.Signatures.
 
 Local Open Scope sorted.
-Local Open Scope hvec.
 Local Open Scope list.
 Local Open Scope transport.
 
@@ -481,7 +480,7 @@ Section Term.
     := vec_foldr concatenate nil v.
 
   Local Lemma vecoplist2oplist_vcons {n: nat} (x: oplist σ) (v: vec (oplist σ) n)
-    : vecoplist2oplist (x ::: v) = concatenate x (vecoplist2oplist v).
+    : vecoplist2oplist (x ::p v) = concatenate x (vecoplist2oplist v).
   Proof.
     apply idpath.
   Defined.
@@ -503,8 +502,8 @@ Section Term.
       apply (maponpaths (λ l, oplistsplit l 1)) in eq.
       rewrite (oplistsplit_concatenate _ _ 1 [x] (term2proof v1x) (isreflnatleh _)) in eq.
       rewrite (oplistsplit_concatenate _ _ 1 [x] (term2proof v2x) (isreflnatleh _)) in eq.
-      do 2 change 1 with (length (hd (x ::: xs) :: [])) in eq at 1.
-      do 2 change 1 with (length (hd (x ::: xs) :: [])) in eq at 1.
+      do 2 change 1 with (length (hd (x ::p xs) :: [])) in eq at 1.
+      do 2 change 1 with (length (hd (x ::p xs) :: [])) in eq at 1.
       rewrite (oplistsplit_self (term2proof v1x)) in eq.
       rewrite (oplistsplit_self (term2proof v2x)) in eq.
       cbn in eq.
@@ -544,15 +543,15 @@ Section Term.
     revert n ar l lstack.
     refine (vec_ind _ _ _).
     - intros.
-      exists [()].
-      exists [()].
+      exists []%hvec.
+      exists []%hvec.
       apply oplistexec_zero_b in lstack.
       rewrite lstack.
       apply idpath.
     - intros x n xs IHxs l lstack.
       induction (oplistexec_oplistsplit l 1 lstack (natleh0n 0))
          as [firststack [reststack [concstack [firststackp [reststackp firstlen]]]]].
-      change (S n,, (x ::: xs)%vec) with (x :: (n ,, xs)) in concstack.
+      change (S n,, (x ::p xs)%pvector) with (x :: (n ,, xs)) in concstack.
       set (first := pr1 (oplistsplit l 1)) in *.
       set (rest := pr2 (oplistsplit l 1)) in *.
       apply length_one_back in firstlen.
@@ -565,7 +564,7 @@ Section Term.
       induction (!concstack).
       induction (!concstack').
       induction (IHxs rest reststackp) as [v [vlen vflatten]].
-      exists ((make_term firststackp) ::: v).
+      exists ((make_term firststackp) ::p v).
       repeat split.
       + change (length first ≤ length l).
         rewrite <- (concatenate_oplistsplit l 1).

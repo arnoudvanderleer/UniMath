@@ -42,7 +42,7 @@ Section VTerms.
   Definition build_term {V: varspec σ} (nm: names σ) (v: (term σ V)⋆ (arity nm))
     : term σ V (sort nm) := build_gterm (namelift V nm) v.
 
-  Definition varterm {V: varspec σ} (v: V): term σ V (varsort v) := build_gterm (varname v) [()].
+  Definition varterm {V: varspec σ} (v: V): term σ V (varsort v) := build_gterm (varname v) [].
 
   Definition assignment {σ: signature} (A: sUU (sorts σ)) (V: varspec σ) : UU := ∏ v: V, A (varsort v).
 

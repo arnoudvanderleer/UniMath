@@ -15,7 +15,6 @@ Require Import UniMath.Algebra.Universal.HVectors.
 Require Import UniMath.Algebra.Universal.Terms.
 
 Local Open Scope stn.
-Local Open Scope vec.
 Local Open Scope sorted.
 
 Section alegbra_functoralgebra.
@@ -31,7 +30,7 @@ Section alegbra_functoralgebra.
       induction n.
       - exact vnil.
       - simpl in hv.
-        exact (pr1 hv ::: IHn (pr2 hv)).
+        exact (pr1 hv ::p IHn (pr2 hv))%pvector.
     Defined.
 
     Definition vec_to_h1const {A: UU} {n: nat} {B: A} {P: A → UU} (v: vec (P B) n)
@@ -41,7 +40,7 @@ Section alegbra_functoralgebra.
       - exact hnil.
       - simpl in v.
         simpl.
-        exact (pr1 v ::: IHn (pr2 v))%hvec.
+        exact (pr1 v ::p IHn (pr2 v))%hvec.
     Defined.
 
     Definition h1const_vec_h1const {A: UU} {n: nat} {B: A} {P: A → UU}
@@ -53,7 +52,7 @@ Section alegbra_functoralgebra.
         apply idpath.
       - simpl in hv.
         simpl.
-        change hv with (pr1 hv ::: pr2 hv)%hvec.
+        change hv with (pr1 hv ::p pr2 hv)%hvec.
         apply maponpaths.
         apply (IHn (pr2 hv)).
     Defined.
@@ -66,7 +65,7 @@ Section alegbra_functoralgebra.
         apply idpath.
       - simpl in v.
         simpl.
-        change v with (pr1 v ::: pr2 v).
+        change v with (pr1 v ::p pr2 v)%pvector.
         apply maponpaths.
         apply (IHn (pr2 v)).
     Defined.
@@ -271,16 +270,14 @@ Section groundTermAlgebraWtype.
     Definition inv_weqonsecfibers {X : UU} {P Q : X → UU} (f : (∏ x : X, (P x ≃ Q x)))
       : invmap (weqonsecfibers P Q f) = (λ q x, invmap (f x) (q x)).
     Proof.
-      use funextsec.
+      apply funextsec.
       intro q.
-      use funextsec.
+      apply funextsec.
       intro x.
-      use maponpaths.
-      simpl.
-      use proofirrelevance.
-      fold ((hfiber (f x) (q x))).
-      use isapropifcontr.
-      use weqproperty.
+      refine (maponpaths _ (_ : iscontrpr1 _ x = _)).
+      apply proofirrelevance.
+      apply isapropifcontr.
+      apply weqproperty.
     Defined. (*it is possible to improve computation time here?*)
 
     Definition inv_weqonsec {X Y} {P:X->Type} {Q:Y->Type}

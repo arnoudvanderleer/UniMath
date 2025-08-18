@@ -185,7 +185,7 @@ Section strength_through_actegories.
     + induction xs.
       apply unit_relativelaxcommutator.
     + induction n as [|n IH].
-      * induction xs as [m []].
+      * induction xs as [m [ ]].
         apply ptdlaxcommutatorCAT_option_functor.
       * induction xs as [m [k xs]].
         use composedrelativelaxcommutator.
@@ -219,7 +219,7 @@ Section strength_through_actegories.
       use reindexed_lax_lineator.
       apply constconst_functor_lax_lineator.
     - induction n as [|n IH].
-      + induction xs as [m []].
+      + induction xs as [m [ ]].
         exact (StrengthCAT_exp_functor m).
       + induction xs as [m [k xs]].
         apply (lax_lineator_binprod Mon_ptdendo_CAT ActPtd_CAT_Endo (ActPtd_CAT C)).
@@ -308,7 +308,7 @@ Section strength_through_actegories.
       2: { apply constconst_functor_lax_lineator. }
       apply lax_lineator_postcomp_SelfActCAT_alt.
     - induction n as [|n IH].
-      + induction xs as [m []].
+      + induction xs as [m [ ]].
         apply StrengthCAT_hat_exp_functor_list'_piece.
       + induction xs as [m [k xs]].
         apply (lax_lineator_binprod Mon_ptdendo_CAT ActPtd_CAT_FromSelf ActPtd_CAT_FromSelf).

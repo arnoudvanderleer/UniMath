@@ -18,10 +18,10 @@ Definition bool_signature := make_signature_simple_single_sorted [0; 0; 1; 2; 2;
 
 (** ** Algebra structure over type bool. *)
 
-Definition bool_algebra := make_algebra_simple_single_sorted' 
+Definition bool_algebra := make_algebra_simple_single_sorted'
   bool_signature
   boolset
-  [( false ; true ; negb ; andb ; orb ; implb )].
+  [false ; true ; negb ; andb ; orb ; implb].
 
 Definition bool_sort: sorts bool_signature := tt.
 

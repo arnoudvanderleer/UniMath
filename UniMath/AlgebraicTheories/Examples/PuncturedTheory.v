@@ -25,6 +25,7 @@ Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 Require Import UniMath.Combinatorics.Tuples.
+Require Import UniMath.Combinatorics.VectorEquivalence.
 Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
@@ -34,7 +35,7 @@ Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.AlgebraCategory.
 
 Local Open Scope algebraic_theories.
-Local Open Scope vec.
+Local Open Scope pvector.
 Local Open Scope stn.
 
 Section PuncturedTheory.
@@ -148,18 +149,18 @@ Section PuncturedTheory.
       refine (subst_action _ (inflate f : punctured_theory 1) _ a1 @ !_).
       refine (subst_action _ (inflate f : punctured_theory 1) _ a2 @ !_).
       do 2 refine (maponpaths (λ x, action _ x) (!homotweqinvweq (weqvecfun _) _) @ !_).
-      pose (v := weqvecfun _ [(
+      pose (v := weqvecfun _ [
         action (lift_constant _ f : punctured_theory (S m)) a1 ;
         action (lift_constant _ f : punctured_theory (S n)) a2
-      )]).
-      refine (maponpaths (λ x, action _ (weqvecfun 1 [(x)])) (!var_action A (● 0 : stn 2) v) @ !_).
-      refine (maponpaths (λ x, action _ (weqvecfun 1 [(x)])) (!var_action A (● 1 : stn 2) v) @ !_).
+      ]).
+      refine (maponpaths (λ x, action _ (weqvecfun 1 [x])) (!var_action A (● 0 : stn 2) v) @ !_).
+      refine (maponpaths (λ x, action _ (weqvecfun 1 [x])) (!var_action A (● 1 : stn 2) v) @ !_).
       do 2 refine (maponpaths (λ x, action _ x) (move_action_through_vector_1 _ _ _) @ !_).
-      refine (!_ @ subst_action A _ (weqvecfun _ [(var (stnpr 1 : stn 2))]) _).
-      refine (!_ @ subst_action A _ (weqvecfun _ [(var (stnpr 0 : stn 2))]) _).
+      refine (!_ @ subst_action A _ (weqvecfun _ [var (stnpr 1 : stn 2)]) _).
+      refine (!_ @ subst_action A _ (weqvecfun _ [var (stnpr 0 : stn 2)]) _).
       apply (maponpaths (λ x, action x _)).
-      refine (subst_inflate T f (weqvecfun _ [(var (● 0 : stn 2))]) @ !_).
-      refine (subst_inflate T f (weqvecfun _ [(var (● 1 : stn 2))]) @ !_).
+      refine (subst_inflate T f (weqvecfun _ [var (● 0 : stn 2)]) @ !_).
+      refine (subst_inflate T f (weqvecfun _ [var (● 1 : stn 2)]) @ !_).
       apply maponpaths.
       now apply (invmaponpathsweq (invweq (weqvecfun _))).
     Qed.
@@ -171,7 +172,7 @@ Section PuncturedTheory.
     Proof.
       simple refine (squash_to_set (setproperty _) _ _ a0').
       - intro a.
-        exact (action (inflate f : punctured_theory 1) (weqvecfun _ [(a)])).
+        exact (action (inflate f : punctured_theory 1) (weqvecfun _ [a])).
       - abstract (
           intros a a';
           apply isaprop_inflated_constant_image
@@ -205,7 +206,7 @@ Section PuncturedTheory.
         + refine (!maponpaths (λ x, action x a) (subst_inflate_extend_tuple _ _ _) @ _).
           refine (subst_action _ (inflate f : punctured_theory 1) _ _ @ _).
           apply isaprop_inflated_constant_image.
-        + refine (maponpaths (λ x, action x (weqvecfun 1 [(a0')])) (inflate_subst _ f g) @ _).
+        + refine (maponpaths (λ x, action x (weqvecfun 1 [a0'])) (inflate_subst _ f g) @ _).
           exact (subst_action _ (f : punctured_theory (S m)) _ _).
         + exact (subst_action _ (f : punctured_theory (S m)) (g : _ → punctured_theory (S n)) a).
       - intros n i a.
@@ -230,7 +231,7 @@ Section PuncturedTheory.
     : algebra T
     := punctured_theory_algebra_to_algebra
       (algebra_to_punctured_theory_algebra A)
-      (hinhfun (λ t, action t (weqvecfun _ [()])) t).
+      (hinhfun (λ t, action t (weqvecfun _ [])) t).
 
   Lemma algebra_to_punctured_theory_algebra_to_algebra_iso_is_morphism
     (t : ∥ T 0 ∥)

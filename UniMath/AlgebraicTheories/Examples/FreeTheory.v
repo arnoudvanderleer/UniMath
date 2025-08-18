@@ -28,6 +28,7 @@ Require Import UniMath.CategoryTheory.DisplayedCats.Total.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.VectorEquivalence.
 Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.
@@ -43,7 +44,7 @@ Require Import UniMath.AlgebraicTheories.Algebras.
 
 Local Open Scope cat.
 Local Open Scope algebraic_theories.
-Local Open Scope vec.
+Local Open Scope pvector.
 
 (** * 1. The free functor *)
 
@@ -267,7 +268,7 @@ Section CosliceCatEquivalence.
     use tpair.
     - use tpair.
       + intros A s.
-        exact (action (T := free_theory S) (n := 0) (inr s) (weqvecfun 0 [()])).
+        exact (action (T := free_theory S) (n := 0) (inr s) (weqvecfun 0 [])).
       + abstract (intros A B F;
         apply funextfun;
         intro s;
@@ -293,8 +294,8 @@ Section CosliceCatEquivalence.
     induction f as [i | s].
     - refine (maponpaths _ (var_action _ _ _) @ !_).
       exact (var_action _ _ _).
-    - refine (maponpaths _ (subst_action A (inr s) (weqvecfun _ [()]) a) @ !_).
-      refine (subst_action B (inr s) (weqvecfun _ [()]) (λ i, coslicecat_mor_morphism _ _ F (a i)) @ !_).
+    - refine (maponpaths _ (subst_action A (inr s) (weqvecfun _ []) a) @ !_).
+      refine (subst_action B (inr s) (weqvecfun _ []) (λ i, coslicecat_mor_morphism _ _ F (a i)) @ !_).
       refine (_ @ eqtohomot (coslicecat_mor_comm _ _ F) s @ _).
       + apply (maponpaths (coslicecat_mor_morphism _ _ F)).
         apply (maponpaths (action (A := A) _)).

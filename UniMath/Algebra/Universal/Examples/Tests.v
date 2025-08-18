@@ -12,7 +12,6 @@ Require Import UniMath.Algebra.Universal.Examples.Bool.
 Local Open Scope stn.
 Local Open Scope sorted.
 Local Open Scope hvec.
-Local Open Scope list.
 
 Section SortedTypes.
 
@@ -25,35 +24,35 @@ End SortedTypes.
 
 Section NatLowLevel.
 
-  Goal Terms.opexec nat_succ_op (just [nat_sort]) = just [nat_sort].
+  Goal Terms.opexec nat_succ_op (just [nat_sort]%plist) = just [nat_sort]%plist.
   Proof. apply idpath. Qed.
 
-  Goal Terms.opexec nat_succ_op (just []) = nothing.
+  Goal Terms.opexec nat_succ_op (just []%plist) = nothing.
   Proof. apply idpath. Qed.
 
-  Local Definition zero_one_oplist: Terms.oplist nat_signature := [nat_zero_op ; nat_succ_op ; nat_zero_op].
+  Local Definition zero_one_oplist: Terms.oplist nat_signature := [nat_zero_op ; nat_succ_op ; nat_zero_op]%plist.
 
-  Local Definition one_oplist: Terms.oplist nat_signature := [nat_succ_op ; nat_zero_op].
+  Local Definition one_oplist: Terms.oplist nat_signature := [nat_succ_op ; nat_zero_op]%plist.
 
-  Local Definition zero_oplist: Terms.oplist nat_signature := [nat_zero_op].
+  Local Definition zero_oplist: Terms.oplist nat_signature := [nat_zero_op]%plist.
 
-  Goal @Terms.oplistexec nat_signature [] = just [].
+  Goal @Terms.oplistexec nat_signature []%plist = just []%plist.
   Proof. apply idpath. Qed.
 
-  Goal Terms.oplistexec one_oplist = just [nat_sort].
+  Goal Terms.oplistexec one_oplist = just [nat_sort]%plist.
   Proof. apply idpath. Qed.
 
-  Goal Terms.oplistexec zero_one_oplist = just [nat_sort ; nat_sort].
+  Goal Terms.oplistexec zero_one_oplist = just [nat_sort ; nat_sort]%plist.
   Proof. apply idpath. Qed.
 
-  Goal Terms.oplistexec [nat_succ_op] = nothing.
+  Goal Terms.oplistexec [nat_succ_op]%plist = nothing.
   Proof. apply idpath. Qed.
 
   Goal Terms.isaterm nat_sort (nat2term 10).
   Proof. apply idpath. Qed.
 
-  Goal Terms.stackconcatenate (just [nat_sort]) (just [nat_sort ; nat_sort])
-    = just [nat_sort ; nat_sort ; nat_sort].
+  Goal Terms.stackconcatenate (just [nat_sort]%plist) (just [nat_sort ; nat_sort]%plist)
+    = just [nat_sort ; nat_sort ; nat_sort]%plist.
   Proof. apply idpath. Qed.
 
   Local Definition one_term : gterm nat_signature nat_sort := make_term(l:=one_oplist) (idpath _).
@@ -66,7 +65,7 @@ Section NatLowLevel.
   Goal Terms.oplistsplit zero_one_oplist 1 = zero_oplist ,, one_oplist.
   Proof. apply idpath. Qed.
 
-  Goal Terms.vecoplist2oplist [( zero_oplist; one_oplist )] = zero_one_oplist.
+  Goal Terms.vecoplist2oplist [ zero_oplist; one_oplist ] = zero_one_oplist.
   Proof. apply idpath. Qed.
 
   Goal h1map_vec (λ _, term2oplist) (pr1 (Terms.oplist2vecoplist zero_one_oplist (idpath _))) = vcons zero_oplist (vcons one_oplist vnil).
@@ -75,7 +74,7 @@ Section NatLowLevel.
   Goal pr1 (Terms.oplist2vecoplist zero_one_oplist (idpath _)) = vcons zero_term (vcons one_term vnil).
   Proof. apply idpath. Qed.
 
-  Goal Terms.oplist_build nat_succ_op [( zero_oplist )] = one_oplist.
+  Goal Terms.oplist_build nat_succ_op [ zero_oplist ] = one_oplist.
   Proof. apply idpath. Qed.
 
 End NatLowLevel.
@@ -101,10 +100,10 @@ Section Nat.
   Goal princop term_four = nat_succ_op.
   Proof. apply idpath. Qed.
 
-  Goal subterms term_one = [( term_zero )].
+  Goal subterms term_one = [ term_zero ].
   Proof. apply idpath. Qed.
 
-  Goal subterms term_two = [( term_one )] .
+  Goal subterms term_two = [ term_one ] .
   Proof. apply idpath. Qed.
 
   Goal build_gterm (princop term_four) (subterms term_four) = term_four.
@@ -137,7 +136,7 @@ Section NatHom.
   Proof. apply idpath. Qed.
 
   Local Definition nat_algebra2
-    := make_algebra_simple_single_sorted nat_signature natset [( λ _, 1 ;  λ x, S (pr1 x) )].
+    := make_algebra_simple_single_sorted nat_signature natset [ λ _, 1 ;  λ x, S (pr1 x) ].
 
   Local Definition homnats: hom nat_algebra nat_algebra2.
   Proof.
@@ -180,10 +179,10 @@ Section Bool.
   Goal princop t1 = conj_op.
   Proof. apply idpath. Qed.
 
-  Goal term2oplist t2 = [ neg_op ; conj_op ; top_op ; bot_op ].
+  Goal term2oplist t2 = [ neg_op ; conj_op ; top_op ; bot_op ]%plist.
   Proof. apply idpath. Qed.
 
-  Goal pr1 (Terms.oplistsplit (term2oplist t1) 0) =  [].
+  Goal pr1 (Terms.oplistsplit (term2oplist t1) 0) =  []%plist.
   Proof. apply idpath. Qed.
 
   Goal pr2 (Terms.oplistsplit (term2oplist t1) 0) = (term2oplist t1).
@@ -192,13 +191,13 @@ Section Bool.
   Goal pr1 (Terms.oplistsplit (term2oplist t1) 1) = (term2oplist t1).
   Proof. apply idpath. Qed.
 
-  Goal pr2 (Terms.oplistsplit (term2oplist t1) 1) = [].
+  Goal pr2 (Terms.oplistsplit (term2oplist t1) 1) = []%plist.
   Proof. apply idpath. Qed.
 
-  Goal subterms t2 = [( t1 )].
+  Goal subterms t2 = [ t1 ].
   Proof. apply idpath. Qed.
 
-  Goal subterms t1 = [( top ; bot )].
+  Goal subterms t1 = [ top ; bot ].
   Proof. apply idpath. Qed.
 
   Goal depth t2 = 3.

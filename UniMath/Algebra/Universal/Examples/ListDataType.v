@@ -31,8 +31,8 @@ Definition cons_idx: names list_signature := ●1.
 Definition list_algebra (A: UU) : algebra list_signature
   := make_algebra_simple'
        list_signature
-       [( A ; list A )]
-       [( nil ; cons )].
+       [A ; list A]
+       [nil ; cons].
 
 (** Correspondence between structures and operations in the universal algebra
 of lists and standard structures and operations on lists. *)

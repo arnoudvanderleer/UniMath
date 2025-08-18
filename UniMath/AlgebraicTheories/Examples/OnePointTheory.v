@@ -14,12 +14,11 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
+Require Import UniMath.Combinatorics.VectorEquivalence.
 Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.Algebras.
-
-Local Open Scope vec_scope.
 
 (** * 1. The definition of the one point theory *)
 
@@ -53,7 +52,7 @@ Proof.
   intro A.
   apply weqcontrtounit.
   use tpair.
-  - use (action (tt : (one_point_theory 0 : hSet)) (weqvecfun 0 vnil)).
+  - use (action (tt : (one_point_theory 0 : hSet)) (weqvecfun 0 []%pvector)).
   - intro a.
     rewrite <- (var_action _ (make_stn 1 0 (idpath _)) (λ _, a)
       : _ = a).

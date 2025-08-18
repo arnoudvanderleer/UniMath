@@ -231,7 +231,7 @@ induction xs as [[|n] xs].
 + induction xs.
   apply DL_id.
 + induction n as [|n IH].
-  * induction xs as [m []].
+  * induction xs as [m [ ]].
     apply DL_sorted_option_functor.
   * induction xs as [m [k xs]].
     apply (DL_comp (DL_sorted_option_functor m) (IH (k,,xs))).
@@ -247,7 +247,7 @@ induction l as [[|n] xs].
 + induction xs.
   exact (pr2 (Gθ_Signature (IdSignature _ _) (proj_functor t))).
 + induction n as [|n IH].
-  * induction xs as [m []].
+  * induction xs as [m [ ]].
     set (Sig_option_list := θ_from_δ_Signature (DL_option_list (cons m (0,,tt)))).
     exact (pr2 (Gθ_Signature Sig_option_list (proj_functor t))).
   * induction xs as [m xs].
@@ -270,7 +270,7 @@ induction xs as [[|n] xs].
 - induction xs.
   exact (pr2 (ConstConstSignature HSET_over_sort HSET HSET_over_sort TerminalHSET)).
 - induction n as [|n IH].
-  + induction xs as [m []].
+  + induction xs as [m [ ]].
     exact (pr2 (Sig_exp_functor m)).
   + induction xs as [m [k xs]].
     exact (pr2 (BinProduct_of_Signatures _ (Sig_exp_functor _) (tpair _ _ (IH (k,,xs))))).
@@ -402,7 +402,7 @@ induction xs as [[|n] xs].
 - induction xs.
   apply is_omega_cocont_post_comp_proj.
 - induction n as [|n].
-  + induction xs as [m []].
+  + induction xs as [m [ ]].
     use is_omega_cocont_functor_composite.
     * apply is_omega_cocont_pre_composition_functor, H.
     * apply is_omega_cocont_post_comp_proj.
@@ -420,7 +420,7 @@ induction xs as [[|n] xs].
 - induction xs.
   apply is_omega_cocont_constant_functor.
 - induction n as [|n IHn].
-  + induction xs as [m []].
+  + induction xs as [m [ ]].
     apply is_omega_cocont_exp_functor, H.
   + induction xs as [m [k xs]].
     apply is_omega_cocont_BinProduct_of_functors.

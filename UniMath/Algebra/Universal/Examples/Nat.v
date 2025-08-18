@@ -22,7 +22,7 @@ Definition nat_sort: sorts nat_signature := tt.
 Definition nat_zero_op: names nat_signature := ●0.
 Definition nat_succ_op: names nat_signature := ●1.
 
-Definition nat_algebra := make_algebra_simple_single_sorted' nat_signature natset [( 0 ; S )].
+Definition nat_algebra := make_algebra_simple_single_sorted' nat_signature natset [0 ; S].
 
 Goal ops' nat_algebra nat_zero_op = 0.
 Proof. apply idpath. Defined.
@@ -30,7 +30,7 @@ Proof. apply idpath. Defined.
 Goal ops' nat_algebra nat_succ_op 1 = 2.
 Proof. apply idpath. Defined.
 
-Definition z2_algebra := make_algebra_simple_single_sorted' nat_signature boolset [( false ; negb )].
+Definition z2_algebra := make_algebra_simple_single_sorted' nat_signature boolset [false ; negb].
 
 Definition nat_to_z2 : nat_algebra s→ z2_algebra
   := λ s: sorts nat_signature, nat_rect (λ _, bool) false (λ n HP, negb HP).
