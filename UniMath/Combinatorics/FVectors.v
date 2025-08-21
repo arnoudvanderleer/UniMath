@@ -53,7 +53,7 @@ Section Append.
 
 End Append.
 
-Infix "::f" := append_vec (at level 59, left associativity) : fvector_scope.
+Infix "::f" := append_vec (at level 58, left associativity) : fvector_scope.
 Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): fvector_scope.
 
 (** ** 1.2. Accessors *)

@@ -45,7 +45,7 @@ Definition cons (x : A) (xs : list) : list :=
   (S (pr1 xs),, x ::p xs)%pvector.
 
 Notation "[]" := nil (at level 0, format "[]"): plist_scope.
-Infix "::p" := cons (at level 60, right associativity) : plist_scope.
+Infix "::p" := cons (at level 59, right associativity) : plist_scope.
 Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): plist_scope.
 
 (** * 3. Misc *)
@@ -94,7 +94,7 @@ Defined.
 End lists.
 
 Notation "[]" := nil (at level 0, format "[]"): plist_scope.
-Infix "::p" := cons (at level 60, right associativity) : plist_scope.
+Infix "::p" := cons (at level 59, right associativity) : plist_scope.
 Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): plist_scope.
 
 (** Make the type not implicit for list *)
@@ -280,28 +280,28 @@ Qed.
 Definition concatenate {X} : list X -> list X -> list X
   := λ r s, foldr cons s r.
 
-Infix "++p" := concatenate (at level 60, right associativity) : plist_scope.
+Infix "++" := concatenate (at level 60, right associativity) : plist_scope.
 
 Lemma concatenateStep {X} (x:X) (r s:list X) :
-  (x ::p r) ++p s = x ::p (r ++p s).
+  (x ::p r) ++ s = x ::p (r ++ s).
 Proof.
   apply idpath.
 Defined.
 
-Lemma nil_concatenate {X} (r : list X) : [] ++p r = r.
+Lemma nil_concatenate {X} (r : list X) : [] ++ r = r.
 Proof. apply idpath. Defined.
 
-Lemma concatenate_nil {X} (r : list X) : r ++p [] = r.
+Lemma concatenate_nil {X} (r : list X) : r ++ [] = r.
 Proof. revert r. apply list_ind. apply idpath. intros x xs p. exact (maponpaths (cons x) p). Defined.
 
-Lemma assoc_concatenate {X} (r s t : list X) : (r ++p s) ++p t = r ++p (s ++p t).
+Lemma assoc_concatenate {X} (r s t : list X) : (r ++ s) ++ t = r ++ (s ++ t).
 Proof.
   revert r. apply list_ind.
   - apply idpath.
   - intros x xs p. now rewrite !concatenateStep, p.
 Defined.
 
-Lemma map_concatenate {X Y} (f : X → Y) (r s : list X) : map f (r ++p s) = map f r ++p map f s.
+Lemma map_concatenate {X Y} (f : X → Y) (r s : list X) : map f (r ++ s) = map f r ++ map f s.
 Proof.
   revert r. apply list_ind.
   - apply idpath.
@@ -337,12 +337,12 @@ Qed.
 (** ** Append *)
 
 Definition append {X} (x : X) (l : list X) : list X :=
-  l ++p [x].
+  l ++ [x].
 
 Lemma appendStep {X} (x y : X) (l : list X) : append x (y ::p l) = y ::p append x l.
   Proof. apply idpath. Defined.
 
-Lemma append_concatenate {X} (x : X) (l s : list X) : append x (l ++p s) = l ++p append x s.
+Lemma append_concatenate {X} (x : X) (l s : list X) : append x (l ++ s) = l ++ append x s.
   Proof. apply assoc_concatenate. Defined.
 
 Lemma map_append {X Y} (f : X → Y) (x : X) (r : list X) : map f (append x r) = append (f x) (map f r).
@@ -354,10 +354,10 @@ Definition flatten {X} : list (list X) → list X.
 Proof.
   apply list_ind.
   + exact [].
-  + intros s _ f. exact (s ++p f).
+  + intros s _ f. exact (s ++ f).
 Defined.
 
-Lemma flattenStep {X} (x:list X) (m : list(list X)) : flatten (x::p m) = x ++p (flatten m).
+Lemma flattenStep {X} (x:list X) (m : list(list X)) : flatten (x::p m) = x ++ (flatten m).
 Proof.
   unfold flatten.
   rewrite list_ind_compute_2.
@@ -382,7 +382,7 @@ Proof.
   - intros x xs p. now rewrite mapStep, !reverseStep, map_append, p.
 Defined.
 
-Lemma reverse_concatenate {X} (l s : list X) : reverse (l ++p s) = reverse s ++p reverse l.
+Lemma reverse_concatenate {X} (l s : list X) : reverse (l ++ s) = reverse s ++ reverse l.
 Proof.
   revert l. apply list_ind.
   - symmetry. apply concatenate_nil.

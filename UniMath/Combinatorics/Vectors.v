@@ -50,7 +50,7 @@ Definition vcons {A: UU} {n} (x : A) (v : vec A n) : vec A (S n)
   := x,, v.
 
 Notation "[]" := vnil (at level 0, format "[]"): pvector_scope.
-Infix "::p" := vcons (at level 60, right associativity) : pvector_scope.
+Infix "::p" := vcons (at level 59, right associativity) : pvector_scope.
 Notation "[ x ; .. ; y ]" := (x ::p .. (y ::p []) ..): pvector_scope.
 
 Section vecs.
@@ -150,7 +150,7 @@ Defined.
 End vecs.
 
 Notation "[]" := vnil (at level 0, format "[]"): pvector_scope.
-Infix "::p" := vcons (at level 60, right associativity) : pvector_scope.
+Infix "::p" := vcons (at level 59, right associativity) : pvector_scope.
 Notation "[ x ; .. ; y ]" := (vcons x .. (vcons y []) ..) : pvector_scope.
 
 (** * 5. Vector operations *)

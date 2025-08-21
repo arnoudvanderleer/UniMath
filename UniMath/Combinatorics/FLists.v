@@ -57,7 +57,7 @@ Definition append {X} : Sequence X -> X -> Sequence X.
 Proof. intros x y. exact (S _,, pr2 x ::f y)%fvector.
 Defined.
 
-Infix "::f" := append (at level 59, left associativity) : flist_scope.
+Infix "::f" := append (at level 58, left associativity) : flist_scope.
 Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): flist_scope.
 
 (** ** 1.2. Accessors *)
@@ -312,13 +312,13 @@ Definition composeUnorderedSequence {X Y} (f:X->Y) : UnorderedSequence X -> Unor
 Definition concatenate {X : UU} : binop (Sequence X)
   := λ x y, functionToSequence (concatenate' x y).
 
-Infix "++f" := concatenate (at level 59, left associativity) : flist_scope.
+Infix "++" := concatenate (at level 60, right associativity) : flist_scope.
 
 Definition concatenate_length {X} (x y:Sequence X) :
-  length (x ++f y) = length x + length y.
+  length (x ++ y) = length x + length y.
 Proof. intros. reflexivity. Defined.
 
-Definition concatenate_0 {X} (s t:Sequence X) : length t = 0 -> s ++f t = s.
+Definition concatenate_0 {X} (s t:Sequence X) : length t = 0 -> s ++ t = s.
 Proof.
   induction s as [m s]. induction t as [n t].
   intro e; simpl in e. induction (!e).
@@ -332,7 +332,7 @@ Proof.
 Defined.
 
 Definition concatenateStep {X : UU} (x : Sequence X) {n : nat} (y : stn (S n) -> X) :
-  x ++f (S n,,y) = (x ++f (n,,y ∘ dni lastelement)) ::f (y lastelement).
+  x ++ (S n,,y) = (x ++ (n,,y ∘ dni lastelement)) ::f (y lastelement).
 Proof.
   revert x n y. induction x as [m l]. intros n y.
   use seq_key_eq_lemma.
@@ -354,7 +354,7 @@ Proof.
 Qed.
 
 Definition isassoc_concatenate {X : UU} (x y z : Sequence X) :
-   (x ++f y) ++f z = x ++f (y ++f z).
+   (x ++ y) ++ z = x ++ (y ++ z).
 Proof.
   use seq_key_eq_lemma.
   - cbn. apply natplusassoc.
@@ -443,7 +443,7 @@ Proof.
 Defined.
 
 Definition flattenStep {X} (x: NonemptySequence (Sequence X)) :
-  flatten x = (flatten (composeSequence' x (dni lastelement))) ++f (lastValue x).
+  flatten x = (flatten (composeSequence' x (dni lastelement))) ++ (lastValue x).
 Proof.
   intros.
   apply pair_path_in2.
