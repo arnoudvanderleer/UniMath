@@ -7,11 +7,12 @@
 
   1. Formulation of the recursion property as a unique existence statement for functions on ℕ
     [hNatRecursionUniq, hNatRecursion_weq]
-  2. The recursive definition of the path family over ℕ [nat_discern]
-  3. Definition and properties of the distance function on ℕ [nat_dist]
-  4. Miscellaneous arithmetic lemmas
-  5. Bounded quantification over ℕ, including uniqueness/searchibility of (minimal) witnesses
-  6. Complete (or strong) induction, where the induction step for N assumes that the property holds
+  2. Two lemmas on the value of natlehchoice
+  3. The recursive definition of the path family over ℕ [nat_discern]
+  4. Definition and properties of the distance function on ℕ [nat_dist]
+  5. Miscellaneous arithmetic lemmas
+  6. Bounded quantification over ℕ, including uniqueness/searchibility of (minimal) witnesses
+  7. Complete (or strong) induction, where the induction step for N assumes that the property holds
       for all n < N [complete_induction]
  *)
 
@@ -94,7 +95,33 @@ Section Uniqueness.
 
 End Uniqueness.
 
-(** * 2. The recursive definition of the path family over ℕ *)
+(** * 2. Two lemmas on the value of natlehchoice *)
+
+Lemma natlehchoice_lt
+  {i n : nat}
+  (H : i ≤ n)
+  (H' : i < n)
+  : natlehchoice _ _ H = inl H'.
+Proof.
+  induction (natlehchoice i n H) as [Hi | Hi].
+  - apply maponpaths.
+    apply propproperty.
+  - induction (isirreflnatlth _ (transportf (λ x, x < n) Hi H')).
+Qed.
+
+Lemma natlehchoice_eq
+  {i n : nat}
+  (H : i ≤ n)
+  (H' : i = n)
+  : natlehchoice _ _ H = inr H'.
+Proof.
+  induction (natlehchoice i n H) as [Hi | Hi].
+  - induction (isirreflnatlth _ (transportf (λ x, x < n) H' Hi)).
+  - apply maponpaths.
+    apply isasetnat.
+Qed.
+
+(** * 3. The recursive definition of the path family over ℕ *)
 (** The standard recursive definition of a type family equivalent to equality on ℕ — that is, a
       code-decode method characterisation of equality on ℕ *)
 
@@ -196,7 +223,7 @@ Defined.
 
 End NatDiscern.
 
-(** * 3. Definition and properties of the distance function on ℕ *)
+(** * 4. Definition and properties of the distance function on ℕ *)
 Section NatDist.
 
 Definition nat_dist (m n: nat) : nat.
@@ -399,7 +426,7 @@ Defined.
 
 End NatDist.
 
-(** * 4. Miscellaneous arithmetic lemmas *)
+(** * 5. Miscellaneous arithmetic lemmas *)
 Section Arithmetic.
 
 Lemma plusmn0n0 m n : m + n = 0 → n = 0.
@@ -490,7 +517,7 @@ Qed.
 
 End Arithmetic.
 
-(** * 5. Bounded quantification over ℕ, including uniqueness/searchibility of (minimal) witnesses *)
+(** * 6. Bounded quantification over ℕ, including uniqueness/searchibility of (minimal) witnesses *)
 
 (** ** Some results on bounded quantification *)
 
@@ -684,8 +711,6 @@ Proof.
   apply (isantisymmnatleh _ _ l1 l2).
 Defined.
 
-Print isapropnatdecleast.
-
 Theorem accth (F : nat → UU) (is : ∏ n, isdecprop (F n))
         (is' : ∃ n, F n) : natdecleast F is.
 Proof.
@@ -735,7 +760,7 @@ Proof.
   apply (X n (hinhpr (tpair _ n (make_dirprod (isreflnatleh n) l)))).
 Defined.
 
-(** * 6. Complete (or strong) induction, where the induction step for N assumes that the property
+(** * 7. Complete (or strong) induction, where the induction step for N assumes that the property
           holds for all n < N *)
 Lemma complete_induction
   (P : nat → UU)

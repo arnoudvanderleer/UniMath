@@ -10,9 +10,10 @@ This file contains main constructions related to the standard finite sets define
 (** Imports. *)
 
 Require Export UniMath.Foundations.NaturalNumbers.
-Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.MoreFoundations.DecidablePropositions.
+Require Import UniMath.MoreFoundations.Nat.
 Require Import UniMath.MoreFoundations.NegativePropositions.
+Require Import UniMath.MoreFoundations.Tactics.
 
 (** ** Standard finite sets [ stn ]. *)
 
@@ -337,6 +338,7 @@ Proof.
   exact (natlthtolths _ _ (pr2 h)).
 Defined.
 
+(* Note that many problems that can be solved with replace_dni_last, can also be solved with di_eq1. *)
 Definition replace_dni_last (n : nat) : dni (@lastelement n) = dni_lastelement.
 Proof.
   intros.
@@ -447,6 +449,51 @@ Proof.
   intros.
   exact ( isdecincltoisincl _  ( isdecincldni n i ) ).
 Defined.
+
+Section StnSnInduction.
+
+  Context {X : UU}.
+  Context {n : nat}.
+  Context {A : stn (S n) → UU}.
+  Context (Hx : ∏ i, A (dni lastelement i)).
+  Context (Hlast : A lastelement).
+
+  Definition stn_sn_ind
+    : ∏ i, A i.
+  Proof.
+    intro i.
+    induction (natlehchoice i n (stnlt i)) as [Hi | Hi].
+    - refine (transportf A _ (Hx (make_stn _ _ Hi))).
+      apply stn_eq.
+      exact (di_eq1 Hi).
+    - refine (transportf A _ Hlast).
+      apply stn_eq.
+      exact (!Hi).
+  Defined.
+
+  Lemma stn_sn_ind_dni
+    (i : stn n)
+    : stn_sn_ind (dni lastelement i) = Hx i.
+  Proof.
+    refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ (transportb (λ x, x < n) (di_eq1 (stnlt i)) (stnlt i))) @ _).
+    simple refine (
+      maponpaths (λ e, transportf _ e _) _ @
+      !functtransportf (dni lastelement) _ _ _ @
+      transport_section Hx _).
+    - apply isasetstn.
+    - apply stn_eq.
+      exact (di_eq1 (stnlt i)).
+  Qed.
+
+  Lemma stn_sn_ind_last
+    : stn_sn_ind lastelement = Hlast.
+  Proof.
+    refine (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath n)) @ _).
+    refine (maponpaths (λ e, transportf _ e _) (_ : _ = idpath _)).
+    apply isasetstn.
+  Qed.
+
+End StnSnInduction.
 
 (** ** The order-preserving functions [ sni n i : stn (S n) -> stn n ] that take the value [i] twice. *)
 

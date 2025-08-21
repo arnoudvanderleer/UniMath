@@ -21,6 +21,7 @@
 
  *)
 Require Import UniMath.Foundations.All.
+Require Import UniMath.MoreFoundations.Nat.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
 Declare Scope fvector_scope.
@@ -46,7 +47,7 @@ Section Append.
   Definition append_vec : Vector X (S n).
   Proof.
     intros i.
-    induction (natlehchoice4 (pr1 i) n (pr2 i)) as [c|d].
+    induction (natlehchoice (pr1 i) n (pr2 i)) as [c|d].
     - exact (vec (pr1 i,,c)).
     - exact x.
   Defined.
@@ -71,42 +72,30 @@ Section Accessors.
   Definition append_vec_compute_1 i : (vec ::f x) (dni lastelement i) = vec i.
   Proof.
     intros.
-    induction i as [i b]; simpl.
-    rewrite replace_dni_last.
-    unfold append_vec; simpl.
-    induction (natlehchoice4 i n (natlthtolths i n b)) as [p|p].
-    - simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
-    - simpl. destruct p. induction (isirreflnatlth i b).
+    simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
+    - refine (transportf (λ x, x < n) (!di_eq1 _) _);
+        apply (stnlt i).
+    - apply (maponpaths vec).
+      apply stn_eq.
+      apply di_eq1.
+      apply stnlt.
   Defined.
 
   Definition append_vec_compute_2 : (vec ::f x) lastelement = x.
   Proof.
-    intros; unfold append_vec; simpl.
-    induction (natlehchoice4 n n (natgthsnn n)) as [a|a]; simpl.
-    - contradicts a (isirreflnatlth n).
-    - reflexivity.
+    exact (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath _))).
   Defined.
 
 End Accessors.
 
 Lemma drop_and_append_vec {X : UU} {n : nat} (vecsn : Vector X (S n)) :
-  (vecsn ∘ dni_lastelement) ::f (vecsn lastelement) = vecsn.
+  (vecsn ∘ dni lastelement) ::f (vecsn lastelement) = vecsn.
 Proof.
   intros.
-  apply funextfun; intros [i b].
-  simpl.
-  induction (natlehchoice4 i n b) as [p|p].
-  - simpl.
-    unfold append_vec. simpl.
-    induction (natlehchoice4 i n b) as [q|q].
-    + simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
-    + induction q. contradicts p (isirreflnatlth i).
-  - induction p.
-    unfold append_vec; simpl.
-    induction (natlehchoice4 i i b) as [r|r].
-    * simpl. apply maponpaths.
-      apply isinjstntonat; simpl. reflexivity.
-    * simpl. apply maponpaths. apply isinjstntonat; simpl. reflexivity.
+  apply funextfun.
+  refine (stn_sn_ind _ _).
+  - exact (append_vec_compute_1 _ _).
+  - exact (append_vec_compute_2 _ _).
 Defined.
 
 (** * 2. Equality lemmas *)
@@ -175,7 +164,7 @@ Proof.
   - refine (transportf (P 0) _ p0).
     apply nil_proofirrelevance.
   - exact (transportf (P _) (drop_and_append_vec vec)
-                      (ind _ (vec ∘ dni_lastelement)
+                      (ind _ (vec ∘ dni lastelement)
                             (vec lastelement)
-                            (IH (vec ∘ dni_lastelement)))).
+                            (IH (vec ∘ dni lastelement)))).
 Defined.

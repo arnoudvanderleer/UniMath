@@ -113,14 +113,14 @@ Proof.
   revert x. intros [n x] h.
   induction n as [|n].
   - simpl in h. contradicts h (idpath 0).
-  - exact (n,,x ∘ dni_lastelement).
+  - exact (n,,x ∘ dni lastelement).
 Defined.
 
 Definition drop' {X} (x:Sequence X) : x != [] -> Sequence X.
 Proof. intros h. exact (drop x (pr2 (logeqnegs (nil_length x)) h)). Defined.
 
 Definition drop_and_append {X n} (x : stn (S n) -> X) :
-  (n,,x ∘ dni_lastelement) ::f (x lastelement) = (S n,, x).
+  (n,,x ∘ dni lastelement) ::f (x lastelement) = (S n,, x).
 Proof.
   intros. apply pair_path_in2. apply drop_and_append_vec.
 Defined.
@@ -129,17 +129,8 @@ Lemma append_and_drop_fun {X n} (x : stn n -> X) y :
   (x ::f y)%fvector ∘ dni lastelement = x.
 Proof.
   intros.
-  apply funextsec; intros i.
-  simpl.
-  unfold append_vec.
-  induction (natlehchoice4 (pr1 (dni lastelement i)) n (pr2 (dni lastelement i))) as [I|J].
-  - simpl. apply maponpaths. apply subtypePath_prop. simpl. apply di_eq1. exact (stnlt i).
-  - apply fromempty. simpl in J.
-    assert (P : di n i = i).
-    { apply di_eq1. exact (stnlt i). }
-    induction (!P); clear P.
-    induction i as [i r]. simpl in J. induction J.
-    exact (isirreflnatlth _ r).
+  apply funextsec.
+  exact (append_vec_compute_1 _ _).
 Defined.
 
 Definition drop_and_append' {X n} (x : stn (S n) -> X) :
@@ -217,7 +208,7 @@ Proof.
   induction x as [n x].
   induction n as [|n].
   - exact (ii1 tt).
-  - exact (ii2(x lastelement,,(n,,x ∘ dni_lastelement))).
+  - exact (ii2(x lastelement,,(n,,x ∘ dni lastelement))).
 Defined.
 
 Definition assembleSequence {X} : coprod unit (X × Sequence X) -> Sequence X.
@@ -234,25 +225,20 @@ Proof. reflexivity. Defined.
 
 Theorem SequenceAssembly {X} : Sequence X ≃ unit ⨿ (X × Sequence X).
 Proof.
-  intros. exists disassembleSequence. apply (isweq_iso _ assembleSequence).
-  { intros. induction x as [n x]. induction n as [|n].
-    { apply nil_unique. }
-    apply drop_and_append'. }
-  intros co. induction co as [t|p].
-  { unfold disassembleSequence; simpl. apply maponpaths.
-    apply proofirrelevancecontr. apply iscontrunit. }
-  induction p as [x y]. induction y as [n y].
-  apply (maponpaths (@inr unit (X × Sequence X))).
-  unfold append_vec, lastelement; simpl.
-  unfold append_vec. simpl.
-  induction (natlehchoice4 n n (natgthsnn n)) as [e|e].
-  { contradicts e (isirreflnatlth n). }
-  simpl. apply maponpaths, maponpaths.
-  apply funextfun; intro i. clear e. induction i as [i b].
-  unfold dni_lastelement; simpl.
-  induction (natlehchoice4 i n (natlthtolths i n b)) as [d|d].
-  { simpl. apply maponpaths. now apply isinjstntonat. }
-  simpl. induction d; contradicts b (isirreflnatlth i).
+  use weq_iso.
+  - exact disassembleSequence.
+  - exact assembleSequence.
+  - intro x.
+    induction x as [n x].
+    induction n as [|n].
+    + apply nil_unique.
+    + apply drop_and_append'.
+  - intro co.
+    induction co as [t|p].
+    + now induction t.
+    + refine (two_arg_paths (f := λ x y, inr (x ,, _ ,, y)) _ _).
+      * apply append_vec_compute_2.
+      * apply append_and_drop_fun.
 Defined.
 
 (** * 4. Induction *)
@@ -264,9 +250,9 @@ Definition Sequence_rect {X} {P : Sequence X ->UU}
 Proof. intros. induction x as [n x]. induction n as [|n IH].
   - exact (transportf P (nil_unique x) p0).
   - exact (transportf P (drop_and_append x)
-                      (ind (n,,x ∘ dni_lastelement)
+                      (ind (n,,x ∘ dni lastelement)
                            (x lastelement)
-                           (IH (x ∘ dni_lastelement)))).
+                           (IH (x ∘ dni lastelement)))).
 Defined.
 
 Lemma Sequence_rect_compute_nil {X} {P : Sequence X ->UU} (p0 : P [])
@@ -338,19 +324,20 @@ Proof.
   use seq_key_eq_lemma.
   - cbn. apply natplusnsm.
   - intros i r s.
-    unfold concatenate, concatenate', weqfromcoprodofstn_invmap; cbn.
-    unfold append_vec, coprod_rect; cbn.
+    symmetry.
+    unfold concatenate, concatenate', weqfromcoprodofstn_invmap; simpl.
+    unfold append_vec; simpl.
     induction (natlthorgeh i m) as [H | H].
-    + induction (natlehchoice4 i (m + n) s) as [H1 | H1].
-      * reflexivity.
-      * apply fromempty. induction (!H1); clear H1.
-        set (tmp := natlehnplusnm m n).
-        set (tmp2 := natlehlthtrans _ _ _ tmp H).
-        exact (isirreflnatlth _ tmp2).
-    + induction (natlehchoice4 i (m + n) s) as [I|J].
-      * apply maponpaths, subtypePath_prop. rewrite replace_dni_last. reflexivity.
-      * apply maponpaths, subtypePath_prop. simpl.
-        induction (!J). rewrite natpluscomm. apply plusminusnmm.
+    + refine (maponpaths _ (natlehchoice_lt _ _)).
+      apply (natlthlehtrans _ _ _ H).
+      apply natlehnplusnm.
+    + induction (natlehchoice i (m + n) s) as [I|J];
+        apply (maponpaths y), subtypePath_prop.
+      * apply di_eq1.
+        apply (nat_split I H).
+      * simpl.
+        induction (!J).
+        now rewrite natpluscomm, plusminusnmm.
 Qed.
 
 Definition isassoc_concatenate {X : UU} (x y z : Sequence X) :

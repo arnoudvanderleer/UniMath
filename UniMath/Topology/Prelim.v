@@ -258,11 +258,11 @@ Proof.
         clear m ;
         intros m Hm.
       induction (natlehchoice _ _ (natlthsntoleh _ _ Hm)) as [Hm' | ->].
-      * generalize (pr2 Hx (m,,Hm')).
-        unfold dni_lastelement ; simpl.
-        assert (H : Hm = natlthtolths m n Hm' ).
-        { apply (pr2 (natlth m (S n))). }
-        now rewrite H.
+      * pose (pr2 Hx (m,,Hm')).
+        refine (transportf (λ a, L a x) _ (pr2 Hx (m ,, Hm'))).
+        apply stn_eq.
+        apply di_eq1.
+        apply Hm'.
       * assert (H : lastelement = (n,, Hm)).
         { now apply subtypePath_prop. }
         rewrite <- H.
@@ -284,7 +284,6 @@ Proof.
     apply maponpaths.
     apply funextfun ; intro m.
     simpl.
-    rewrite <- replace_dni_last.
     apply append_vec_compute_1.
   - reflexivity.
 Qed.

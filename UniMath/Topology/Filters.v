@@ -1189,8 +1189,7 @@ Proof.
                  *** simple refine (pr2 (pr2 (pr2 C) x _)).
                      exact H0.
           + intros.
-            generalize (Hl (dni_lastelement m)) ; simpl.
-            rewrite <- replace_dni_last.
+            generalize (Hl (dni lastelement m)) ; simpl.
             now rewrite append_vec_compute_1. }
       revert B.
       apply hinhuniv.
