@@ -27,8 +27,6 @@ Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 
 Require Import UniMath.Combinatorics.FiniteSets.
-Require Import UniMath.Combinatorics.Lists.
-Require Import UniMath.Combinatorics.Vectors.
 Require Import UniMath.Combinatorics.FVectors.
 
 Declare Scope flist_scope.
