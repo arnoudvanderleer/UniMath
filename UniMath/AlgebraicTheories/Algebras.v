@@ -15,15 +15,14 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.VectorEquivalence.
-Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraCategoryCore.
 
+Local Open Scope fvector.
 Local Open Scope algebraic_theories.
-Local Open Scope pvector.
 
 (** * 1. The definition of algebras *)
 
@@ -150,7 +149,7 @@ Lemma lift_constant_action
   (n : nat)
   (f : T 0)
   (a : stn n → A)
-  : action (lift_constant n f) a = action f (weqvecfun _ vnil).
+  : action (lift_constant n f) a = action f [].
 Proof.
   refine (subst_action _ _ _ a @ _).
   apply maponpaths, funextfun.
@@ -164,30 +163,31 @@ Section ActionVector.
 
   Context {T : algebraic_theory}.
   Context (A : algebra T).
+  Context {n : nat}.
+  Context (f g h : (T n : hSet)).
+  Context (a : Vector A n).
 
-  Lemma move_action_through_vector {n m : nat} (f : vec (T m : hSet) n) (a : stn m → A):
-    weqvecfun _ (vec_map (λ fi, action fi a) f)
-     = λ i, action (weqvecfun _ f i) a.
+  Definition move_action_through_vector_1
+    : [Algebras.action f a]
+      = λ i, Algebras.action ([f] i) a.
   Proof.
-    apply funextfun.
-    intro.
-    simpl.
-    now rewrite el_vec_map.
+    reflexivity.
   Qed.
 
-  Definition move_action_through_vector_1 {n : nat} (f : (T n : hSet)) (a : stn n → A)
-    : weqvecfun 1 [(action f a)]
-      = λ i, action (weqvecfun 1 [(f)] i) a
-    := move_action_through_vector [(f)] _.
+  Lemma move_action_through_vector_2
+    : [Algebras.action f a ; Algebras.action g a]
+      = λ i, Algebras.action ([f ; g] i) a.
+  Proof.
+    apply funextfun.
+    do 2 (refine (stn_sn_ind _ _); try reflexivity).
+  Qed.
 
-  Definition move_action_through_vector_2 {n : nat} (f g : (T n : hSet)) (a : stn n → A)
-    : weqvecfun _ [action f a ; action g a]
-      = λ i, action (weqvecfun _ [f ; g] i) a
-    := move_action_through_vector [f ; g] _.
-
-  Definition move_action_through_vector_3 {n : nat} (f g h : (T n : hSet)) (a : stn n → A)
-    : weqvecfun _ [action f a ; action g a ; action h a]
-      = λ i, action (weqvecfun _ [f ; g ; h] i) a
-    := move_action_through_vector [f ; g ; h] _.
+  Lemma move_action_through_vector_3
+    : [Algebras.action f a ; Algebras.action g a ; Algebras.action h a]
+      = λ i, Algebras.action ([f ; g ; h] i) a.
+  Proof.
+    apply funextfun.
+    do 3 (refine (stn_sn_ind _ _); try reflexivity).
+  Qed.
 
 End ActionVector.

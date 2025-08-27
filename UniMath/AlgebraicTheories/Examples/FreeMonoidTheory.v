@@ -23,10 +23,8 @@ Require Import UniMath.CategoryTheory.Core.Functors.
 Require Import UniMath.CategoryTheory.Core.Isos.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Categories.Monoid.
-Require Import UniMath.Combinatorics.Lists.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.VectorEquivalence.
-Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.Algebras.
@@ -35,9 +33,10 @@ Require Import UniMath.AlgebraicTheories.AlgebraCategory.
 Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.Examples.FreeObjectTheory.
 
-Local Open Scope algebraic_theories.
-Local Open Scope pvector.
+Local Open Scope stn.
 Local Open Scope cat.
+Local Open Scope fvector.
+Local Open Scope algebraic_theories.
 
 (** * 1. The definition of the algebraic theory *)
 
@@ -70,36 +69,26 @@ Proof.
   use make_setwithbinop.
   - exact A.
   - intros a b.
-    exact (action op_el (weqvecfun _ [a ; b])).
+    exact (action op_el [a ; b]).
 Defined.
-
-Local Lemma move_action_through_weqvecfun
-  {A : algebra free_monoid_theory}
-  {n : nat}
-  {f g : free_monoid_theory n}
-  (h : stn n → A)
-  : weqvecfun _ [action f h ; action g h] = λ i, action (weqvecfun _  [f ; g] i) h.
-Proof.
-  now apply (invmaponpathsweq (invweq (weqvecfun _))).
-Qed.
 
 Lemma free_monoid_theory_algebra_to_setwithbinop_op_is_assoc
   (A : algebra free_monoid_theory)
   : isassoc (op (X := free_monoid_theory_algebra_to_setwithbinop A)).
 Proof.
   intros a b c.
-  pose (f := weqvecfun _ [a ; b ; c]).
+  pose (f := [a ; b ; c]).
   pose (Hf := λ i Hi, !(var_action _ (make_stn 3 i Hi) f)).
-  cbn -[weqvecfun action].
-  rewrite (Hf 0 (idpath true) : a = _),
-    (Hf 1 (idpath true) : b = _),
-    (Hf 2 (idpath true) : c = _).
-  now do 4 rewrite (move_action_through_weqvecfun f), <- subst_action.
+  cbn -[action].
+  rewrite <- (var_action _ (● 0 : stn 3) f : _ = a).
+  rewrite <- (var_action _ (● 1 : stn 3) f : _ = b).
+  rewrite <- (var_action _ (● 2 : stn 3) f : _ = c).
+  now do 4 rewrite (move_action_through_vector_2 _ _ _ f), <- subst_action.
 Qed.
 
 Definition free_monoid_theory_algebra_to_unit (A : algebra free_monoid_theory)
   : A
-  := action unit_el (weqvecfun _ []).
+  := action unit_el [].
 
 Lemma free_monoid_theory_algebra_to_isunit (A : algebra free_monoid_theory)
   : isunit
@@ -108,10 +97,10 @@ Lemma free_monoid_theory_algebra_to_isunit (A : algebra free_monoid_theory)
 Proof.
   split;
     intro x;
-    cbn -[weqvecfun action];
+    cbn -[action];
     now rewrite <- (var_action _ (make_stn 1 0 (idpath _)) (λ _, x)),
       <- (lift_constant_action 1 _ (λ _, x) : _ = free_monoid_theory_algebra_to_unit A),
-      (move_action_through_weqvecfun (λ _, x)),
+      (move_action_through_vector_2 _ _ _ (λ _, x)),
       <- subst_action.
 Qed.
 
@@ -142,8 +131,8 @@ Proof.
     refine (make_monoidfun (f := f) _).
     abstract (
       use make_ismonoidfun;
-      [ exact (λ m m', mor_action f op_el (weqvecfun _ [m ; m']))
-      | exact (mor_action f unit_el (weqvecfun _ [])) ]
+      [ exact (λ m m', mor_action f op_el [m ; m'])
+      | exact (mor_action f unit_el []) ]
     ).
   - abstract (
       intro f;
@@ -169,9 +158,9 @@ Proof.
   apply (list_ind (λ x, action (A := A') x a = action (A := A) x a)).
   - exact (!(lift_constant_action (A := A) _ (unel (free_monoid _)) a)).
   - intros i xs Haction.
-    refine (subst_action A' op_el (weqvecfun _ [free_monoid_unit i ; xs]) a @ !_).
-    refine (subst_action A op_el (weqvecfun _ [free_monoid_unit i ; xs]) a @ !_).
-    now rewrite <- (move_action_through_weqvecfun (A := A) a),
+    refine (subst_action A' op_el [free_monoid_unit i ; xs] a @ !_).
+    refine (subst_action A op_el [free_monoid_unit i ; xs] a @ !_).
+    now rewrite <- (move_action_through_vector_2 A _ _ a),
       <- Haction,
       (var_action A _ _ :
         action (free_monoid_unit i : free_monoid_theory n) _ = _).

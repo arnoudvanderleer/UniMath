@@ -23,8 +23,8 @@ Require Import UniMath.CategoryTheory.coslicecat.
 Require Import UniMath.CategoryTheory.DisplayedCats.Constructions.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.Limits.BinCoproducts.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
 
 Require Import UniMath.AlgebraicTheories.AlgebraCategory.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryCategoryCore.
@@ -34,8 +34,9 @@ Require Import UniMath.AlgebraicTheories.AlgebraMorphisms.
 Require Import UniMath.AlgebraicTheories.Algebras.
 Require Import UniMath.AlgebraicTheories.Examples.TheoryAlgebra.
 
-Local Open Scope algebraic_theories.
 Local Open Scope cat.
+Local Open Scope fvector.
+Local Open Scope algebraic_theories.
 
 (** * 1. The theory of extensions *)
 
@@ -241,7 +242,7 @@ Section TheoryOfExtensions.
           : A → (algebra_pullback extensions_theory_embedding B : algebra _).
         Proof.
           intro a.
-          refine (action (A := B) _ (iscontrpr1 (iscontr_empty_tuple _))).
+          refine (action (A := B) _ []).
           refine ((BinCoproductIn1 (H A (theory_algebra T 0)) : algebra_morphism _ _) _).
           exact a.
         Defined.
@@ -277,7 +278,7 @@ Section TheoryOfExtensions.
           intro a.
           refine (mor_action F _ _ @ _).
           apply (maponpaths (action _)).
-          apply iscontr_uniqueness.
+          apply nil_proofirrelevance.
         Qed.
 
       End Mor.
@@ -473,12 +474,12 @@ Section TheoryOfExtensions.
         refine (algebra_mor_comp _ _ @ _).
         apply funextfun.
         intro a.
-        refine (_ @ subst_action B ((BinCoproductIn1 _ : algebra_morphism _ _) a) (iscontrpr1 (iscontr_empty_tuple _)) b @ _).
+        refine (_ @ subst_action B ((BinCoproductIn1 _ : algebra_morphism _ _) a) [] b @ _).
         + refine (!_ @ maponpaths (λ x, action (A := B) (x a) b) (algebra_mor_comp _ _)).
           apply (maponpaths (λ x, action (A := B) (algebra_morphism_to_function x a) b)).
           apply BinCoproductIn1Commutes.
         + apply (maponpaths (action _)).
-          apply iscontr_uniqueness.
+          apply nil_proofirrelevance.
       - apply algebra_morphism_eq.
         exact (algebra_mor_comp _ _).
     Qed.
@@ -560,7 +561,7 @@ Section Factorization.
     refine (algebra_morphism_to_function (BinCoproductArrow _ (c := (algebra_pullback F (theory_algebra T' n))) _ _)).
     - apply algebra_pullback_mor.
       apply theory_algebra_free.
-      apply (iscontrpr1 (iscontr_empty_tuple _)).
+      exact [].
     - apply theory_algebra_free.
       exact var.
   Defined.
@@ -596,8 +597,7 @@ Section Factorization.
         refine (_ @ !maponpaths (λ x, algebra_morphism_to_function (A' := algebra_pullback F (theory_algebra T' m)) x _ • _) (BinCoproductIn1Commutes _ _ _ _ _ _ _)).
         refine (_ @ !subst_subst T' f _ _).
         apply (maponpaths (λ x, f • x)).
-        symmetry.
-        apply iscontr_uniqueness.
+        apply nil_proofirrelevance.
       + refine (assoc _ _ _ @ _).
         refine (maponpaths (λ x, x · _) (BinCoproductIn2Commutes _ _ _ _ _ _ _) @ _).
         apply algebra_morphism_eq.

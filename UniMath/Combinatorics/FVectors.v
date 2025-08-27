@@ -55,41 +55,51 @@ Section Append.
 End Append.
 
 Infix "::f" := append_vec (at level 58, left associativity) : fvector_scope.
-Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): fvector_scope.
+Notation "[ x ; .. ; y ]" := (.. ([] ::f x) .. ::f y) : fvector_scope.
 
 (** ** 1.2. Accessors *)
 
-Section Accessors.
+Notation "'init' xs" := (xs ∘ dni lastelement) (at level 10) : fvector_scope.
 
-  Context {X : UU}.
-  Context {n : nat}.
-  Context (vec : Vector X n).
-  Context (x : X).
+Notation "'last' xs" := (xs lastelement) (at level 10) : fvector_scope.
 
-  Definition tail (vecsn : Vector X (S n)) : Vector X n :=
-    vecsn ∘ dni (0,, natgthsn0 n).
+Notation "'tail' xs" := (xs ∘ dni firstelement) (at level 10) : fvector_scope.
 
-  Definition append_vec_compute_1 i : (vec ::f x) (dni lastelement i) = vec i.
-  Proof.
-    intros.
-    simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
-    - refine (transportf (λ x, x < n) (!di_eq1 _) _);
-        apply (stnlt i).
-    - apply (maponpaths vec).
-      apply stn_eq.
-      apply di_eq1.
-      apply stnlt.
-  Defined.
+Notation "'head' xs" := (xs firstelement) (at level 10) : fvector_scope.
 
-  Definition append_vec_compute_2 : (vec ::f x) lastelement = x.
-  Proof.
-    exact (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath _))).
-  Defined.
+Definition append_vec_compute_1
+  {X : UU}
+  {n : nat}
+  (vec : Vector X n)
+  (x : X)
+  (i : stn n)
+  : init (vec ::f x) i = vec i.
+Proof.
+  intros.
+  simple refine (maponpaths (coprod_rect _ _ _) (natlehchoice_lt _ _) @ _).
+  - refine (transportf (λ x, x < n) (!di_eq1 _) _);
+      apply (stnlt i).
+  - apply (maponpaths vec).
+    apply stn_eq.
+    apply di_eq1.
+    apply stnlt.
+Defined.
 
-End Accessors.
+Definition append_vec_compute_2
+  {X : UU}
+  {n : nat}
+  (vec : Vector X n)
+  (x : X)
+  : last (vec ::f x) = x.
+Proof.
+  exact (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath _))).
+Defined.
 
-Lemma drop_and_append_vec {X : UU} {n : nat} (vecsn : Vector X (S n)) :
-  (vecsn ∘ dni lastelement) ::f (vecsn lastelement) = vecsn.
+Lemma drop_and_append_vec
+  {X : UU}
+  {n : nat}
+  (vecsn : Vector X (S n))
+  : (init vecsn) ::f (last vecsn) = vecsn.
 Proof.
   intros.
   apply funextfun.

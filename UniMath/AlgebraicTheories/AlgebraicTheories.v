@@ -14,16 +14,15 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.VectorEquivalence.
-Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryCategoryCore.
-Require Import UniMath.Combinatorics.Tuples.
 
 Declare Scope algebraic_theories.
 
 Local Open Scope cat.
+Local Open Scope fvector.
 Local Open Scope algebraic_theories.
 
 (** * 1. The definition of algebraic theories *)
@@ -146,21 +145,21 @@ Definition subst_var
 
 Definition lift_constant {T : algebraic_theory_data} (n : nat) (f : (T 0 : hSet))
   : (T n : hSet)
-  := f • weqvecfun _ vnil.
+  := f • [].
 
 Definition inflate {T : algebraic_theory_data} {n : nat} (f : T n) : T (S n)
-  := f • (λ i, var (stnweq (inl i))).
+  := f • init var.
 
 Definition inflate_var (T : algebraic_theory) {n : nat} (i : stn n)
-  : inflate (var i) = var (stnweq (inl i))
+  : inflate (var i) = init var i
   := var_subst T _ _.
 
 Definition inflate_subst (T : algebraic_theory) {m n : nat} (f : T m) (g : stn m → T n)
-  : inflate (subst f g) = subst f (λ i, inflate (g i))
+  : inflate (f • g) = f • (λ i, inflate (g i))
   := subst_subst _ _ _ _.
 
 Lemma subst_inflate (T : algebraic_theory) {m n : nat} (f : T m) (g : stn (S m) → T n)
-  : subst (inflate f) g = subst f (λ i, g (stnweq (inl i))).
+  : (inflate f) • g = f • (init g).
 Proof.
   unfold inflate.
   rewrite subst_subst.
@@ -175,10 +174,9 @@ Lemma subst_inflate_extend_tuple
   {m : nat}
   (f : T 0)
   (g : stn 0 → T m)
-  : inflate f • extend_tuple g (lift_constant _ f) = f • g.
+  : inflate f • (g ::f (lift_constant _ f)) = f • g.
 Proof.
   refine (subst_inflate _ f _ @ _).
   apply maponpaths.
-  apply proofirrelevancecontr.
-  apply iscontr_empty_tuple.
+  apply nil_proofirrelevance.
 Qed.

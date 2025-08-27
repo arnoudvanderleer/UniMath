@@ -10,12 +10,7 @@ Require Import UniMath.MoreFoundations.Tactics.
 Require Import UniMath.Algebra.Groups.
 Require Import UniMath.MoreFoundations.NegativePropositions.
 
-(* move upstream *)
-
-(* end of move upstream *)
-
-Local Notation "[]" := Lists.nil (at level 0, format "[]").
-Local Infix "::" := cons.
+Local Open Scope plist.
 
 (** general associativity for binary operations on types *)
 
@@ -35,8 +30,8 @@ Section BinaryOperations.
     induction n as [|n _].
     { exact unel. }
     { induction n as [|n I].
-      { exact (x lastelement). }
-      { exact (op (I (x ∘ dni lastelement)) (x lastelement)). }}
+      { exact (last x)%fvector. }
+      { exact (op (I (init x)) (last x))%fvector. }}
   Defined.
 
   Definition iterop_seq : Sequence X → X.
@@ -91,10 +86,10 @@ Section BinaryOperations.
   Defined.
 
   Definition iterop_list_step (runax : isrunit op unel) (x:X) (xs:list X) :
-    iterop_list (x::xs) = op x (iterop_list xs).
+    iterop_list (x ::p xs) = op x (iterop_list xs).
   Proof.
     generalize x; clear x.
-    apply (list_ind (λ xs, ∏ x : X, iterop_list (x :: xs) = op x (iterop_list xs))).
+    apply (list_ind (λ xs, ∏ x : X, iterop_list (x ::p xs) = op x (iterop_list xs))).
     { intro x. simpl. apply pathsinv0,runax. }
     intros y rest IH x.
     reflexivity.
@@ -113,7 +108,7 @@ Section BinaryOperations.
   Defined.
 
   Definition iterop_fun_step (lunax : islunit op unel) {m} (x:stn(S m) → X) :
-    iterop_fun x = op (iterop_fun (x ∘ dni lastelement)) (x lastelement).
+    iterop_fun x = (op (iterop_fun (init x)) (last x))%fvector.
   Proof.
     intros.
     unfold iterop_fun at 1.
@@ -130,9 +125,7 @@ Section BinaryOperations.
     rewrite append_vec_compute_2.
     apply (maponpaths (λ x, op (iterop_fun x) y)).
     apply funextfun; intro i.
-    simpl.
-    rewrite append_vec_compute_1.
-    reflexivity.
+    now rewrite append_vec_compute_1.
   Defined.
 
 End BinaryOperations.
@@ -162,13 +155,13 @@ Section Monoids.
   (* some rewriting rules *)
 
   Lemma iterop_seq_mon_len1 (x : stn 1 → M) :
-    iterop_seq_mon (functionToSequence x) = x lastelement.
+    iterop_seq_mon (functionToSequence x) = (last x)%fvector.
   Proof.
     reflexivity.
   Defined.
 
   Lemma iterop_seq_mon_step {n} (x:stn (S n) → M) :
-    iterop_seq_mon (S n,,x) = iterop_seq_mon (n,,x ∘ dni lastelement) * x lastelement.
+    iterop_seq_mon (S n,,x) = (iterop_seq_mon (n,, init x) * last x)%fvector.
   Proof.
     intros. induction n as [|n _].
     - cbn. apply pathsinv0, lunax.
@@ -181,12 +174,12 @@ Section Monoids.
   Defined.
 
   Lemma iterop_list_mon_step (x:M) (xs:list M) :
-    iterop_list_mon (x::xs) = x * iterop_list_mon xs.
+    iterop_list_mon (x ::p xs) = x * iterop_list_mon xs.
   Proof.
     apply iterop_list_step. apply runax.
   Defined.
 
-  Lemma iterop_list_mon_singleton (x : M) : iterop_list_mon (x::[]) = x.
+  Lemma iterop_list_mon_singleton (x : M) : iterop_list_mon [x] = x.
   Proof.
     reflexivity.
   Defined.
@@ -199,12 +192,12 @@ Section Monoids.
      rewrite append_vec_compute_2.
      apply (maponpaths (λ a, a * m)).
      apply (maponpaths (λ x, iterop_seq_mon (n,,x))).
-     apply funextfun; intros [i b]; simpl.
+     apply funextfun; intros [i b].
      now rewrite append_vec_compute_1.
   Defined.
 
   Local Lemma iterop_seq_seq_mon_step {n} (x:stn (S n) → Sequence M) :
-    iterop_seq_seq_mon (S n,,x) = iterop_seq_seq_mon (n,,x ∘ dni lastelement) * iterop_seq_mon (x lastelement).
+    iterop_seq_seq_mon (S n,,x) = (iterop_seq_seq_mon (n,, init x) * iterop_seq_mon (last x))%fvector.
   Proof.
     intros.
     induction n as [|n _].
@@ -279,7 +272,7 @@ Proof.
   { reflexivity. }
   change (flatten _) with (flatten ((n,,x): NonemptySequence _)).
   rewrite flattenStep.
-  change (lastValue _) with (x lastelement).
+  change (lastValue _) with (last x)%fvector.
   unfold iterop_seq_seq. simpl.
   unfold iterop_fun_fun.
   rewrite (iterop_fun_step _ _ (lunax M)).
@@ -287,7 +280,8 @@ Proof.
   unfold iterop_seq.
   induction z as [m z].
   induction m as [|m IHm].
-  { simpl. rewrite runax.
+  { simpl.
+    rewrite runax.
     simple refine (_ @ IHn (x ∘ dni lastelement)).
     rewrite concatenate'_r0.
     now apply (two_arg_paths_b (natplusr0 (stnsum (length ∘ (x ∘ dni lastelement))))). }
@@ -295,8 +289,7 @@ Proof.
   rewrite (iterop_fun_step _ _ (lunax M)). rewrite concatenateStep.
   generalize (z lastelement) as w; intros.
   rewrite <- assocax. unfold append.
-  Opaque iterop_fun. simpl. Transparent iterop_fun.
-  rewrite (iterop_fun_append _ _ (lunax M)).
+  refine (iterop_fun_append _ _ (lunax M) _ _ @ _).
   apply (maponpaths (λ u, u*w)). simpl in IHm. apply IHm.
 Defined.
 
@@ -324,7 +317,7 @@ Proof.
   induction j as [j jlt].
   assert (jle := natlthsntoleh _ _ jlt).
   Local Open Scope transport.
-  set (f := nil □ j □ S O □ n-j : stn 3 → nat).
+  set (f := [j ; S O ; n - j]%fvector : stn 3 → nat).
   assert (B : stnsum f = S n).
   { unfold stnsum, f; simpl. repeat unfold append_vec; simpl. rewrite natplusassoc.
     rewrite (natpluscomm 1). rewrite <- natplusassoc.
@@ -348,7 +341,7 @@ Proof.
   set (s2 := @lastelement 2).
   unfold partition'. unfold inverse_lexicalEnumeration.
   change (f s0) with j; change (f s1) with (S O); change (f s2) with (n-j).
-  set (f' := nil □ j □ n-j : stn 2 → nat).
+  set (f' := [j ; n - j]%fvector : stn 2 → nat).
   assert (B' : stnsum f' = n).
   { unfold stnsum, f'; simpl. repeat unfold append_vec; simpl.
     rewrite natpluscomm. now apply minusplusnmm. }
@@ -387,7 +380,7 @@ Proof.
         { apply fromempty. exact (negnatlthplusnmn j i c). }
         { change_rhs (1 + (j + i)). rewrite <- natplusassoc. rewrite (natpluscomm j 1).
           reflexivity. } } }
-    unfold x'; simpl. apply maponpaths.
+    unfold x'; simpl. apply (maponpaths x).
     apply subtypePath_prop. change (j+0 = j). apply natplusr0. }
   { apply (maponpaths (λ k, k * _)). induction (!B').
     change_rhs (iterop_seq_mon (n,, x ∘ dni (j,, jlt))).

@@ -26,9 +26,8 @@ Require Import UniMath.CategoryTheory.DisplayedCats.Total.
 Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Colimits.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
-Require Import UniMath.Combinatorics.Vectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryCategory.
@@ -272,17 +271,18 @@ Proof.
         apply funextsec;
         intro u);
       [ refine (app_subst _ _ _ @ _);
-        apply (maponpaths (subst (_ (pr1 f u))));
-        apply extend_tuple_eq;
-        [ intro i;
-          now rewrite extend_tuple_inl
-        | now rewrite extend_tuple_inr ]
+        apply (maponpaths (subst (_ (pr1 f u))))
       | refine (!_ @ abs_subst _ _ _);
-        apply (maponpaths (λ x, abs (subst (pr1 f u) x)));
-        apply extend_tuple_eq;
+        apply (maponpaths (λ x, abs (subst (pr1 f u) x)))
+         ];
+      (apply funextfun;
+        refine (stn_sn_ind _ _);
         [ intro i;
-          now rewrite extend_tuple_inl
-        | now rewrite extend_tuple_inr ] ]
+          refine (append_vec_compute_1 _ _ _ @ !_);
+          exact (maponpaths (λ x, pr1 x u) (append_vec_compute_1 _ _ _))
+        | refine (append_vec_compute_2 _ _ @ !_);
+          exact (maponpaths (λ x, pr1 x u) (append_vec_compute_2 _ _)) ]
+      )
     ).
 Defined.
 

@@ -34,7 +34,7 @@ Require Import UniMath.CategoryTheory.Core.Setcategories.
 Require Import UniMath.CategoryTheory.Equivalences.Core.
 Require Import UniMath.CategoryTheory.IdempotentsAndSplitting.Retracts.
 Require Import UniMath.CategoryTheory.Monads.Monads.
-Require Import UniMath.Combinatorics.Tuples.
+Require Import UniMath.Combinatorics.FVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryToMonoid.
@@ -179,7 +179,7 @@ Section Monoid.
       rewrite subst_inflate.
       rewrite var_subst.
       apply (maponpaths (λ x, app (subst _ x) _)).
-      apply (proofirrelevancecontr (iscontr_empty_tuple _)).
+      apply nil_proofirrelevance.
     - now rewrite !appx_to_app,
         inflate_U_term,
         (app_U _ Lβ).

@@ -37,9 +37,11 @@ Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 Require Import UniMath.CategoryTheory.Limits.Products.
 Require Import UniMath.CategoryTheory.Limits.Terminal.
 Require Import UniMath.CategoryTheory.FunctorCategory.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
 Local Open Scope cat.
+Local Open Scope fvector.
 
 (** ** Definition of binary products *)
 Section binproduct_def.
@@ -1540,7 +1542,6 @@ Section ProductsFromBinProducts.
   Context {n : nat}.
   Context {c : C}.
   Context (P : Product (stn n) C (λ _, c)).
-  Let stnweq := (weqdnicoprod n lastelement).
 
   Definition sn_power_object
     : C
@@ -1550,11 +1551,10 @@ Section ProductsFromBinProducts.
     (i : stn (S n))
     : C ⟦ sn_power_object, c ⟧.
   Proof.
-    induction (invmap stnweq i) as [i' | i'].
-    - exact (
-        BinProductPr1 _ _ ·
-        ProductPr _ _ _ i'
-      ).
+    revert i.
+    refine (_ ::f _).
+    - intro i.
+      exact (BinProductPr1 _ _ · ProductPr _ _ _ i).
     - apply BinProductPr2.
   Defined.
 
@@ -1568,25 +1568,23 @@ Section ProductsFromBinProducts.
     Proof.
       use BinProductArrow.
       - apply ProductArrow.
-        intro i.
-        apply (cone' (stnweq (inl i))).
-      - apply (cone' (stnweq (inr tt))).
+        exact (init cone').
+      - apply (last cone').
     Defined.
 
     Lemma sn_power_arrow_commutes
       (i : stn (S n))
       : sn_power_arrow · sn_power_projection i = cone' i.
     Proof.
-      rewrite <- (homotweqinvweq stnweq i).
-      induction (invmap stnweq i) as [i' | i'].
-      - refine (maponpaths (λ x, _ · (_ x)) (homotinvweqweq stnweq (inl i')) @ _).
+      revert i.
+      refine (stn_sn_ind _ _).
+      - intro i.
+        refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
         refine (assoc _ _ _ @ _).
         refine (maponpaths (λ x, x · _) (BinProductPr1Commutes _ _ _ _ _ _ _) @ _).
         apply (ProductPrCommutes _ _ _ P).
-      - refine (maponpaths (λ x, _ · (_ x)) (homotinvweqweq stnweq (inr i')) @ _).
-        refine (BinProductPr2Commutes _ _ _ (BP P c) _ _ _ @ _).
-        apply maponpaths.
-        now apply stn_eq.
+      - refine (maponpaths _ (append_vec_compute_2 _ _) @ _).
+        exact (BinProductPr2Commutes _ _ _ (BP P c) _ _ _).
     Qed.
 
     Lemma sn_power_arrow_unique
@@ -1607,10 +1605,10 @@ Section ProductsFromBinProducts.
         refine (_ @ pr2 t _).
         refine (assoc' _ _ _ @ _).
         refine (maponpaths _ (!_)).
-        exact (maponpaths _ (homotinvweqweq _ _)).
+        exact (append_vec_compute_1 _ _ _).
       - refine (!_ @ pr2 t _).
         apply maponpaths.
-        exact (maponpaths _ (homotinvweqweq _ _)).
+        exact (append_vec_compute_2 _ _).
     Qed.
 
   End Arrow.

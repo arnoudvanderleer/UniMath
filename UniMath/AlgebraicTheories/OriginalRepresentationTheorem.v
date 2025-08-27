@@ -22,8 +22,8 @@ Require Import UniMath.CategoryTheory.Core.Prelude.
 Require Import UniMath.CategoryTheory.Exponentials.
 Require Import UniMath.CategoryTheory.Limits.BinProducts.
 Require Import UniMath.CategoryTheory.Limits.Products.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryCategory.
@@ -37,6 +37,7 @@ Require Import UniMath.AlgebraicTheories.ReflexiveObjects.
 Require Import Ltac2.Ltac2.
 
 Local Open Scope cat.
+Local Open Scope fvector.
 Local Open Scope algebraic_theories.
 Local Open Scope lambda_calculus.
 
@@ -75,12 +76,16 @@ Section EndomorphismTheory.
     : U (n := n) L Lβ ∘ n_π i = n_π i.
   Proof.
     induction m as [ | m IHm].
-    - apply fromempty.
-      apply negstn0.
+    - apply fromstn0.
       apply i.
-    - unfold n_π.
-      unfold nat_rect.
-      induction (invmap stnweq i) as [i' | i'];
+    - revert i.
+      refine '(stn_sn_ind _ _).
+      intro i.
+      + refine '(maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
+        refine '(append_vec_compute_1 _ _ _ @ !_).
+        apply (U_compose _ Lβ).
+      + refine '(maponpaths _ (append_vec_compute_2 _ _) @ !_).
+        refine '(append_vec_compute_2 _ _ @ !_).
         apply (U_compose _ Lβ).
   Qed.
 
@@ -147,7 +152,7 @@ Section EndomorphismTheory.
     refine '(maponpaths (λ x, (abs (app (app (((abs (_ ∘ x)) ∘ _) ∘ _) _) _))) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (app (((abs ((x ∘ _) ∘ _)) ∘ _) ∘ _) _) _))) (subst_inflate _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (app (((abs ((_ ∘ x) ∘ _)) ∘ _) ∘ _) _) _))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app (app (((abs ((_ ∘ x) ∘ _)) ∘ _) ∘ _) _) _))) (extend_tuple_inr _ _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app (app (((abs ((_ ∘ x) ∘ _)) ∘ _) ∘ _) _) _))) (append_vec_compute_2 _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (app (((abs ((x ∘ _) ∘ x)) ∘ _) ∘ _) _) _))) (subst_U_term _ _) @ _).
     refine '(maponpaths (λ x, abs (app x _)) (app_compose _ Lβ _ _ _) @ _).
     refine '(maponpaths (λ x, abs (app x _)) (app_compose _ Lβ _ _ _) @ _).
@@ -155,7 +160,7 @@ Section EndomorphismTheory.
     refine '(maponpaths (λ x, (abs (app x _))) (subst_compose _ _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app (x ∘ _) _))) (subst_compose _ _ _ _) @ _).
     refine '(maponpaths (λ x, (abs (app ((_ ∘ x) ∘ _) _))) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (abs (app ((_ ∘ x) ∘ _) _))) (extend_tuple_inr _ _ _) @ _).
+    refine '(maponpaths (λ x, (abs (app ((_ ∘ x) ∘ _) _))) (append_vec_compute_2 _ _) @ _).
     refine '(maponpaths (λ x, (abs (app ((x ∘ _) ∘ x) _))) (subst_U_term _ _) @ _).
     do 2 (refine '(maponpaths (λ x, (abs x)) (app_compose _ Lβ _ _ _) @ _)).
     refine '(maponpaths (λ x, (abs x)) (app_U _ Lβ _) @ _).
@@ -189,7 +194,7 @@ Section Isomorphism.
       (s • (λ i,
         app
         (n_π i)
-        (var (stnweq (inr tt))))).
+        (last var))).
 
   Lemma representation_theorem_iso_inv_is_mor
     {n : nat}
@@ -209,7 +214,7 @@ Section Isomorphism.
     refine '(subst_app _ _ _ _ @ _).
     refine '(maponpaths (λ x, (app x _)) (subst_n_π _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ x)) (extend_tuple_inr _ _ _) @ _).
+    refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 (init var) _) @ _).
     refine '(maponpaths (λ x, app _ (app (inflate x) _)) (R_power_object_is_n_tuple_arrow _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ (app x _))) (inflate_n_tuple_arrow _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (app_n_tuple_arrow _ Lβ _ _) @ _).
@@ -242,7 +247,7 @@ Section Isomorphism.
     refine '(_ @ !maponpaths (λ x, abs (app _ (app x _))) (inflate_n_tuple_arrow _ _)).
     refine '(_ @ !maponpaths (λ x, abs (app _ x)) (app_n_tuple_arrow _ Lβ _ _)).
     do 2 (refine '(maponpaths (λ x, abs (app (R_mor_to_L _ s • x) _))
-      (iscontr_uniqueness (iscontr_empty_tuple _) _) @ !_)).
+      (nil_proofirrelevance _ _ []) @ !_)).
     apply (maponpaths (λ x, abs (app (R_mor_to_L _ s • _) (n_tuple x)))).
     apply funextfun.
     intro i.
@@ -266,9 +271,9 @@ Section Isomorphism.
     refine '(subst_app _ _ _ _ @ _).
     refine '(maponpaths (λ x, (app x _)) (subst_n_π _ _ _) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ (x • _))) (extend_tuple_inr _ _ _) @ _).
+    refine '(maponpaths (λ x, (app _ (x • _))) (append_vec_compute_2 _ (last var)) @ _).
     refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ _).
-    refine '(maponpaths (λ x, (app _ x)) (extend_tuple_inr _ _ _) @ _).
+    refine '(maponpaths (λ x, (app _ x)) (append_vec_compute_2 _ _) @ _).
     apply n_π_tuple.
     exact Lβ.
   Qed.
@@ -300,7 +305,7 @@ Section Isomorphism.
     refine '(_ @ !maponpaths (λ x, (app x _)) (subst_subst _ _ _ _)).
     refine '(_ @ !maponpaths (λ x, (app _ x)) (subst_n_tuple _ _ _)).
     refine '(_ @ maponpaths (λ x, app (L := L) ((R_mor_to_L _ f) • x) _)
-      (!iscontr_uniqueness (iscontr_empty_tuple _) _)).
+      (nil_proofirrelevance _ [] _)).
     apply (maponpaths (λ x, app ((R_mor_to_L _ f) • _) (n_tuple x))).
     apply funextfun.
     intro i.
@@ -317,7 +322,7 @@ Section Isomorphism.
     refine '(app_curry _ Lβ _ _ @ _).
     refine '(maponpaths (λ x, (abs (app x _))) (inflate_subst _ _ _) @ _).
     refine '(maponpaths (λ x, abs (app ((R_mor_to_L _ f) • x) _))
-      (iscontr_uniqueness (iscontr_empty_tuple _) _) @ _).
+      (nil_proofirrelevance _ _ []) @ _).
     refine '(maponpaths (λ x, abs (app (R_mor_to_L _ f • _) ⟨x, _⟩)) (inflate_n_tuple _ _) @ _).
     apply (maponpaths (λ x, abs (app (R_mor_to_L _ f • _) ⟨n_tuple x, _⟩))).
     apply funextfun.
@@ -336,8 +341,8 @@ Section Isomorphism.
     refine '(_ @ !appx_to_app _).
     refine '(_ @ !maponpaths (λ x, (app x _)) (inflate_app _ _ _)).
     refine '(_ @ !maponpaths (λ x, (app (app x _) _)) (inflate_subst _ _ _)).
-    refine '(_ @ !maponpaths (λ x, app (app (R_mor_to_L _ f • x) _) _)
-      (iscontr_uniqueness (iscontr_empty_tuple _) _)).
+    refine '(_ @ maponpaths (λ x, app (app (R_mor_to_L _ f • x) _) _)
+      (nil_proofirrelevance _ [] _)).
     refine '(_ @ !maponpaths (λ x, app (app (R_mor_to_L _ f • _) x) _) (inflate_n_tuple _ _)).
     apply (maponpaths (λ x, app (app (R_mor_to_L _ f • _) (n_tuple x)) _)).
     apply funextfun.

@@ -24,11 +24,29 @@
  **************************************************************************************************)
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
 
-Require Import UniMath.Combinatorics.Tuples.
+Local Open Scope fvector.
 
 (** * 1. The data of the λ-calculus *)
+
+Local Definition append_dep
+  {n : nat}
+  {X : UU}
+  {Y : X → UU}
+  {xs : stn n → X}
+  {x : X}
+  (ys : ∏ i, Y (xs i))
+  (y : Y x)
+  : ∏ i, Y ((xs ::f x) i).
+Proof.
+  intro i.
+  unfold append_vec.
+  induction (natlehchoice (pr1 i) n (pr2 i)).
+  - exact (ys (pr1 i ,, a)).
+  - exact y.
+Defined.
 
 Definition lambda_calculus_data : UU := ∑
   (L : nat → hSet)
@@ -36,17 +54,17 @@ Definition lambda_calculus_data : UU := ∑
   (app : ∏ n, L n → L n → L n)
   (abs : ∏ n, L (S n) → L n)
   (subst : ∏ m n, L m → (stn m → L n) → L n)
-  (inflate := (λ _ l, subst _ _ l (λ i, (var _ (stnweq (inl i))))) : ∏ n, L n → L (S n))
+  (inflate := (λ _ l, subst _ _ l (init (var _))) : ∏ n, L n → L (S n))
   (var_subst : ∏ m n i (f : stn m → L n), subst _ _ (var _ i) f = f i)
   (subst_app : ∏ m n l l' (f : stn m → L n),
     subst _ _ (app _ l l') f = app _ (subst _ _ l f) (subst _ _ l' f))
   (subst_abs : ∏ m n l (f : stn m → L n),
     subst _ _ (abs _ l) f
-    = abs _ (subst _ _ l (extend_tuple (λ i, inflate _ (f i)) (var _ (stnweq (inr tt))))))
+    = abs _ (subst _ _ l ((λ i, inflate _ (f i)) ::f (last (var _)))))
   (subst_subst : ∏ l m n t (g : stn l → L m) (f : stn m → L n),
     subst _ _ (subst _ _ t g) f = subst _ _ t (λ i, subst _ _ (g i) f))
   (beta : ∏ n (f : L (S n)) g,
-    app _ (abs _ f) g = subst _ _ f (extend_tuple (var _) g)),
+    app _ (abs _ f) g = subst _ _ f (var _ ::f g)),
   (∏
     (A : ∏ n l,
       hSet)
@@ -58,7 +76,7 @@ Definition lambda_calculus_data : UU := ∑
       A _ l → A _ (abs n l))
     (f_subst : ∏ m n l f,
       A _ l → (∏ i, A _ (f i)) → A _ (subst m n l f))
-    (f_inflate := (λ n _ al, f_subst _ _ _ _ al (λ i, (f_var _ (stnweq (inl i)))))
+    (f_inflate := (λ n _ al, f_subst _ _ _ _ al (f_var _ ∘ dni lastelement))
       : ∏ n (l : L n), A n l → A (S n) (inflate _ l))
     (f_var_subst : ∏ m n i f af,
       PathOver (Y := A n) (var_subst m n i f) (f_subst _ _ _ _ (f_var _ i) af) (af i))
@@ -75,7 +93,7 @@ Definition lambda_calculus_data : UU := ∑
       (f_subst _ _ _ _ (f_abs _ _ al) af)
       (f_abs _ _ (f_subst _ _ _ _
         al
-        (extend_tuple_dep (A := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ (stnweq (inr tt)))))))
+        (append_dep (Y := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ lastelement)))))
     (f_subst_subst : ∏ l m n t a g ag f af,
       PathOver
       (Y := A n)
@@ -87,7 +105,7 @@ Definition lambda_calculus_data : UU := ∑
         (Y := A n)
         (beta n f g)
         (f_app _ _ _ (f_abs _ _ af) ag)
-        (f_subst _ _ _ _ af (extend_tuple_dep (A := A n) (f_var _) ag)))
+        (f_subst _ _ _ _ af (append_dep (Y := A n) (f_var _) ag)))
     , (∏ n l, A n l)
   ).
 
@@ -107,7 +125,7 @@ Notation "(λ' n , x )" := (@abs _ n x).
 
 Definition inflate {L : lambda_calculus_data} {n} (l : L n)
   : L (S n)
-  := subst l (λ i, (var (stnweq (inl i)))).
+  := subst l (init var).
 Definition var_subst {L : lambda_calculus_data} {m n} i (f : stn m → L n)
   : subst (var i) f = f i
   := pr122 (pr222 L) m n i f.
@@ -115,13 +133,13 @@ Definition subst_app {L : lambda_calculus_data} {m n} l l' (f : stn m → L n)
   : subst (app l l') f = app (subst l f) (subst l' f)
   := pr1 (pr222 (pr222 L)) m n l l' f.
 Definition subst_abs {L : lambda_calculus_data} {m n} l (f : stn m → L n)
-  : subst (abs l) f = abs (subst l (extend_tuple (λ i, inflate (f i)) (var (stnweq (inr tt)))))
+  : subst (abs l) f = abs (subst l ((λ i, inflate (f i)) ::f (last var)))
   := pr12 (pr222 (pr222 L)) m n l f.
 Definition subst_subst {L : lambda_calculus_data} {l m n} t (g : stn l → L m) (f : stn m → L n)
   : subst (subst t g) f = subst t (λ i, subst (g i) f)
   := pr122 (pr222 (pr222 L)) l m n t g f.
 Definition beta_equality {L : lambda_calculus_data} {n} (f : L (S n)) g
-  : app (abs f) g = subst f (extend_tuple var g)
+  : app (abs f) g = subst f (var ::f g)
   := pr1 (pr222 (pr222 (pr222 L))) n f g.
 
 Definition lambda_calculus_ind
@@ -136,7 +154,7 @@ Definition lambda_calculus_ind
     A _ l → A n (abs l))
   (f_subst : ∏ m n l f,
     A m l → (∏ i, A _ (f i)) → A n (subst l f))
-  (f_inflate := (λ n _ al, f_subst _ _ _ _ al (λ i, (f_var _ (stnweq (inl i))))) : ∏ n (l : L n),
+  (f_inflate := (λ n _ al, f_subst _ _ _ _ al (f_var _ ∘ dni lastelement)) : ∏ n (l : L n),
     A n l → A (S n) (inflate l))
   (f_paths :
     (∏ m n i f af,
@@ -154,7 +172,7 @@ Definition lambda_calculus_ind
         (f_subst _ _ _ _ (f_abs m _ al) af)
         (f_abs _ _ (f_subst _ _ _ _
           al
-          (extend_tuple_dep (A := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ (stnweq (inr tt))))))) ×
+          (append_dep (Y := A (S n)) (λ i, f_inflate _ _ (af i)) (f_var _ lastelement))))) ×
     (∏ l m n t a g ag f af,
       PathOver
         (Y := A n)
@@ -166,7 +184,7 @@ Definition lambda_calculus_ind
         (Y := A n)
         (beta_equality f g)
         (f_app _ _ _ (f_abs _ _ af) ag)
-        (f_subst _ _ _ _ af (extend_tuple_dep (A := A n) (f_var _) ag)))
+        (f_subst _ _ _ _ af (append_dep (Y := A n) (f_var _) ag)))
   )
   : (∏ n l, A n l)
   := pr2 (pr222 (pr222 (pr222 L)))
@@ -190,7 +208,7 @@ Definition lambda_calculus_rect
   (f_app : ∏ n, A n → A n → A n)
   (f_abs : ∏ n, A (S n) → A n)
   (f_subst : ∏ m n, A m → (stn m → A n) → A n)
-  (f_inflate := (λ n a, f_subst _ _ a (λ i, (f_var _ (stnweq (inl i))))) : ∏ n, A n → A (S n))
+  (f_inflate := (λ n a, f_subst _ _ a (init (f_var _))) : ∏ n, A n → A (S n))
   (f_paths :
     (∏ m n i af,
       (f_subst m n (f_var m i) af) = (af i)) ×
@@ -198,11 +216,11 @@ Definition lambda_calculus_rect
       (f_subst m n (f_app _ al al') af) = (f_app _ (f_subst _ _ al af) (f_subst _ _ al' af))) ×
     (∏ m n al af,
       (f_subst m n (f_abs m al) af)
-      = (f_abs _ (f_subst _ _ al (extend_tuple (λ i, f_inflate _ (af i)) (f_var _ (stnweq (inr tt))))))) ×
+      = (f_abs _ (f_subst _ _ al ((λ i, f_inflate _ (af i)) ::f (last (f_var _)))))) ×
     (∏ l m n a ag af,
       (f_subst m n (f_subst l m a ag) af) = (f_subst _ _ a (λ i, f_subst _ _ (ag i) af))) ×
     (∏ n af ag,
-      (f_app n (f_abs _ af) ag) = (f_subst _ _ af (extend_tuple (f_var _) ag)))
+      (f_app n (f_abs _ af) ag) = (f_subst _ _ af (f_var _ ::f ag)))
   )
   : (∏ n, L n → A n).
 Proof.
@@ -214,18 +232,8 @@ Proof.
   - repeat split;
       simpl;
       intros;
-      refine (PathOverConstant_map1 _ _).
-    + apply f_paths.
-    + apply f_paths.
-    + refine (pr122 f_paths _ _ _ _ @ _).
-      do 2 apply maponpaths.
-      symmetry.
-      apply extend_tuple_dep_const.
-    + apply f_paths.
-    + refine ((pr2 (pr222 f_paths)) _ _ _ @ _).
-      apply maponpaths.
-      symmetry.
-      apply extend_tuple_dep_const.
+      refine (PathOverConstant_map1 _ _);
+      apply f_paths.
 Defined.
 
 Definition lambda_calculus_ind_prop
@@ -255,18 +263,18 @@ Proof.
 Defined.
 
 Lemma subst_inflate {L : lambda_calculus_data} {m n} (l : L m) (f : stn (S m) → L n)
-  : subst (inflate l) f = subst l (λ i, f (stnweq (inl i))).
+  : subst (inflate l) f = subst l (init f).
 Proof.
   unfold inflate.
   rewrite subst_subst.
   apply maponpaths.
   apply funextfun.
   intro i.
-  now rewrite var_subst.
+  exact (var_subst _ _).
 Qed.
 
 Definition inflate_var {L : lambda_calculus_data} {n} (i : stn n)
-  : inflate (L := L) (var i) = var (stnweq (inl i))
+  : inflate (L := L) (var i) = init var i
   := var_subst i _.
 
 Definition inflate_app {L : lambda_calculus_data} {n} (l l' : L n)
@@ -275,15 +283,14 @@ Definition inflate_app {L : lambda_calculus_data} {n} (l l' : L n)
 
 Definition inflate_abs {L : lambda_calculus_data} {n} (l : L (S n))
   : inflate (abs l)
-  = abs (subst l (extend_tuple (λ i, inflate (inflate (var i))) (var (stnweq (inr tt))))).
+  = abs (subst l ((λ i, inflate (inflate (var i))) ::f (last var))).
 Proof.
-  unfold inflate.
   refine (subst_abs l _ @ _).
   do 2 apply maponpaths.
   apply (maponpaths (λ x, _ x _)).
   apply funextfun.
   intro.
-  now rewrite inflate_var, var_subst, var_subst.
+  exact (!maponpaths _ (inflate_var _)).
 Qed.
 
 Definition inflate_subst {L : lambda_calculus_data} {m n} (l : L m) (f : stn m → L n)
@@ -409,10 +416,12 @@ Proof.
     apply maponpaths.
     refine (_ @ H).
     apply maponpaths.
-    apply extend_tuple_eq.
-    + intro.
+    apply funextfun.
+    refine (stn_sn_ind _ _).
+    + intro i.
+      refine (append_vec_compute_1 _ _ _ @ _).
       apply inflate_var.
-    + apply idpath.
+    + exact (append_vec_compute_2 _ _).
   - intros ? ? ? ? ? H.
     rewrite subst_subst.
     apply maponpaths.

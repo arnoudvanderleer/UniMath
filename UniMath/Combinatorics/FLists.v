@@ -58,7 +58,7 @@ Proof. intros x y. exact (S _,, pr2 x ::f y)%fvector.
 Defined.
 
 Infix "::f" := append (at level 58, left associativity) : flist_scope.
-Notation "[ x ; .. ; y ]" := (x ::f .. (y ::f []) ..): flist_scope.
+Notation "[ x ; .. ; y ]" := (.. ([] ::f x) .. ::f y): fvector_scope.
 
 (** ** 1.2. Accessors *)
 
@@ -469,7 +469,7 @@ Proof.
   apply funextfun; intro i.
   unfold reverse, dualelement, coprod_rect. cbn.
   induction (natchoice0 n) as [H | H].
-  + apply fromempty. rewrite <- H in i. now apply negstn0.
+  + apply fromempty. rewrite <- H in i. now apply fromstn0.
   + cbn. apply maponpaths. apply isinjstntonat. apply minusminusmmn. apply natgthtogehm1. apply stnlt.
 Qed.
 

@@ -27,14 +27,14 @@ Require Import UniMath.CategoryTheory.DisplayedCats.Univalence.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Colimits.
 Require Import UniMath.CategoryTheory.Limits.Graphs.Limits.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Vectors.
+Require Import UniMath.Combinatorics.FVectors.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryCategoryCore.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryMorphisms.
-Require Import UniMath.Combinatorics.Tuples.
 
 Local Open Scope cat.
+Local Open Scope fvector.
 Local Open Scope algebraic_theories.
 
 Section LambdaTheoryCategory.
@@ -165,7 +165,7 @@ Section LambdaTheoryCategory.
     : mor_abs_ax (data_mor F) n f
     := pr22 F n f.
 
-(** ** 1.2. The category of λtheories *)
+(** ** 1.2. The category of λ-theories *)
 
   Local Definition extended_composition
     {T : algebraic_theory_data}
@@ -173,7 +173,7 @@ Section LambdaTheoryCategory.
     (f : T (S m))
     (g : stn m → T n)
     : T (S n)
-    := f • (extend_tuple (λ i, (g i) • (λ i, var (stnweq (inl i)))) (var (stnweq (inr tt)))).
+    := f • ((λ i, inflate (g i)) ::f (last var)).
 
   Local Definition app_subst_ax
     (L : lambda_theory_data_cat)

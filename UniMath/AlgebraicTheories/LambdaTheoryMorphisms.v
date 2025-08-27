@@ -15,8 +15,8 @@
 Require Import UniMath.Foundations.All.
 Require Import UniMath.MoreFoundations.All.
 Require Import UniMath.CategoryTheory.Core.Categories.
+Require Import UniMath.Combinatorics.FVectors.
 Require Import UniMath.Combinatorics.StandardFiniteSets.
-Require Import UniMath.Combinatorics.Tuples.
 
 Require Import UniMath.AlgebraicTheories.AlgebraicTheories.
 Require Import UniMath.AlgebraicTheories.AlgebraicTheoryMorphisms.
@@ -104,11 +104,14 @@ Proof.
   refine (maponpaths (λ x, x • _) (mor_appx _ _) @ _).
   apply (maponpaths (λ x, appx _ • x)).
   apply funextfun.
-  intro i.
-  unfold extend_tuple.
-  induction (invmap stnweq i).
-  - apply mor_var.
-  - reflexivity.
+  refine (stn_sn_ind _ _).
+  + intro i.
+    refine (maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
+    refine (append_vec_compute_1 _ _ _ @ !_).
+    apply mor_var.
+  + refine (maponpaths _ (append_vec_compute_2 _ _) @ !_).
+    refine (append_vec_compute_2 _ _ @ !_).
+    reflexivity.
 Qed.
 
 Lemma lambda_theory_morphism_eq
@@ -192,15 +195,18 @@ Section MakeIsLambdaTheoryMorphism'.
       refine (mor_subst _ _ _ @ _).
       refine (maponpaths (λ x, x • _) H1 @ _).
       apply (maponpaths (subst _)).
-      refine (!extend_tuple_eq _ _).
+      apply funextfun.
+      refine (stn_sn_ind _ _).
       + intro i.
-        refine (!_ @ !maponpaths (λ x, _ x) (extend_tuple_inl _ _ _)).
+        refine (maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
+        refine (append_vec_compute_1 _ _ _ @ !_).
         refine (mor_subst _ _ _ @ _).
         apply (maponpaths (subst _)).
         apply funextfun.
         intro i'.
         apply mor_var.
-      + exact (!mor_var _ _).
+      + refine (maponpaths _ (append_vec_compute_2 _ _) @ _).
+        exact (mor_var _ _).
     - intros n t.
       induction (abs_from_one _ H t (abs t) (idpath _)) as [H3 H4].
       refine (!invmap (abs_from_one _ H' _ _) _).
@@ -209,28 +215,35 @@ Section MakeIsLambdaTheoryMorphism'.
         refine (mor_subst _ _ _ @ _).
         refine (maponpaths (λ x, x • _) H1 @ !_).
         apply maponpaths.
-        apply extend_tuple_eq.
+        apply funextfun.
+        refine (stn_sn_ind _ _).
         * intro i.
-          refine (!_ @ !maponpaths (λ x, _ x) (extend_tuple_inl _ _ _)).
+          refine (append_vec_compute_1 _ _ _ @ !_).
+          refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
           refine (mor_subst _ _ _ @ _).
           refine (maponpaths (λ x, x • _) H2 @ _).
           apply (maponpaths (subst _)).
-          apply proofirrelevancecontr.
-          apply iscontr_empty_tuple.
-        * exact (!maponpaths (λ x, _ x) (extend_tuple_inr _ _ _)).
+          apply nil_proofirrelevance.
+        * refine (append_vec_compute_2 [lift_constant n (one L')] _ @ !_).
+          apply maponpaths.
+          apply append_vec_compute_2.
       + refine (!_ @ maponpaths _ H4).
         refine (mor_subst _ _ _ @ _).
         refine (maponpaths (λ x, x • _) H1 @ !_).
         apply (maponpaths (subst _)).
-        apply extend_tuple_eq.
+        apply funextfun.
+        refine (stn_sn_ind _ _).
         * intro i.
-          refine (!_ @ !maponpaths (λ x, _ x) (extend_tuple_inl _ _ _)).
+          refine (append_vec_compute_1 _ _ _ @ !_).
+          refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
           refine (mor_subst _ _ _ @ _).
           apply (maponpaths (subst _)).
           apply funextfun.
           intro i'.
           apply mor_var.
-        * exact (!mor_var _ _).
+        * refine (append_vec_compute_2 [inflate (F n (abs t))] _ @ !_).
+          refine (maponpaths _ (append_vec_compute_2 _ _) @ _).
+          apply mor_var.
   Qed.
 
 End MakeIsLambdaTheoryMorphism'.
