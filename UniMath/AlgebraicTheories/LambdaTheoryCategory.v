@@ -275,13 +275,10 @@ Proof.
       | refine (!_ @ abs_subst _ _ _);
         apply (maponpaths (λ x, abs (subst (pr1 f u) x)))
          ];
-      (apply funextfun;
-        refine (stn_sn_ind _ _);
+      (refine (!append_vec_eq' _ _);
         [ intro i;
-          refine (append_vec_compute_1 _ _ _ @ !_);
           exact (maponpaths (λ x, pr1 x u) (append_vec_compute_1 _ _ _))
-        | refine (append_vec_compute_2 _ _ @ !_);
-          exact (maponpaths (λ x, pr1 x u) (append_vec_compute_2 _ _)) ]
+        | exact (maponpaths (λ x, pr1 x u) (append_vec_compute_2 _ (last _)%fvector)) ]
       )
     ).
 Defined.

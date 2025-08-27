@@ -48,12 +48,10 @@ Proof.
   - intros l m n x f g.
     refine (op_op P x _ _ @ _).
     apply (maponpaths (op (x : P _))).
-    apply funextfun.
-    refine (stn_sn_ind _ _).
+    refine (append_vec_eq' _ _).
     + intro i.
       refine (maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
       refine (subst_subst T (f i) _ _ @ !_).
-      refine (append_vec_compute_1 _ _ _ @ _).
       refine (subst_subst T (f i) g _ @ !_).
       apply maponpaths.
       apply funextfun.
@@ -62,16 +60,13 @@ Proof.
       exact (append_vec_compute_1 _ _ _).
     + refine (maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
       refine (var_subst _ _ _ @ _).
-      now do 2 refine (append_vec_compute_2 _ _ @ !_).
+      apply append_vec_compute_2.
   - intros n x.
     refine (_ @ op_var _ _).
     apply (maponpaths (op (x : P _))).
-    apply funextfun.
-    refine (stn_sn_ind _ _).
-    + intro i.
-      refine (append_vec_compute_1 _ _ _ @ _).
-      apply inflate_var.
-    + apply append_vec_compute_2.
+    apply append_vec_eq.
+    + apply inflate_var.
+    + reflexivity.
 Qed.
 
 Definition plus_1_presheaf

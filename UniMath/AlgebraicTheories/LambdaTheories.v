@@ -307,16 +307,13 @@ Section AppAbs.
     refine (maponpaths (λ x, x • _) (app_from_app' (one L)) @ _).
     refine (subst_subst _ (app' L) _ _ @ _).
     apply maponpaths.
-    apply funextfun.
-    refine (stn_sn_ind _ _).
+    apply append_vec_eq'.
     - intro i.
-      refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ !_).
-      refine (append_vec_compute_1 _ _ _ @ !_).
+      refine (maponpaths (λ x, x • _) (append_vec_compute_1 _ _ _) @ _).
       refine (subst_subst _ (one L) _ _ @ _).
       apply (maponpaths (subst _)).
       apply nil_proofirrelevance.
-    - refine (maponpaths (λ x, x • _) (append_vec_compute_2 (n := 2) (λ _, inflate (one L)) _) @ !_).
-      refine (append_vec_compute_2 (n := 1) (λ _, lift_constant n (one L)) _ @ !_).
+    - refine (maponpaths (λ x, x • _) (append_vec_compute_2 (n := 2) (λ _, inflate (one L)) _) @ _).
       apply var_subst.
   Qed.
 

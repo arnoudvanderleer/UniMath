@@ -165,14 +165,13 @@ Section EndomorphismTheory.
       intro i.
       refine (pow_commutes _ _ _ _ @ !_).
       revert i.
-      refine (stn_sn_ind _ _).
+      refine (append_vec_eq_i' _ _).
       + intro i.
         refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
         refine (assoc _ _ _ @ _).
         refine (maponpaths (λ x, x · _) (bp_commutes_1 _ _ _ _) @ _).
         refine (assoc' _ _ _ @ _).
         refine (maponpaths (λ x, _ · x) (pow_commutes _ _ _ _) @ !_).
-        refine (append_vec_compute_1 _ _ _ @ _).
         apply (maponpaths (λ x, x · _)).
         apply ProductArrow_eq.
         intro j.
@@ -181,7 +180,7 @@ Section EndomorphismTheory.
       + refine (maponpaths _ (append_vec_compute_2 _ _) @ _).
         refine (bp_commutes_2 _ _ _ _ @ _).
         refine (id_right _ @ !_).
-        now do 2 refine (append_vec_compute_2 _ _ @ _).
+        apply append_vec_compute_2.
   Qed.
 
   Definition endomorphism_lambda_theory

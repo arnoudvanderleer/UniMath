@@ -79,13 +79,11 @@ Section EndomorphismTheory.
     - apply fromstn0.
       apply i.
     - revert i.
-      refine '(stn_sn_ind _ _).
-      intro i.
-      + refine '(maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
-        refine '(append_vec_compute_1 _ _ _ @ !_).
+      apply append_vec_eq_i'.
+      + intro i.
+        refine '(maponpaths _ (append_vec_compute_1 _ _ _) @ _).
         apply (U_compose _ Lβ).
-      + refine '(maponpaths _ (append_vec_compute_2 _ _) @ !_).
-        refine '(append_vec_compute_2 _ _ @ !_).
+      + refine '(maponpaths _ (append_vec_compute_2 _ _) @ _).
         apply (U_compose _ Lβ).
   Qed.
 

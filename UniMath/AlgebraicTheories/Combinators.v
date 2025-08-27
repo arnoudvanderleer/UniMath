@@ -360,15 +360,12 @@ Proof.
   refine '(maponpaths (λ x, (abs x)) (beta_equality _ Lβ _ _) @ _).
   refine '(maponpaths (λ x, (abs x)) (subst_subst _ _ _ _) @ _).
   refine '(maponpaths (λ x, _ (_ • x)) (!_)).
-  apply funextfun.
-  refine '(stn_sn_ind _ _).
+  apply append_vec_eq.
   - intro i.
-    refine '(append_vec_compute_1 _ _ _ @ !_).
-    refine '(maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _) @ _).
+    refine '(!_ @ !maponpaths (λ x, (x • _)) (append_vec_compute_1 _ _ _)).
     refine '(var_subst _ _ _ @ _).
     exact (append_vec_compute_1 _ _ _).
-  - refine '(append_vec_compute_2 _ _ @ !_).
-    refine '(maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _) @ _).
+  - refine '(!_ @ !maponpaths (λ x, (x • _)) (append_vec_compute_2 _ _)).
     refine '(var_subst _ _ _ @ _).
     exact (append_vec_compute_2 _ _).
 Qed.
@@ -2005,16 +2002,14 @@ Proof.
   - apply fromstn0.
     apply i.
   - revert i.
-    refine '(stn_sn_ind _ _).
+    refine '(append_vec_eq_i' _ _).
     + intro i.
-      refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ !_).
-      refine '(append_vec_compute_1 _ _ _ @ !_).
+      refine '(maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
       refine '(subst_compose _ _ _ _ @ _).
       refine '(maponpaths (λ x, _ ∘ x) (subst_π1 _ _) @ _).
       apply (maponpaths (λ x, x ∘ _)).
       apply IHl.
-    + refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ !_).
-      refine '(append_vec_compute_2 _ _ @ !_).
+    + refine '(maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
       apply subst_π2.
 Qed.
 

@@ -60,11 +60,9 @@ Proof.
       do 3 rewrite subst_abs.
       rewrite Hl.
       do 2 apply maponpaths.
-      apply funextfun.
-      refine (stn_sn_ind _ _).
-      * intro.
-        refine (maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ !_).
-        refine (append_vec_compute_1 _ _ _ @ !_).
+      refine (append_vec_eq' _ _).
+      * intro i.
+        refine (maponpaths_2 _ (append_vec_compute_1 _ _ _) _ @ _).
         rewrite inflate_subst.
         unfold inflate.
         rewrite subst_subst.
@@ -73,8 +71,7 @@ Proof.
         intro.
         refine (var_subst _ _ @ _).
         exact (append_vec_compute_1 _ _ _).
-      * refine (maponpaths_2 _ (append_vec_compute_2 _ _) _ @ !_).
-        refine (append_vec_compute_2 _ _ @ !_).
+      * refine (maponpaths_2 _ (append_vec_compute_2 _ _) _ @ _).
         refine (var_subst _ _ @ _).
         exact (append_vec_compute_2 _ _).
     + intros m n l f Hl Hf m' f_m' n' f_n'.
@@ -97,12 +94,10 @@ Proof.
       apply maponpaths.
       refine (_ @ Hl).
       apply maponpaths.
-      apply funextfun.
-      refine (stn_sn_ind _ _).
-      * intro.
-        refine (append_vec_compute_1 _ _ _ @ _).
+      apply append_vec_eq.
+      * intro i.
         apply inflate_var.
-      * exact (append_vec_compute_2 _ _).
+      * reflexivity.
     + intros ? ? ? ? Hl Hf.
       rewrite subst_subst.
       apply maponpaths.

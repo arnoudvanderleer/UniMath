@@ -416,12 +416,9 @@ Proof.
     apply maponpaths.
     refine (_ @ H).
     apply maponpaths.
-    apply funextfun.
-    refine (stn_sn_ind _ _).
-    + intro i.
-      refine (append_vec_compute_1 _ _ _ @ _).
-      apply inflate_var.
-    + exact (append_vec_compute_2 _ _).
+    apply append_vec_eq.
+    + apply inflate_var.
+    + reflexivity.
   - intros ? ? ? ? ? H.
     rewrite subst_subst.
     apply maponpaths.

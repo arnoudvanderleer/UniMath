@@ -95,17 +95,77 @@ Proof.
   exact (maponpaths (coprod_rect _ _ _) (natlehchoice_eq _ (idpath _))).
 Defined.
 
+Lemma append_vec_eq_i
+  {X : UU}
+  {n : nat}
+  {xs : Vector X n}
+  {x : X}
+  {ys : Vector X (S n)}
+  (Hinit : ∏ i, xs i = init ys i)
+  (Hlast : x = last ys)
+  (i : stn (S n))
+  : (xs ::f x) i = ys i.
+Proof.
+  revert i.
+  refine (stn_sn_ind _ _).
+  - intro i.
+    exact (append_vec_compute_1 _ _ i @ Hinit i).
+  - exact (append_vec_compute_2 _ _ @ Hlast).
+Qed.
+
+Lemma append_vec_eq_i'
+  {X : UU}
+  {n : nat}
+  {xs : Vector X (S n)}
+  {ys : Vector X n}
+  {y : X}
+  (Hinit : ∏ i, init xs i = ys i)
+  (Hlast : last xs = y)
+  (i : stn (S n))
+  : xs i = (ys ::f y) i.
+Proof.
+  refine (!append_vec_eq_i _ _ _).
+  - intro j.
+    exact (!Hinit j).
+  - exact (!Hlast).
+Qed.
+
+Lemma append_vec_eq
+  {X : UU}
+  {n : nat}
+  {xs : Vector X n}
+  {x : X}
+  {ys : Vector X (S n)}
+  (Hinit : ∏ i, xs i = init ys i)
+  (Hlast : x = last ys)
+  : xs ::f x = ys.
+Proof.
+  apply funextfun.
+  exact (append_vec_eq_i Hinit Hlast).
+Qed.
+
+Lemma append_vec_eq'
+  {X : UU}
+  {n : nat}
+  {xs : Vector X (S n)}
+  {ys : Vector X n}
+  {y : X}
+  (Hinit : ∏ i, init xs i = ys i)
+  (Hlast : last xs = y)
+  : xs = ys ::f y.
+Proof.
+  apply funextfun.
+  exact (append_vec_eq_i' Hinit Hlast).
+Qed.
+
 Lemma drop_and_append_vec
   {X : UU}
   {n : nat}
   (vecsn : Vector X (S n))
   : (init vecsn) ::f (last vecsn) = vecsn.
 Proof.
-  intros.
-  apply funextfun.
-  refine (stn_sn_ind _ _).
-  - exact (append_vec_compute_1 _ _).
-  - exact (append_vec_compute_2 _ _).
+  apply append_vec_eq;
+    reflexivity.
 Defined.
 
 (** * 2. Equality lemmas *)

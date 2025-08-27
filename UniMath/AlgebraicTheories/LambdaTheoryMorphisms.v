@@ -103,15 +103,11 @@ Proof.
   refine (mor_subst _ _ _ @ _).
   refine (maponpaths (λ x, x • _) (mor_appx _ _) @ _).
   apply (maponpaths (λ x, appx _ • x)).
-  apply funextfun.
-  refine (stn_sn_ind _ _).
+  apply append_vec_eq'.
   + intro i.
-    refine (maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
-    refine (append_vec_compute_1 _ _ _ @ !_).
+    refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
     apply mor_var.
-  + refine (maponpaths _ (append_vec_compute_2 _ _) @ !_).
-    refine (append_vec_compute_2 _ _ @ !_).
-    reflexivity.
+  + exact (maponpaths _ (append_vec_compute_2 _ _)).
 Qed.
 
 Lemma lambda_theory_morphism_eq
@@ -195,11 +191,9 @@ Section MakeIsLambdaTheoryMorphism'.
       refine (mor_subst _ _ _ @ _).
       refine (maponpaths (λ x, x • _) H1 @ _).
       apply (maponpaths (subst _)).
-      apply funextfun.
-      refine (stn_sn_ind _ _).
+      apply append_vec_eq'.
       + intro i.
-        refine (maponpaths _ (append_vec_compute_1 _ _ _) @ !_).
-        refine (append_vec_compute_1 _ _ _ @ !_).
+        refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
         refine (mor_subst _ _ _ @ _).
         apply (maponpaths (subst _)).
         apply funextfun.
@@ -215,34 +209,27 @@ Section MakeIsLambdaTheoryMorphism'.
         refine (mor_subst _ _ _ @ _).
         refine (maponpaths (λ x, x • _) H1 @ !_).
         apply maponpaths.
-        apply funextfun.
-        refine (stn_sn_ind _ _).
+        apply append_vec_eq.
         * intro i.
-          refine (append_vec_compute_1 _ _ _ @ !_).
-          refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
+          refine (!_ @ !maponpaths _ (append_vec_compute_1 _ _ _)).
           refine (mor_subst _ _ _ @ _).
           refine (maponpaths (λ x, x • _) H2 @ _).
           apply (maponpaths (subst _)).
           apply nil_proofirrelevance.
-        * refine (append_vec_compute_2 [lift_constant n (one L')] _ @ !_).
-          apply maponpaths.
-          apply append_vec_compute_2.
+        * exact (!maponpaths _ (append_vec_compute_2 _ _)).
       + refine (!_ @ maponpaths _ H4).
         refine (mor_subst _ _ _ @ _).
         refine (maponpaths (λ x, x • _) H1 @ !_).
         apply (maponpaths (subst _)).
-        apply funextfun.
-        refine (stn_sn_ind _ _).
+        apply append_vec_eq.
         * intro i.
-          refine (append_vec_compute_1 _ _ _ @ !_).
-          refine (maponpaths _ (append_vec_compute_1 _ _ _) @ _).
+          refine (!_ @ !maponpaths _ (append_vec_compute_1 _ _ _)).
           refine (mor_subst _ _ _ @ _).
           apply (maponpaths (subst _)).
           apply funextfun.
           intro i'.
           apply mor_var.
-        * refine (append_vec_compute_2 [inflate (F n (abs t))] _ @ !_).
-          refine (maponpaths _ (append_vec_compute_2 _ _) @ _).
+        * refine (!_ @ !maponpaths _ (append_vec_compute_2 _ _)).
           apply mor_var.
   Qed.
 
